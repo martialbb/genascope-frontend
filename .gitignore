@@ -25,3 +25,7 @@ pnpm-debug.log*
 
 # VSCode
 .vscode/
+
+# test results
+test-results/
+playwright-report/
