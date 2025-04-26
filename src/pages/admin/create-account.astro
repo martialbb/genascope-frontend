@@ -1,0 +1,14 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import CreateAccountForm from '../../components/CreateAccountForm.tsx';
+
+// In a real app, add authentication/authorization checks here
+// to ensure only Super Admins can access this page.
+---
+
+<Layout title="Super Admin - Create Account">
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Super Admin Panel</h1>
+    <CreateAccountForm client:load />
+  </main>
+</Layout>

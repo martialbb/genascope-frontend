@@ -1,0 +1,38 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LoginForm from '../components/LoginForm.tsx';
+import { AuthProvider } from '../context/AuthContext.tsx'; // Import AuthProvider
+---
+
+<Layout title="Login - CancerGenix">
+  <AuthProvider> { /* Wrap with AuthProvider */ }
+    <main class="container mx-auto px-4 py-8">
+      <LoginForm client:load />
+    </main>
+  </AuthProvider>
+</Layout>
+
+<script>
+  // Redirect if already logged in (using the mock localStorage check)
+  // This is a basic client-side check. Robust auth needs server-side checks.
+  const storedUser = localStorage.getItem('authUser');
+  if (storedUser) {
+    // Redirect based on role, or just to dashboard
+    try {
+      const user = JSON.parse(storedUser);
+      if (user && user.role) {
+        // Example: Redirect clinicians/admins to dashboard, super admins to their page
+        if (user.role === 'super_admin') {
+          window.location.href = '/admin/create-account';
+        } else {
+          window.location.href = '/dashboard';
+        }
+      } else {
+        window.location.href = '/dashboard'; // Default redirect
+      }
+    } catch (e) {
+      console.error("Error parsing stored user for redirect", e);
+      localStorage.removeItem('authUser'); // Clear corrupted data
+    }
+  }
+</script>

@@ -1,0 +1,14 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ChatComponent from '../components/ChatComponent.tsx';
+
+// Placeholder sessionId - in a real app, this would come from the URL or user session
+const sessionId = "session_12345";
+---
+
+<Layout title="CancerGenix Chat">
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-center mb-8 text-blue-700">CancerGenix Chat</h1>
+    <ChatComponent sessionId={sessionId} client:load />
+  </main>
+</Layout>
