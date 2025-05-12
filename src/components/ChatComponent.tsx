@@ -1,14 +1,9 @@
 // src/components/ChatComponent.tsx
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiService, { type ChatQuestion } from '../services/api';
 
 interface Message {
   sender: 'bot' | 'user';
-  text: string;
-}
-
-interface Question {
-  id: number;
   text: string;
 }
 
@@ -18,21 +13,20 @@ interface ChatProps {
 
 const ChatComponent: React.FC<ChatProps> = ({ sessionId }) => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [currentQuestion, setCurrentQuestion] = useState<ChatQuestion | null>(null);
   const [userInput, setUserInput] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Added loading state
-  const [error, setError] = useState<string | null>(null); // Added error state
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const startChat = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        // Replace with actual API endpoint if different
-        const response = await axios.post<{ question: Question }>('/api/start_chat', { sessionId });
-        if (response.data.question) {
-            setCurrentQuestion(response.data.question);
-            setMessages([{ sender: 'bot', text: response.data.question.text }]);
+        const response = await apiService.startChat(sessionId);
+        if (response.question) {
+            setCurrentQuestion(response.question);
+            setMessages([{ sender: 'bot', text: response.question.text }]);
         } else {
             setError("Could not start chat session.");
         }
@@ -62,22 +56,18 @@ const ChatComponent: React.FC<ChatProps> = ({ sessionId }) => {
     setCurrentQuestion(null); // Temporarily hide input while waiting for response
 
     try {
-      // Replace with actual API endpoint if different
-      const response = await axios.post<{ nextQuestion: Question | null }>(
-        '/api/submit_answer',
-        {
-          sessionId,
-          questionId: questionId,
-          answer: currentAnswer,
-        }
-      );
+      const response = await apiService.submitAnswer({
+        sessionId,
+        questionId: questionId,
+        answer: currentAnswer,
+      });
 
-      if (response.data.nextQuestion) {
+      if (response.nextQuestion) {
         setMessages((prev) => [
           ...prev,
-          { sender: 'bot', text: response.data.nextQuestion.text },
+          { sender: 'bot', text: response.nextQuestion?.text || 'Next question' },
         ]);
-        setCurrentQuestion(response.data.nextQuestion);
+        setCurrentQuestion(response.nextQuestion);
       } else {
         // Chat finished
         setMessages((prev) => [
