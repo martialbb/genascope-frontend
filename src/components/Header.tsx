@@ -9,7 +9,9 @@ const Header: React.FC = () => {
   const navLinks = [
     { href: '/', label: 'Home' },
     user && { href: '/chat', label: 'Chat' },
-    user && (user.role === 'clinician' || user.role === 'admin') && { href: '/dashboard', label: 'Dashboard' },
+    user && (user.role === 'clinician' || user.role === 'admin' || user.role === 'physician') && { href: '/dashboard', label: 'Dashboard' },
+    user && (user.role === 'clinician' || user.role === 'admin' || user.role === 'physician') && { href: '/invite', label: 'Invite Patient' },
+    user && (user.role === 'clinician' || user.role === 'admin' || user.role === 'physician') && { href: '/lab-order', label: 'Order Test' },
     user && user.role === 'admin' && { href: '/admin/create-user', label: 'Manage Users' },
     user && user.role === 'super_admin' && { href: '/admin/create-account', label: 'Manage Accounts' },
   ].filter(Boolean); // Filter out false values (for conditional links)

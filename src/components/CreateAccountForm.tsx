@@ -1,10 +1,13 @@
 // src/components/CreateAccountForm.tsx
 import React, { useState } from 'react';
-import axios from 'axios'; // Import axios
+import apiService from '../services/api';
 
 const CreateAccountForm: React.FC = () => {
   const [accountName, setAccountName] = useState<string>('');
+  const [domain, setDomain] = useState<string>('');
   const [adminEmail, setAdminEmail] = useState<string>('');
+  const [adminName, setAdminName] = useState<string>('');
+  const [adminPassword, setAdminPassword] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -15,19 +18,25 @@ const CreateAccountForm: React.FC = () => {
     setError(null);
     setSuccess(null);
 
-    console.log('Submitting new account:', { accountName, adminEmail });
+    console.log('Submitting new account:', { accountName, domain, adminEmail });
 
     try {
-      // Replace placeholder with actual API call
-      const response = await axios.post('/api/admin/create_account', { accountName, adminEmail });
+      const response = await apiService.createAccount({
+        name: accountName,
+        domain: domain,
+        admin_email: adminEmail,
+        admin_name: adminName,
+        admin_password: adminPassword,
+      });
 
-      // Assuming API returns success message or relevant data
-      setSuccess(response.data.message || `Account "${accountName}" created successfully.`);
+      setSuccess(`Account "${accountName}" created successfully.`);
       setAccountName('');
+      setDomain('');
       setAdminEmail('');
+      setAdminName('');
+      setAdminPassword('');
     } catch (err: any) {
       console.error('Error creating account:', err);
-      // Use error message from API response if available
       setError(err.response?.data?.detail || err.message || 'Failed to create account. Please try again.');
     } finally {
       setSubmitting(false);
@@ -51,7 +60,20 @@ const CreateAccountForm: React.FC = () => {
           />
         </div>
         <div>
-          <label htmlFor="adminEmail" className="block text-sm font-medium text-gray-600 mb-1">Account Admin Email</label>
+          <label htmlFor="domain" className="block text-sm font-medium text-gray-600 mb-1">Organization Domain</label>
+          <input
+            type="text"
+            id="domain"
+            value={domain}
+            onChange={(e) => setDomain(e.target.value)}
+            required
+            placeholder="hospital.org"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            aria-label="Organization Domain"
+          />
+        </div>
+        <div>
+          <label htmlFor="adminEmail" className="block text-sm font-medium text-gray-600 mb-1">Admin Email</label>
           <input
             type="email"
             id="adminEmail"
@@ -59,7 +81,31 @@ const CreateAccountForm: React.FC = () => {
             onChange={(e) => setAdminEmail(e.target.value)}
             required
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            aria-label="Account Admin Email"
+            aria-label="Admin Email"
+          />
+        </div>
+        <div>
+          <label htmlFor="adminName" className="block text-sm font-medium text-gray-600 mb-1">Admin Name</label>
+          <input
+            type="text"
+            id="adminName"
+            value={adminName}
+            onChange={(e) => setAdminName(e.target.value)}
+            required
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            aria-label="Admin Name"
+          />
+        </div>
+        <div>
+          <label htmlFor="adminPassword" className="block text-sm font-medium text-gray-600 mb-1">Admin Password</label>
+          <input
+            type="password"
+            id="adminPassword"
+            value={adminPassword}
+            onChange={(e) => setAdminPassword(e.target.value)}
+            required
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            aria-label="Admin Password"
           />
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}

@@ -1,18 +1,20 @@
 // src/components/CreateUserForm.tsx
 import React, { useState } from 'react';
-import axios from 'axios'; // Import axios
+import apiService from '../services/api';
 
 // Define roles - adjust as needed based on backend
-type UserRole = 'clinician' | 'admin';
+type UserRole = 'user' | 'physician' | 'admin';
 
 interface CreateUserFormProps {
-  accountId: string; // Passed from the Astro page
+  accountId?: string; // Passed from the Astro page
 }
 
 const CreateUserForm: React.FC<CreateUserFormProps> = ({ accountId }) => {
-  const [userName, setUserName] = useState<string>('');
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
   const [userEmail, setUserEmail] = useState<string>('');
-  const [userRole, setUserRole] = useState<UserRole>('clinician');
+  const [userRole, setUserRole] = useState<UserRole>('user');
+  const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -23,22 +25,24 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ accountId }) => {
     setError(null);
     setSuccess(null);
 
-    console.log('Submitting new user:', { accountId, userName, userEmail, userRole });
+    console.log('Submitting new user:', { accountId, firstName, lastName, userEmail, userRole });
 
     try {
-      // Replace placeholder with actual API call
-      const response = await axios.post('/api/account/create_user', {
-        accountId,
-        userName,
-        userEmail,
-        userRole
+      const response = await apiService.createUser({
+        email: userEmail,
+        first_name: firstName,
+        last_name: lastName,
+        role: userRole,
+        phone: phoneNumber
       });
 
       // Assuming API returns success message or relevant data
-      setSuccess(response.data.message || `User "${userName}" (${userRole}) created successfully.`);
-      setUserName('');
+      setSuccess(`User "${firstName} ${lastName}" (${userRole}) created successfully.`);
+      setFirstName('');
+      setLastName('');
       setUserEmail('');
-      setUserRole('clinician'); // Reset role
+      setPhoneNumber('');
+      setUserRole('user'); // Reset role
     } catch (err: any) {
       console.error('Error creating user:', err);
       // Use error message from API response if available
@@ -53,19 +57,31 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ accountId }) => {
       <h2 className="text-2xl font-semibold mb-6 text-gray-700">Create New User</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="userName" className="block text-sm font-medium text-gray-600 mb-1">User Name</label>
+          <label htmlFor="firstName" className="block text-sm font-medium text-gray-600 mb-1">First Name</label>
           <input
             type="text"
-            id="userName"
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)}
+            id="firstName"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
             required
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            aria-label="User Name"
+            aria-label="First Name"
           />
         </div>
         <div>
-          <label htmlFor="userEmail" className="block text-sm font-medium text-gray-600 mb-1">User Email</label>
+          <label htmlFor="lastName" className="block text-sm font-medium text-gray-600 mb-1">Last Name</label>
+          <input
+            type="text"
+            id="lastName"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            required
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            aria-label="Last Name"
+          />
+        </div>
+        <div>
+          <label htmlFor="userEmail" className="block text-sm font-medium text-gray-600 mb-1">Email</label>
           <input
             type="email"
             id="userEmail"
@@ -74,6 +90,17 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ accountId }) => {
             required
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             aria-label="User Email"
+          />
+        </div>
+        <div>
+          <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-600 mb-1">Phone Number</label>
+          <input
+            type="tel"
+            id="phoneNumber"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            aria-label="Phone Number"
           />
         </div>
         <div>
@@ -86,9 +113,9 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ accountId }) => {
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
             aria-label="User Role"
           >
-            <option value="clinician">Clinician</option>
-            <option value="admin">Account Admin</option>
-            {/* Add other roles if needed */}
+            <option value="user">Regular User</option>
+            <option value="physician">Physician</option>
+            <option value="admin">Admin</option>
           </select>
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}

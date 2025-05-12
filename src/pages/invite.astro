@@ -1,0 +1,14 @@
+---
+import Layout from '../layouts/Layout.astro';
+import GenerateInviteForm from '../components/GenerateInviteForm';
+
+// Get any patient info from query params
+const { patientId, patientName } = Astro.url.searchParams;
+---
+
+<Layout title="Generate Patient Invite - CancerGenix">
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-center mb-8 text-blue-700">Generate Patient Invite</h1>
+    <GenerateInviteForm client:load patientId={patientId} patientName={patientName} />
+  </main>
+</Layout>

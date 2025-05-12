@@ -6,7 +6,7 @@ interface User {
   id: string;
   email: string;
   name: string;
-  role: 'clinician' | 'admin' | 'super_admin'; // Define roles as needed
+  role: 'clinician' | 'admin' | 'super_admin' | 'physician' | 'user'; // Define roles as needed
   accountId?: string; // Optional: For account admins/clinicians
 }
 
@@ -72,6 +72,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         loggedInUser = { id: 'u002', email: 'admin@test.com', name: 'Account Admin', role: 'admin', accountId: 'acc001' };
       } else if (email === 'clinician@test.com' && password === 'password') {
         loggedInUser = { id: 'u003', email: 'clinician@test.com', name: 'Dr. Clinician', role: 'clinician', accountId: 'acc001' };
+      } else if (email === 'physician@test.com' && password === 'password') {
+        loggedInUser = { id: 'u004', email: 'physician@test.com', name: 'Dr. Jane Smith', role: 'physician', accountId: 'acc001' };
+      } else if (email === 'user@test.com' && password === 'password') {
+        loggedInUser = { id: 'u005', email: 'user@test.com', name: 'Regular User', role: 'user' };
       }
 
       if (loggedInUser) {
