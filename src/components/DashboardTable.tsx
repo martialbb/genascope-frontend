@@ -77,7 +77,7 @@ const DashboardTable: React.FC = () => {
 
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
-      <div className="p-4 border-b">
+      <div className="p-4 border-b flex justify-between items-center">
         <input
           type="text"
           placeholder="Filter by name or status..."
@@ -86,6 +86,12 @@ const DashboardTable: React.FC = () => {
           className="border p-2 rounded-md w-full md:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500"
           aria-label="Filter patients"
         />
+        <button 
+          onClick={fetchPatients} 
+          className="ml-2 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
+        >
+          Refresh
+        </button>
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">

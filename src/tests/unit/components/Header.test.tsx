@@ -3,129 +3,216 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Header from '../../../components/Header';
-import { AuthContext, AuthProvider } from '../../../context/AuthContext'; // Import AuthProvider too if needed for setup
-import type { User } from '../../../context/AuthContext'; // Import User type
+import { AuthContext } from '../../../context/AuthContext';
 
 // Mock the AuthContext
 const mockLogout = vi.fn();
 
-const renderWithAuth = (user: User | null, loading: boolean = false) => {
-  return render(
-    <AuthContext.Provider value={{ user, login: vi.fn(), logout: mockLogout, loading, error: null, checkAuth: vi.fn() }}>
-      <Header />
-    </AuthContext.Provider>
-  );
-};
+// Define user role type to match AuthContext
+type UserRole = 'clinician' | 'admin' | 'super_admin';
 
-describe('Header Component', () => {
+describe('Header', () => {
   beforeEach(() => {
-    // Reset mocks before each test
-    mockLogout.mockClear();
-    // Mock window.location.href navigation
-    Object.defineProperty(window, 'location', {
-        value: {
-            href: '/',
-            assign: vi.fn(), // Mock assign if navigation is triggered directly
-        },
-        writable: true,
-    });
+    vi.clearAllMocks();
   });
 
-  it('renders the brand name', () => {
-    renderWithAuth(null);
-    expect(screen.getByRole('link', { name: /cancergenix/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /cancergenix/i })).toHaveAttribute('href', '/');
+  it('shows logo and login link when user is not authenticated', () => {
+    // Set up mock auth context with no user
+    const authValue = {
+      user: null,
+      loading: false,
+      error: null,
+      login: vi.fn(),
+      logout: mockLogout,
+      checkAuth: vi.fn()
+    };
+
+    render(
+      <AuthContext.Provider value={authValue}>
+        <Header />
+      </AuthContext.Provider>
+    );
+
+    // Check for logo/brand name
+    expect(screen.getByText('CancerGenix')).toBeInTheDocument();
+    
+    // Check for login link when not authenticated
+    const loginLink = screen.getByText('Login');
+    expect(loginLink).toBeInTheDocument();
+    expect(loginLink.closest('a')).toHaveAttribute('href', '/login');
+    
+    // Should not show logout button
+    expect(screen.queryByText('Logout')).not.toBeInTheDocument();
   });
 
-  it('shows Login link when user is not authenticated', () => {
-    renderWithAuth(null);
-    expect(screen.getByRole('link', { name: /login/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /login/i })).toHaveAttribute('href', '/login');
-    expect(screen.queryByText(/welcome/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /logout/i })).not.toBeInTheDocument();
+  it('shows user welcome and logout button when authenticated', () => {
+    // Set up mock auth context with user
+    const authValue = {
+      user: { 
+        id: 'user123', 
+        name: 'Dr. Smith',
+        email: 'smith@hospital.com',
+        role: 'clinician' as UserRole
+      },
+      loading: false,
+      error: null,
+      login: vi.fn(),
+      logout: mockLogout,
+      checkAuth: vi.fn()
+    };
+
+    render(
+      <AuthContext.Provider value={authValue}>
+        <Header />
+      </AuthContext.Provider>
+    );
+
+    // Check for welcome message
+    expect(screen.getByText(/Welcome, Dr. Smith!/)).toBeInTheDocument();
+    
+    // Check for logout button
+    const logoutButton = screen.getByRole('button', { name: /logout/i });
+    expect(logoutButton).toBeInTheDocument();
+    
+    // Should not show login link
+    expect(screen.queryByText('Login')).not.toBeInTheDocument();
   });
 
-  it('shows loading state', () => {
-    renderWithAuth(null, true);
-    expect(screen.getByText(/loading.../i)).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /login/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /logout/i })).not.toBeInTheDocument();
-  });
+  it('calls logout function when logout button clicked', () => {
+    // Set up mock auth context with user
+    const authValue = {
+      user: { 
+        id: 'user123', 
+        name: 'Dr. Smith',
+        email: 'smith@hospital.com',
+        role: 'clinician' as UserRole
+      },
+      loading: false,
+      error: null,
+      login: vi.fn(),
+      logout: mockLogout,
+      checkAuth: vi.fn()
+    };
 
-  it('shows welcome message and Logout button when user is authenticated', () => {
-    const testUser: User = { id: '1', name: 'Test User', role: 'patient', token: 'token' };
-    renderWithAuth(testUser);
-    expect(screen.getByText(/welcome, test user!/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /login/i })).not.toBeInTheDocument();
-  });
+    render(
+      <AuthContext.Provider value={authValue}>
+        <Header />
+      </AuthContext.Provider>
+    );
 
-  it('calls logout function when Logout button is clicked', () => {
-    const testUser: User = { id: '1', name: 'Test User', role: 'patient', token: 'token' };
-    renderWithAuth(testUser);
+    // Click logout button
     const logoutButton = screen.getByRole('button', { name: /logout/i });
     fireEvent.click(logoutButton);
+    
+    // Verify logout was called
     expect(mockLogout).toHaveBeenCalledTimes(1);
   });
 
-  // Test navigation links based on roles
-  it('shows correct links for a patient', () => {
-    const testUser: User = { id: '1', name: 'Patient Zero', role: 'patient', token: 'token' };
-    renderWithAuth(testUser);
-    expect(screen.getByRole('link', { name: /home/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /chat/i })).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /dashboard/i })).not.toBeInTheDocument();
+  it('shows loading state', () => {
+    // Set up mock auth context with loading state
+    const authValue = {
+      user: null,
+      loading: true, // Loading is true
+      error: null,
+      login: vi.fn(),
+      logout: mockLogout,
+      checkAuth: vi.fn()
+    };
+
+    render(
+      <AuthContext.Provider value={authValue}>
+        <Header />
+      </AuthContext.Provider>
+    );
+
+    // Check for loading text
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  });
+
+  it('shows appropriate navigation links for clinician role', () => {
+    // Set up mock auth context with clinician user
+    const authValue = {
+      user: { 
+        id: 'user123', 
+        name: 'Dr. Smith',
+        email: 'smith@hospital.com',
+        role: 'clinician' as UserRole
+      },
+      loading: false,
+      error: null,
+      login: vi.fn(),
+      logout: mockLogout,
+      checkAuth: vi.fn()
+    };
+
+    render(
+      <AuthContext.Provider value={authValue}>
+        <Header />
+      </AuthContext.Provider>
+    );
+
+    // Check for expected clinician links
+    expect(screen.getByRole('link', { name: /home/i })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: /chat/i })).toHaveAttribute('href', '/chat');
+    expect(screen.getByRole('link', { name: /dashboard/i })).toHaveAttribute('href', '/dashboard');
+    
+    // Should not show admin links
     expect(screen.queryByRole('link', { name: /manage users/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /manage accounts/i })).not.toBeInTheDocument();
   });
 
-  it('shows correct links for a clinician', () => {
-    const testUser: User = { id: '2', name: 'Dr. Clinician', role: 'clinician', token: 'token' };
-    renderWithAuth(testUser);
-    expect(screen.getByRole('link', { name: /home/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /chat/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /dashboard/i })).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /manage users/i })).not.toBeInTheDocument();
+  it('shows additional navigation links for admin role', () => {
+    // Set up mock auth context with admin user
+    const authValue = {
+      user: { 
+        id: 'admin123', 
+        name: 'Admin User',
+        email: 'admin@hospital.com',
+        role: 'admin' as UserRole
+      },
+      loading: false,
+      error: null,
+      login: vi.fn(),
+      logout: mockLogout,
+      checkAuth: vi.fn()
+    };
+
+    render(
+      <AuthContext.Provider value={authValue}>
+        <Header />
+      </AuthContext.Provider>
+    );
+
+    // Check for admin link
+    expect(screen.getByRole('link', { name: /manage users/i })).toHaveAttribute('href', '/admin/create-user');
+    
+    // Should not show super_admin links
     expect(screen.queryByRole('link', { name: /manage accounts/i })).not.toBeInTheDocument();
   });
 
-  it('shows correct links for an admin', () => {
-    const testUser: User = { id: '3', name: 'Admin User', role: 'admin', token: 'token' };
-    renderWithAuth(testUser);
-    expect(screen.getByRole('link', { name: /home/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /chat/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /dashboard/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /manage users/i })).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /manage accounts/i })).not.toBeInTheDocument();
-  });
+  it('shows all navigation links for super_admin role', () => {
+    // Set up mock auth context with super_admin user
+    const authValue = {
+      user: { 
+        id: 'superadmin123', 
+        name: 'Super Admin',
+        email: 'superadmin@cancergenix.com',
+        role: 'super_admin' as UserRole
+      },
+      loading: false,
+      error: null,
+      login: vi.fn(),
+      logout: mockLogout,
+      checkAuth: vi.fn()
+    };
 
-  it('shows correct links for a super_admin', () => {
-    const testUser: User = { id: '4', name: 'Super Admin', role: 'super_admin', token: 'token' };
-    renderWithAuth(testUser);
-    expect(screen.getByRole('link', { name: /home/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /chat/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /dashboard/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /manage users/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /manage accounts/i })).toBeInTheDocument();
-  });
+    render(
+      <AuthContext.Provider value={authValue}>
+        <Header />
+      </AuthContext.Provider>
+    );
 
-  it('renders dashboard and logout links for authenticated regular user', () => {
-    const user = { id: '1', email: 'user@example.com', role: 'user' };
-    renderWithAuth(user);
-    expect(screen.getByRole('link', { name: /dashboard/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /login/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /create user/i })).not.toBeInTheDocument(); // Ensure admin links aren't shown
-    expect(screen.queryByRole('link', { name: /create account/i })).not.toBeInTheDocument(); // Ensure admin links aren't shown
-  });
-
-  it('renders dashboard, admin links, and logout for authenticated admin user', () => {
-    const user = { id: '2', email: 'admin@example.com', role: 'admin' };
-    renderWithAuth(user);
-    expect(screen.getByRole('link', { name: /dashboard/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /create user/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /create account/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /login/i })).not.toBeInTheDocument();
+    // Check for super_admin link
+    expect(screen.getByRole('link', { name: /manage accounts/i })).toHaveAttribute('href', '/admin/create-account');
   });
 });

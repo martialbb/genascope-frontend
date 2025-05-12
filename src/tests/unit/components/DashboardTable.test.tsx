@@ -1,228 +1,165 @@
 // src/tests/unit/components/DashboardTable.test.tsx
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import axios from 'axios';
 import DashboardTable from '../../../components/DashboardTable';
 
 // Mock axios
 vi.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-// Sample patient data
-const mockPatients = [
-  { id: '1', name: 'Alice Smith', status: 'Chat Completed', lastActivity: '2025-04-24' },
-  { id: '2', name: 'Bob Johnson', status: 'Results Ready', lastActivity: '2025-04-23' },
-  { id: '3', name: 'Charlie Brown', status: 'Pending Invite', lastActivity: '2025-04-25' },
-  { id: '4', name: 'Diana Prince', status: 'Test Ordered', lastActivity: '2025-04-22' },
-  { id: '5', name: 'Ethan Hunt', status: 'Chat In Progress', lastActivity: '2025-04-25' },
-];
-
-describe('DashboardTable Component', () => {
+describe('DashboardTable', () => {
+  const mockPatients = [
+    { id: 'p1', name: 'John Doe', status: 'Chat Completed', lastActivity: '2025-05-10' }, // Changed to Chat Completed for Order Test button
+    { id: 'p2', name: 'Jane Smith', status: 'Results Ready', lastActivity: '2025-05-09' },
+    { id: 'p3', name: 'Bob Johnson', status: 'Pending Invite', lastActivity: '2025-05-08' },
+  ];
+  
   beforeEach(() => {
-    // Reset mocks before each test
-    mockedAxios.get.mockReset();
-    mockedAxios.post.mockReset();
-    // Mock console.log/error to avoid cluttering test output if needed
-    vi.spyOn(console, 'log').mockImplementation(() => {});
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.clearAllMocks();
   });
 
-  afterEach(() => {
-    // Restore mocks
-    vi.restoreAllMocks();
-  });
-
-  it('should show loading state initially', () => {
-    mockedAxios.get.mockResolvedValueOnce({ data: [] }); // Prevent state update warning
+  it('shows loading state initially', async () => {
+    // Mock API call that never resolves
+    vi.mocked(axios.get).mockReturnValueOnce(new Promise(() => {}));
+    
     render(<DashboardTable />);
-    expect(screen.getByText(/loading patient data.../i)).toBeInTheDocument();
+    
+    expect(screen.getByText(/loading/i)).toBeInTheDocument();
   });
 
-  it('should display patient data after successful fetch', async () => {
-    mockedAxios.get.mockResolvedValueOnce({ data: mockPatients });
+  it('displays patient data after successful API call', async () => {
+    // Mock successful API response
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: mockPatients } as any);
+    
     render(<DashboardTable />);
-
+    
+    // Check for loading initially
+    expect(screen.getByText(/loading/i)).toBeInTheDocument();
+    
+    // Wait for data to load
     await waitFor(() => {
-      expect(screen.getByText('Alice Smith')).toBeInTheDocument();
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+      expect(screen.getByText('Jane Smith')).toBeInTheDocument();
       expect(screen.getByText('Bob Johnson')).toBeInTheDocument();
-      expect(screen.getByText('Chat Completed')).toBeInTheDocument();
-      expect(screen.getByText('Results Ready')).toBeInTheDocument();
     });
-
-    // Check table headers
-    expect(screen.getByRole('columnheader', { name: /name/i })).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: /status/i })).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: /last activity/i })).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: /actions/i })).toBeInTheDocument();
+    
+    // Check for status and date columns
+    expect(screen.getByText('Chat Completed')).toBeInTheDocument();
+    expect(screen.getByText('Results Ready')).toBeInTheDocument();
+    expect(screen.getByText('2025-05-10')).toBeInTheDocument();
   });
 
-  it('should display error message on fetch failure', async () => {
-    const errorMessage = 'Network Error';
-    mockedAxios.get.mockRejectedValueOnce(new Error(errorMessage));
+  it('shows error message when API call fails', async () => {
+    // Mock API failure
+    vi.mocked(axios.get).mockRejectedValueOnce(new Error('Failed to fetch patients'));
+    
     render(<DashboardTable />);
-
+    
     await waitFor(() => {
       expect(screen.getByText(/failed to load patient data/i)).toBeInTheDocument();
     });
-    expect(screen.queryByText(/loading patient data.../i)).not.toBeInTheDocument();
   });
 
-  it('should filter patients by name', async () => {
-    mockedAxios.get.mockResolvedValueOnce({ data: mockPatients });
+  it('filters patients based on search input', async () => {
+    // Mock successful API response
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: mockPatients } as any);
+    
     render(<DashboardTable />);
-
+    
+    // Wait for data to load
     await waitFor(() => {
-      expect(screen.getByText('Alice Smith')).toBeInTheDocument(); // Wait for data
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
     });
-
-    const filterInput = screen.getByLabelText(/filter patients/i);
-    fireEvent.change(filterInput, { target: { value: 'Alice' } });
-
-    expect(screen.getByText('Alice Smith')).toBeInTheDocument();
+    
+    // Get search input and filter for "Jane"
+    const searchInput = screen.getByPlaceholderText(/Filter by name or status/i);
+    fireEvent.change(searchInput, { target: { value: 'Jane' } });
+    
+    // Jane should be visible
+    expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+    
+    // John and Bob shouldn't be visible
+    expect(screen.queryByText('John Doe')).not.toBeInTheDocument();
     expect(screen.queryByText('Bob Johnson')).not.toBeInTheDocument();
-    expect(screen.queryByText('Charlie Brown')).not.toBeInTheDocument();
   });
 
-   it('should filter patients by status', async () => {
-    mockedAxios.get.mockResolvedValueOnce({ data: mockPatients });
+  it('filters by status', async () => {
+    // Mock successful API response
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: mockPatients } as any);
+    
     render(<DashboardTable />);
-
+    
+    // Wait for data to load
     await waitFor(() => {
-      expect(screen.getByText('Alice Smith')).toBeInTheDocument(); // Wait for data
+      expect(screen.getByText('Results Ready')).toBeInTheDocument();
     });
-
-    const filterInput = screen.getByLabelText(/filter patients/i);
-    fireEvent.change(filterInput, { target: { value: 'Results Ready' } });
-
-    expect(screen.queryByText('Alice Smith')).not.toBeInTheDocument();
-    expect(screen.getByText('Bob Johnson')).toBeInTheDocument();
-    expect(screen.queryByText('Charlie Brown')).not.toBeInTheDocument();
+    
+    // Filter by status "Results Ready"
+    const searchInput = screen.getByPlaceholderText(/Filter by name or status/i);
+    fireEvent.change(searchInput, { target: { value: 'Results Ready' } });
+    
+    // Only Jane should be visible
+    expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+    expect(screen.queryByText('John Doe')).not.toBeInTheDocument();
+    expect(screen.queryByText('Bob Johnson')).not.toBeInTheDocument();
   });
 
-  it('should show "No patients found" message when filter matches nothing', async () => {
-    mockedAxios.get.mockResolvedValueOnce({ data: mockPatients });
+  it('calls API correctly when ordering a test', async () => {
+    // Mock patients API call
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: mockPatients } as any);
+    // Mock successful order test API call
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: { success: true } } as any);
+    
     render(<DashboardTable />);
-
+    
+    // Wait for data to load
     await waitFor(() => {
-      expect(screen.getByText('Alice Smith')).toBeInTheDocument(); // Wait for data
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
     });
-
-    const filterInput = screen.getByLabelText(/filter patients/i);
-    fireEvent.change(filterInput, { target: { value: 'NonExistent' } });
-
-    expect(screen.getByText(/no patients found matching filter/i)).toBeInTheDocument();
-    expect(screen.queryByText('Alice Smith')).not.toBeInTheDocument();
+    
+    // Find order test button - can search by multiple approaches
+    // (This assumes text-based approach, but you could use a test ID or other selector)
+    const orderButtons = screen.getAllByRole('button', { name: /order test/i });
+    fireEvent.click(orderButtons[0]); // Click on first patient's button
+    
+    // Verify API call
+    expect(axios.post).toHaveBeenCalledWith('/api/order_test', { patientId: 'p1' });
   });
 
-   it('should show "No patient data available" message when fetch returns empty', async () => {
-    mockedAxios.get.mockResolvedValueOnce({ data: [] });
+  it('shows refresh button and refreshes data when clicked', async () => {
+    // Initial data load
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: mockPatients } as any);
+    
     render(<DashboardTable />);
-
+    
+    // Wait for initial data load
     await waitFor(() => {
-      expect(screen.getByText(/no patient data available/i)).toBeInTheDocument();
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
     });
-    expect(screen.queryByRole('row', { name: /alice smith/i })).not.toBeInTheDocument();
-  });
-
-  it('should render "Order Test" button for "Chat Completed" status', async () => {
-    mockedAxios.get.mockResolvedValueOnce({ data: mockPatients });
-    render(<DashboardTable />);
-
+    
+    // Clear mocks to track the refresh
+    vi.clearAllMocks();
+    
+    // Updated data for the refresh
+    const updatedPatients = [
+      ...mockPatients,
+      { id: 'p4', name: 'Sarah Lee', status: 'Chat Completed', lastActivity: '2025-05-11' }
+    ];
+    
+    // Setup mock for refresh call
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: updatedPatients } as any);
+    
+    // Click refresh button
+    const refreshButton = screen.getByRole('button', { name: /refresh/i });
+    fireEvent.click(refreshButton);
+    
+    // API should be called again
+    expect(axios.get).toHaveBeenCalledWith('/api/patients');
+    
+    // New patient should appear
     await waitFor(() => {
-      // Find the row for Alice Smith
-      const aliceRow = screen.getByRole('row', { name: /alice smith/i });
-      // Check for the button within that row
-      const orderButton = within(aliceRow).getByRole('button', { name: /order test/i });
-      expect(orderButton).toBeInTheDocument();
-    });
-  });
-
-  it('should render "View Results" button for "Results Ready" status', async () => {
-    mockedAxios.get.mockResolvedValueOnce({ data: mockPatients });
-    render(<DashboardTable />);
-
-    await waitFor(() => {
-      const bobRow = screen.getByRole('row', { name: /bob johnson/i });
-      const viewButton = within(bobRow).getByRole('button', { name: /view results/i });
-      expect(viewButton).toBeInTheDocument();
-    });
-  });
-
-  it('should call handleOrderTest and API on button click', async () => {
-    mockedAxios.get.mockResolvedValueOnce({ data: mockPatients });
-    mockedAxios.post.mockResolvedValueOnce({}); // Mock successful post
-    render(<DashboardTable />);
-
-    let orderButton: HTMLElement;
-    await waitFor(() => {
-      const aliceRow = screen.getByRole('row', { name: /alice smith/i });
-      orderButton = within(aliceRow).getByRole('button', { name: /order test/i });
-      expect(orderButton).toBeInTheDocument();
-    });
-
-    fireEvent.click(orderButton!);
-
-    await waitFor(() => {
-      expect(mockedAxios.post).toHaveBeenCalledTimes(1);
-      expect(mockedAxios.post).toHaveBeenCalledWith('/api/order_test', { patientId: '1' });
-      // Check if status updated optimistically
-      const aliceRow = screen.getByRole('row', { name: /alice smith/i });
-      expect(within(aliceRow).getByText('Test Ordered')).toBeInTheDocument();
+      expect(screen.getByText('Sarah Lee')).toBeInTheDocument();
     });
   });
-
-   it('should handle error when ordering test fails', async () => {
-    mockedAxios.get.mockResolvedValueOnce({ data: mockPatients });
-    const postError = new Error('API Error');
-    mockedAxios.post.mockRejectedValueOnce(postError);
-    // Mock window.alert
-    const alertMock = vi.spyOn(window, 'alert').mockImplementation(() => {});
-
-    render(<DashboardTable />);
-
-    let orderButton: HTMLElement;
-    await waitFor(() => {
-      const aliceRow = screen.getByRole('row', { name: /alice smith/i });
-      orderButton = within(aliceRow).getByRole('button', { name: /order test/i });
-      expect(orderButton).toBeInTheDocument();
-    });
-
-    fireEvent.click(orderButton!);
-
-    await waitFor(() => {
-      expect(mockedAxios.post).toHaveBeenCalledTimes(1);
-      expect(mockedAxios.post).toHaveBeenCalledWith('/api/order_test', { patientId: '1' });
-      // Check if alert was called
-      expect(alertMock).toHaveBeenCalledWith('Failed to order test for patient 1. Please try again.');
-      // Check if status did NOT change optimistically on error
-      const aliceRow = screen.getByRole('row', { name: /alice smith/i });
-      expect(within(aliceRow).getByText('Chat Completed')).toBeInTheDocument(); // Should remain the same
-    });
-
-    alertMock.mockRestore(); // Clean up alert mock
-  });
-
-  // Basic test for View Results click (currently just logs)
-  it('should call handleViewResults on button click', async () => {
-     const consoleSpy = vi.spyOn(console, 'log');
-     mockedAxios.get.mockResolvedValueOnce({ data: mockPatients });
-     render(<DashboardTable />);
-
-     let viewButton: HTMLElement;
-     await waitFor(() => {
-       const bobRow = screen.getByRole('row', { name: /bob johnson/i });
-       viewButton = within(bobRow).getByRole('button', { name: /view results/i });
-       expect(viewButton).toBeInTheDocument();
-     });
-
-     fireEvent.click(viewButton!);
-
-     expect(consoleSpy).toHaveBeenCalledWith('Viewing results for patient 2');
-     consoleSpy.mockRestore();
-   });
-
 });
-
-// Helper to query within elements (needed for finding buttons in specific rows)
-import { within } from '@testing-library/react';

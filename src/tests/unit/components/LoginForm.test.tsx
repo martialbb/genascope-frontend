@@ -100,4 +100,207 @@ describe('LoginForm Component', () => {
     expect(loginButton).toBeInTheDocument();
     expect(loginButton).toBeDisabled();
   });
+
+  it('renders the form correctly', () => {
+    // Set up auth context with empty values
+    const authValue = {
+      user: null,
+      loading: false,
+      error: null,
+      login: mockLogin,
+      logout: vi.fn(),
+      checkAuth: vi.fn()
+    };
+
+    render(
+      <AuthContext.Provider value={authValue}>
+        <LoginForm />
+      </AuthContext.Provider>
+    );
+    
+    // Check form elements
+    expect(screen.getAllByText('Login')[0]).toBeInTheDocument(); // Use getAllByText to handle multiple "Login" texts
+    expect(screen.getByLabelText('Email')).toBeInTheDocument();
+    expect(screen.getByLabelText('Password')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Login/i })).toBeInTheDocument();
+  });
+
+  it('handles input changes', () => {
+    // Set up auth context with empty values
+    const authValue = {
+      user: null,
+      loading: false,
+      error: null,
+      login: mockLogin,
+      logout: vi.fn(),
+      checkAuth: vi.fn()
+    };
+
+    render(
+      <AuthContext.Provider value={authValue}>
+        <LoginForm />
+      </AuthContext.Provider>
+    );
+    
+    // Get form elements
+    const emailInput = screen.getByLabelText('Email');
+    const passwordInput = screen.getByLabelText('Password');
+    
+    // Simulate typing in form
+    fireEvent.change(emailInput, { target: { value: 'user@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'secretPassword123' } });
+    
+    // Check values are updated
+    expect(emailInput).toHaveValue('user@example.com');
+    expect(passwordInput).toHaveValue('secretPassword123');
+  });
+
+  it('submits the form and calls login function', async () => {
+    // Set up auth context with empty values
+    const authValue = {
+      user: null,
+      loading: false,
+      error: null,
+      login: mockLogin,
+      logout: vi.fn(),
+      checkAuth: vi.fn()
+    };
+
+    render(
+      <AuthContext.Provider value={authValue}>
+        <LoginForm />
+      </AuthContext.Provider>
+    );
+    
+    // Fill form
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'user@example.com' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secretPassword123' } });
+    
+    // Submit form
+    fireEvent.click(screen.getByRole('button', { name: /login/i }));
+    
+    // Check if login function was called with correct values
+    expect(mockLogin).toHaveBeenCalledWith('user@example.com', 'secretPassword123');
+  });
+
+  it('prevents submission if email or password is empty', async () => {
+    // Set up auth context with empty values
+    const authValue = {
+      user: null,
+      loading: false,
+      error: null,
+      login: mockLogin,
+      logout: vi.fn(),
+      checkAuth: vi.fn()
+    };
+
+    render(
+      <AuthContext.Provider value={authValue}>
+        <LoginForm />
+      </AuthContext.Provider>
+    );
+    
+    // Submit form without filling in fields
+    fireEvent.click(screen.getByRole('button', { name: /login/i }));
+    
+    // Check login was not called
+    expect(mockLogin).not.toHaveBeenCalled();
+    
+    // Fill only email
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'user@example.com' } });
+    fireEvent.click(screen.getByRole('button', { name: /login/i }));
+    
+    // Should still not call login
+    expect(mockLogin).not.toHaveBeenCalled();
+    
+    // Reset form and fill only password
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: '' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secretPassword123' } });
+    fireEvent.click(screen.getByRole('button', { name: /login/i }));
+    
+    // Should still not call login
+    expect(mockLogin).not.toHaveBeenCalled();
+  });
+
+  it('shows loading state when authentication is in progress', () => {
+    // Set up auth context with loading true
+    const authValue = {
+      user: null,
+      loading: true, // Loading state
+      error: null,
+      login: mockLogin,
+      logout: vi.fn(),
+      checkAuth: vi.fn()
+    };
+
+    render(
+      <AuthContext.Provider value={authValue}>
+        <LoginForm />
+      </AuthContext.Provider>
+    );
+    
+    // Should show loading state on button
+    const button = screen.getByRole('button');
+    expect(button).toBeDisabled();
+    expect(button).toHaveTextContent(/logging in/i);
+  });
+
+  it('shows error message when authentication fails', () => {
+    // Set up auth context with an error
+    const authValue = {
+      user: null,
+      loading: false,
+      error: 'Invalid email or password', // Error message
+      login: mockLogin,
+      logout: vi.fn(),
+      checkAuth: vi.fn()
+    };
+
+    render(
+      <AuthContext.Provider value={authValue}>
+        <LoginForm />
+      </AuthContext.Provider>
+    );
+    
+    // Should display error message
+    expect(screen.getByText('Invalid email or password')).toBeInTheDocument();
+  });
+
+  it('redirects on successful login (via AuthContext)', async () => {
+    // This test is to verify the LoginForm integrates correctly with AuthContext
+    // The actual redirect is typically handled in AuthContext or with a hook
+    const successfulLogin = vi.fn().mockResolvedValue(true); // Use mockResolvedValue instead
+    
+    // Set up auth context with a success response
+    const authValue = {
+      user: null,
+      loading: false,
+      error: null,
+      login: successfulLogin,
+      logout: vi.fn(),
+      checkAuth: vi.fn()
+    };
+
+    render(
+      <AuthContext.Provider value={authValue}>
+        <LoginForm />
+      </AuthContext.Provider>
+    );
+    
+    // Fill form
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'user@example.com' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secretPassword123' } });
+    
+    // Submit form
+    fireEvent.click(screen.getByRole('button', { name: /login/i }));
+    
+    // Verify login was called
+    expect(successfulLogin).toHaveBeenCalledWith('user@example.com', 'secretPassword123');
+    
+    // With mockResolvedValue, we just need to confirm the function was called
+    // No need to check the return value as mockResolvedValue guarantees it resolves to true
+    await waitFor(() => {
+      expect(successfulLogin).toHaveBeenCalled();
+    });
+  });
 });
