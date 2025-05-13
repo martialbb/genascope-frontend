@@ -1,0 +1,67 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SchedulingComponent from '../components/SchedulingComponent';
+import { useAuth } from '../context/AuthContext';
+
+// Get user type from URL parameters or session
+const { type, clinicianId, patientId } = Astro.url.searchParams;
+
+// Set page title based on user type
+const pageTitle = type === 'patient' ? 'Schedule Your Appointment' : 'Appointment Scheduling';
+---
+
+<Layout title={pageTitle}>
+  <main class="container mx-auto px-4 py-8">
+    <div class="max-w-3xl mx-auto">
+      <h1 class="text-3xl font-bold text-gray-800 mb-6">{pageTitle}</h1>
+      
+      <div class="mb-8">
+        <p class="text-gray-600">
+          {type === 'patient' 
+            ? 'Please select a convenient date and time for your appointment with our genetic counselor.' 
+            : 'Schedule an appointment for your patient with a genetic counselor.'}
+        </p>
+      </div>
+      
+      <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <SchedulingComponent 
+          client:load 
+          clinicianId={clinicianId || ''} 
+          patientId={patientId || ''} 
+        />
+      </div>
+      
+      <div class="mt-8">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">What to Expect</h2>
+        <div class="bg-blue-50 p-6 rounded-lg">
+          <ul class="space-y-3 text-gray-700">
+            <li class="flex items-start">
+              <svg class="h-6 w-6 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Virtual appointments are conducted through a secure video platform.</span>
+            </li>
+            <li class="flex items-start">
+              <svg class="h-6 w-6 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Your genetic counselor will review your risk assessment results with you.</span>
+            </li>
+            <li class="flex items-start">
+              <svg class="h-6 w-6 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Appointments typically last 30-45 minutes.</span>
+            </li>
+            <li class="flex items-start">
+              <svg class="h-6 w-6 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>You'll receive a confirmation email with all the details.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>

@@ -1,6 +1,6 @@
 # CancerGenix
 
-CancerGenix is a comprehensive web application designed to help identify individuals who may benefit from genetic testing for hereditary cancer syndromes. The platform consists of a chat-based risk assessment tool, eligibility analysis, and lab integration features.
+CancerGenix is a comprehensive web application designed to help identify individuals who may benefit from genetic testing for hereditary cancer syndromes. The platform consists of a chat-based risk assessment tool, eligibility analysis, lab integration features, and appointment scheduling capabilities.
 
 ## 🔄 Project Architecture
 
@@ -14,8 +14,20 @@ This project uses a multi-repository architecture:
 - **Eligibility Analysis**: Algorithms to determine testing eligibility based on NCCN guidelines and Tyrer-Cuzick model
 - **Patient Management**: Dashboard for clinicians to manage patients
 - **Lab Integration**: Order genetic tests and view results
+- **Appointment Scheduling**: Self-scheduling for patients and availability management for clinicians
 - **Account Management**: Tools for creating and managing organizational accounts and users
 - **Role-Based Access Control**: Different permissions for different user roles
+
+## 📅 Appointment Scheduling
+
+The appointment scheduling system provides:
+
+- **Patient Self-Scheduling**: Patients can book appointments after completing risk assessments or receiving test results
+- **Clinician Availability Management**: Clinicians can set their recurring or one-time availability
+- **Virtual & In-Person Appointments**: Support for both appointment types
+- **Appointment Dashboard**: View and manage appointments for both clinicians and patients
+- **Post-Assessment Integration**: Prompts to schedule appointments based on risk assessment results
+- **Email Notifications**: Sends confirmations and reminders for appointments
 
 ## 🚀 Project Setup
 

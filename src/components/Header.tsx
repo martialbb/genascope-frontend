@@ -12,6 +12,11 @@ const Header: React.FC = () => {
     user && (user.role === 'clinician' || user.role === 'admin' || user.role === 'physician') && { href: '/dashboard', label: 'Dashboard' },
     user && (user.role === 'clinician' || user.role === 'admin' || user.role === 'physician') && { href: '/invite', label: 'Invite Patient' },
     user && (user.role === 'clinician' || user.role === 'admin' || user.role === 'physician') && { href: '/lab-order', label: 'Order Test' },
+    // Add appointment-related links
+    user && (user.role === 'clinician' || user.role === 'admin' || user.role === 'physician') && { href: '/appointments-dashboard', label: 'Appointments' },
+    user && (user.role === 'clinician') && { href: '/manage-availability', label: 'My Availability' },
+    user && user.role === 'patient' && { href: '/schedule-appointment', label: 'Schedule Appointment' },
+    user && user.role === 'patient' && { href: '/appointments-dashboard', label: 'My Appointments' },
     user && user.role === 'admin' && { href: '/admin/create-user', label: 'Manage Users' },
     user && user.role === 'super_admin' && { href: '/admin/create-account', label: 'Manage Accounts' },
   ].filter(Boolean); // Filter out false values (for conditional links)

@@ -1,11 +1,59 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import DashboardTable from '../components/DashboardTable.tsx';
+import AppointmentsList from '../components/AppointmentsList.tsx';
 ---
 
 <Layout title="Clinician Dashboard">
   <main class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Clinician Dashboard</h1>
-    <DashboardTable client:load />
+    
+    <div class="mb-10">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Today's Appointments</h2>
+        <a 
+          href="/appointments-dashboard" 
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          View All Appointments
+        </a>
+      </div>
+      <div class="bg-white shadow overflow-hidden sm:rounded-md">
+        <AppointmentsList 
+          client:load 
+          clinicianId="clinician-123" 
+          isClinicianView={true} 
+        />
+      </div>
+    </div>
+    
+    <div>
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">Patient Management</h2>
+      <DashboardTable client:load />
+    </div>
+    
+    <div class="mt-10 grid md:grid-cols-2 gap-6">
+      <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Manage Your Availability</h3>
+        <p class="text-gray-600 mb-4">Set your availability to allow patients to book appointments with you.</p>
+        <a 
+          href="/manage-availability" 
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Set Availability
+        </a>
+      </div>
+      
+      <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Invite a New Patient</h3>
+        <p class="text-gray-600 mb-4">Send an invitation to a new patient to join the platform.</p>
+        <a 
+          href="/invite" 
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Invite Patient
+        </a>
+      </div>
+    </div>
   </main>
 </Layout>

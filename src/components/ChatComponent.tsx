@@ -1,6 +1,7 @@
 // src/components/ChatComponent.tsx
 import React, { useState, useEffect } from 'react';
-import apiService, { type ChatQuestion } from '../services/api';
+import apiService, { type ChatQuestion, type EligibilityResult } from '../services/api';
+import SchedulingPrompt from './SchedulingPrompt';
 
 interface Message {
   sender: 'bot' | 'user';
@@ -17,6 +18,8 @@ const ChatComponent: React.FC<ChatProps> = ({ sessionId }) => {
   const [userInput, setUserInput] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [chatCompleted, setChatCompleted] = useState<boolean>(false);
+  const [eligibilityResult, setEligibilityResult] = useState<EligibilityResult | null>(null);
 
   useEffect(() => {
     const startChat = async () => {
@@ -40,6 +43,23 @@ const ChatComponent: React.FC<ChatProps> = ({ sessionId }) => {
 
     startChat();
   }, [sessionId]);
+
+  // When chat is completed, analyze eligibility
+  useEffect(() => {
+    const fetchEligibility = async () => {
+      if (!chatCompleted) return;
+      
+      try {
+        const result = await apiService.analyzeEligibility(sessionId);
+        setEligibilityResult(result);
+      } catch (err) {
+        console.error('Error analyzing eligibility:', err);
+        // Don't show error to user, just log it
+      }
+    };
+
+    fetchEligibility();
+  }, [chatCompleted, sessionId]);
 
   const handleSubmit = async () => {
     if (!userInput.trim() || !currentQuestion || isLoading) return; // Prevent multiple submissions
@@ -75,6 +95,7 @@ const ChatComponent: React.FC<ChatProps> = ({ sessionId }) => {
           { sender: 'bot', text: 'Thank you! Your responses have been recorded.' },
         ]);
         setCurrentQuestion(null); // Keep input hidden
+        setChatCompleted(true); // Mark chat as completed to trigger eligibility analysis
       }
     } catch (err) {
       console.error('Error submitting answer:', err);
@@ -144,9 +165,20 @@ const ChatComponent: React.FC<ChatProps> = ({ sessionId }) => {
           </button>
         </div>
       )}
+      
+      {/* Show scheduling prompt after chat completion and eligibility analysis */}
+      {chatCompleted && eligibilityResult && (
+        <div className="mt-4">
+          <SchedulingPrompt
+            patientId="patient-123" // In a real app, get from user context
+            eligibilityResult={eligibilityResult}
+          />
+        </div>
+      )}
+      
       {/* Display chat finished message */} 
-      {!isLoading && !currentQuestion && messages.length > 0 && !error && (
-         <p className="text-center text-gray-600 mt-4">Chat finished.</p>
+      {!isLoading && !currentQuestion && messages.length > 0 && !error && !eligibilityResult && (
+         <p className="text-center text-gray-600 mt-4">Chat finished. Analyzing your responses...</p>
       )}
       {/* Initial loading state */} 
       {isLoading && messages.length === 0 && (

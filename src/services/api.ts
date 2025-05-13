@@ -33,6 +33,40 @@ export interface EligibilityResult {
   tyrer_cuzick_threshold: number;
 }
 
+// Appointment Scheduling Types
+export interface TimeSlot {
+  time: string;
+  available: boolean;
+}
+
+export interface AvailabilityResponse {
+  date: string;
+  clinician_id: string;
+  clinician_name: string;
+  time_slots: TimeSlot[];
+}
+
+export interface AppointmentRequest {
+  clinician_id: string;
+  date: string;
+  time: string;
+  patient_id: string;
+  appointment_type: string;
+  notes?: string;
+}
+
+export interface AppointmentResponse {
+  appointment_id: string;
+  clinician_id: string;
+  clinician_name: string;
+  patient_id: string;
+  patient_name: string;
+  date_time: string;
+  appointment_type: string;
+  status: string;
+  confirmation_code: string;
+}
+
 class ApiService {
   private client: AxiosInstance;
   
@@ -121,6 +155,39 @@ class ApiService {
   
   async searchPatients(query: string) {
     return this.client.get(`/api/patients/search?query=${encodeURIComponent(query)}`);
+  }
+
+  // Appointment methods
+  async getAvailability(clinicianId: string, date: string): Promise<AvailabilityResponse> {
+    const response = await this.client.get(`/api/availability?clinician_id=${clinicianId}&date=${date}`);
+    return response.data;
+  }
+
+  async bookAppointment(appointmentData: AppointmentRequest): Promise<AppointmentResponse> {
+    const response = await this.client.post('/api/book_appointment', appointmentData);
+    return response.data;
+  }
+
+  async getClinicianAppointments(clinicianId: string, startDate: string, endDate: string) {
+    const response = await this.client.get(
+      `/api/appointments/clinician/${clinicianId}?start_date=${startDate}&end_date=${endDate}`
+    );
+    return response.data;
+  }
+
+  async getPatientAppointments(patientId: string) {
+    const response = await this.client.get(`/api/appointments/patient/${patientId}`);
+    return response.data;
+  }
+
+  async updateAppointmentStatus(appointmentId: string, status: string) {
+    const response = await this.client.put(`/api/appointments/${appointmentId}?status=${status}`);
+    return response.data;
+  }
+  
+  async setClinicianAvailability(clinicianId: string, availabilityData: any) {
+    const response = await this.client.post(`/api/availability/set?clinician_id=${clinicianId}`, availabilityData);
+    return response.data;
   }
 }
 
