@@ -25,7 +25,7 @@ const Header: React.FC = () => {
     <header className="bg-white shadow-md">
       <nav className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="text-lg font-bold text-blue-700">
-          <a href="/">CancerGenix</a>
+          <a href="/">Genascope</a>
         </div>
         <div className="flex items-center space-x-4">
           {/* Navigation Links */}

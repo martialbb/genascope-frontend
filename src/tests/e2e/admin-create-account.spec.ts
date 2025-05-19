@@ -6,7 +6,7 @@ test.describe('Admin Create Account Page', () => {
     // Mock authentication state by setting localStorage
     await page.goto('/');
     await page.evaluate(() => {
-      localStorage.setItem('cancerGenixUser', JSON.stringify({
+      localStorage.setItem('genascopeUser', JSON.stringify({
         id: '4',
         name: 'Super Admin',
         role: 'super_admin',
@@ -21,7 +21,7 @@ test.describe('Admin Create Account Page', () => {
   test('should restrict access to non-super-admin users', async ({ page }) => {
     // Set regular admin role instead of super_admin
     await page.evaluate(() => {
-      localStorage.setItem('cancerGenixUser', JSON.stringify({
+      localStorage.setItem('genascopeUser', JSON.stringify({
         id: '3',
         name: 'Regular Admin',
         role: 'admin',
@@ -39,7 +39,7 @@ test.describe('Admin Create Account Page', () => {
   
   test('should display account creation form', async ({ page }) => {
     // Check page title
-    await expect(page).toHaveTitle(/Create Account | CancerGenix/);
+    await expect(page).toHaveTitle(/Create Account | Genascope/);
     
     // Check form heading
     const heading = page.getByRole('heading', { name: /create account/i });

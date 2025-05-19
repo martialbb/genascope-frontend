@@ -4,7 +4,7 @@ import type { APIRoute } from 'astro';
 // Mock data for the first question
 const firstQuestion = {
   id: 1,
-  text: "Welcome to CancerGenix! To start, could you please provide the patient's primary diagnosis?"
+  text: "Welcome to Genascope! To start, could you please provide the patient's primary diagnosis?"
 };
 
 export const POST: APIRoute = async ({ request }) => {

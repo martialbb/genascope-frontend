@@ -34,7 +34,7 @@ describe('Header', () => {
     );
 
     // Check for logo/brand name
-    expect(screen.getByText('CancerGenix')).toBeInTheDocument();
+    expect(screen.getByText('Genascope')).toBeInTheDocument();
     
     // Check for login link when not authenticated
     const loginLink = screen.getByText('Login');
@@ -196,7 +196,7 @@ describe('Header', () => {
       user: { 
         id: 'superadmin123', 
         name: 'Super Admin',
-        email: 'superadmin@cancergenix.com',
+        email: 'superadmin@genascope.com',
         role: 'super_admin' as UserRole
       },
       loading: false,

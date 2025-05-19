@@ -6,7 +6,7 @@ test.describe('Dashboard Page', () => {
     // Mock authentication state by setting localStorage
     await page.goto('/');
     await page.evaluate(() => {
-      localStorage.setItem('cancerGenixUser', JSON.stringify({
+      localStorage.setItem('genascopeUser', JSON.stringify({
         id: '2',
         name: 'Test Clinician',
         role: 'clinician',
@@ -20,7 +20,7 @@ test.describe('Dashboard Page', () => {
   
   test('should redirect unauthenticated users to login page', async ({ page }) => {
     // Clear authentication
-    await page.evaluate(() => localStorage.removeItem('cancerGenixUser'));
+    await page.evaluate(() => localStorage.removeItem('genascopeUser'));
     
     // Try to access dashboard
     await page.goto('/dashboard');
@@ -31,7 +31,7 @@ test.describe('Dashboard Page', () => {
   
   test('should display dashboard with patient data table', async ({ page }) => {
     // Check page title
-    await expect(page).toHaveTitle(/Dashboard | CancerGenix/);
+    await expect(page).toHaveTitle(/Dashboard | Genascope/);
     
     // Check for dashboard heading
     const heading = page.getByRole('heading', { name: /Dashboard/i });

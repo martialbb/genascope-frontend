@@ -6,7 +6,7 @@ import GenerateInviteForm from '../components/GenerateInviteForm';
 const { patientId, patientName } = Astro.url.searchParams;
 ---
 
-<Layout title="Generate Patient Invite - CancerGenix">
+<Layout title="Generate Patient Invite - Genascope">
   <main class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold text-center mb-8 text-blue-700">Generate Patient Invite</h1>
     <GenerateInviteForm client:load patientId={patientId} patientName={patientName} />

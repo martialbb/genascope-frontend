@@ -6,7 +6,7 @@ test.describe('Chat Page', () => {
     // Mock authentication state by setting localStorage
     await page.goto('/');
     await page.evaluate(() => {
-      localStorage.setItem('cancerGenixUser', JSON.stringify({
+      localStorage.setItem('genascopeUser', JSON.stringify({
         id: '1',
         name: 'Test Patient',
         role: 'patient',
@@ -20,7 +20,7 @@ test.describe('Chat Page', () => {
   
   test('should redirect unauthenticated users to login', async ({ page }) => {
     // Clear authentication
-    await page.evaluate(() => localStorage.removeItem('cancerGenixUser'));
+    await page.evaluate(() => localStorage.removeItem('genascopeUser'));
     
     // Try to access chat page
     await page.goto('/chat');
@@ -31,7 +31,7 @@ test.describe('Chat Page', () => {
   
   test('should display chat interface', async ({ page }) => {
     // Check page title
-    await expect(page).toHaveTitle(/Chat | CancerGenix/);
+    await expect(page).toHaveTitle(/Chat | Genascope/);
     
     // Check for chat container
     const chatContainer = page.locator('.chat-container');

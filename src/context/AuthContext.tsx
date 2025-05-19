@@ -1,5 +1,5 @@
 // src/context/AuthContext.tsx
-import React, { createContext, useState, useEffect, type ReactNode } from 'react'; // Use 'type ReactNode'
+import React, { createContext, useState, useEffect, useContext, type ReactNode } from 'react'; // Added useContext
 import axios from 'axios';
 
 interface User {
@@ -20,6 +20,15 @@ interface AuthContextType {
 }
 
 export const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+
+// Add the useAuth hook
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
 interface AuthProviderProps {
   children: ReactNode;

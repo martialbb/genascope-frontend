@@ -1,5 +1,5 @@
 /**
- * API Client for CancerGenix Backend
+ * API Client for Genascope Backend
  * 
  * This service handles all communication with the backend API.
  */

@@ -3,7 +3,7 @@ import type { APIRoute } from 'astro';
 
 // Mock data for subsequent questions
 const questions = [
-  { id: 1, text: "Welcome to CancerGenix! To start, could you please provide the patient's primary diagnosis?" },
+  { id: 1, text: "Welcome to Genascope! To start, could you please provide the patient's primary diagnosis?" },
   { id: 2, text: "Thank you. What stage is the cancer?" },
   { id: 3, text: "Understood. Has the patient undergone any previous treatments (e.g., chemotherapy, radiation)?" },
   { id: 4, text: "Noted. Are there any known genetic mutations associated with the patient's cancer (e.g., BRCA1/2)?" },

@@ -8,7 +8,7 @@ test.describe('Login Page', () => {
   
   test('should display login form', async ({ page }) => {
     // Check that the page title contains appropriate text
-    await expect(page).toHaveTitle(/Login | CancerGenix/);
+    await expect(page).toHaveTitle(/Login | Genascope/);
     
     // Verify login form elements
     const emailInput = page.getByLabel(/email/i);
