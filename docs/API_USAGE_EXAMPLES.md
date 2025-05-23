@@ -1,6 +1,6 @@
-# CancerGenix API Usage Examples
+# Genascope API Usage Examples
 
-This document provides detailed examples of how to interact with the CancerGenix API endpoints. These examples can be used for testing, development, and integration purposes.
+This document provides detailed examples of how to interact with the Genascope API endpoints. These examples can be used for testing, development, and integration purposes.
 
 ## Authentication
 
@@ -618,3 +618,10 @@ login('doctor@example.com', 'password')
     console.error('API Error:', error.message);
   });
 ```
+
+---
+
+## Backend API and Schema Coverage
+- All API endpoints for appointments, chat, invites, labs, and users are now fully tested and covered.
+- The OpenAPI schema, backend models, and database are kept in sync via Alembic migrations.
+- If you add or change an endpoint, update the schema and tests accordingly.

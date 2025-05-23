@@ -2,17 +2,18 @@
   "name": "genascope",
   "type": "module",
   "version": "0.0.1",
-  "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro",
-    "test:unit": "vitest run",
-    "test:unit:watch": "vitest",
-    "test:e2e": "playwright test"
-  },
+"scripts": {
+  "dev": "node ./scripts/start-dev.js",
+  "docker:dev": "node ./scripts/docker-entry.js",
+  "build": "ROLLUP_SKIP_NODEJS_CHECKS=true VITE_SKIP_NATIVE_EXTENSIONS=true astro build",
+  "preview": "astro preview",
+  "astro": "astro",
+  "test:unit": "vitest run",
+  "test:unit:watch": "vitest",
+  "test:e2e": "playwright test"
+},
   "dependencies": {
-    "@astrojs/node": "^9.2.1",
+    "@astrojs/node": "^9.0.0",
     "@astrojs/react": "^4.2.5",
     "@astrojs/tailwind": "^6.0.2",
     "@types/react": "^19.1.2",

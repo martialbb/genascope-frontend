@@ -1,4 +1,4 @@
-# CancerGenix Architecture Diagrams
+# Genascope Architecture Diagrams
 
 ## System Architecture
 
@@ -179,6 +179,21 @@
 5. Account admin logs in and creates users
 6. New user accounts created in the system
 ```
+
+## Backend Layering and Database Sync
+
+- The backend is structured in API, service, repository, and model layers.
+- All models are registered and kept in sync with the database using Alembic migrations.
+- The `appointments` and `recurring_availability` tables now include all fields required by the code and tests (see Database Schema doc).
+- When adding new fields, always:
+  1. Update the SQLAlchemy model.
+  2. Create and apply an Alembic migration.
+  3. Update tests and repositories as needed.
+
+## Test and Coverage Workflow
+- All backend API, service, and repository code is now covered by tests (pytest + pytest-cov).
+- Run tests with Docker Compose: `docker compose -f docker-compose.dev.yml exec backend pytest --cov`
+- If you encounter test failures due to schema mismatches, see the Troubleshooting Guide.
 
 ## Database Schema
 

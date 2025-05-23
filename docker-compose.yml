@@ -6,6 +6,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: production
     ports:
       - "${FRONTEND_PORT:-4321}:4321"
     environment:
@@ -29,20 +30,19 @@ services:
   backend:
     # Using local backend repository that we just set up
     build:
-      context: ./backend
+      context: ../genascope-backend
       dockerfile: Dockerfile
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
-      - ./backend:/app
+      - ../genascope-backend:/app
     environment:
       - PORT=8000
       - DATABASE_URI=${DATABASE_URI:-mysql+pymysql://user:password@db/genascope}
       - CORS_ORIGINS=["http://localhost:4321"]
       - SECRET_KEY=${SECRET_KEY:-your_default_secret_key_here}
-      - PYTHONPATH=/app
     restart: unless-stopped
-    command: uvicorn run:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
       - db
       

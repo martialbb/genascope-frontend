@@ -1,13 +1,13 @@
-// src/context/AuthContext.tsx
-import React, { createContext, useState, useEffect, useContext, type ReactNode } from 'react'; // Added useContext
-import axios from 'axios';
+import React, { createContext, useState, useContext } from 'react';
+import type { ReactNode } from 'react'; // Import ReactNode as a type
 
+
+// Define the User type
 interface User {
   id: string;
   email: string;
-  name: string;
-  role: 'clinician' | 'admin' | 'super_admin' | 'physician' | 'user'; // Define roles as needed
-  accountId?: string; // Optional: For account admins/clinicians
+  role: string;
+  name?: string;
 }
 
 interface AuthContextType {
@@ -21,11 +21,11 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
-// Add the useAuth hook
+// Create a custom hook to use the auth context
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -39,106 +39,88 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState<boolean>(true); // Start loading initially to check auth
   const [error, setError] = useState<string | null>(null);
 
-  // Mock checkAuth: Check local storage or session for token/user info
-  const checkAuth = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      // Simulate checking a token (e.g., in localStorage)
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const storedUser = localStorage.getItem('authUser');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      } else {
-        setUser(null);
-      }
-      // In a real app, you'd verify the token with the backend:
-      // const response = await axios.get('/api/auth/me');
-      // setUser(response.data.user);
-    } catch (err) {
-      console.error("Auth check failed:", err);
-      setUser(null);
-      localStorage.removeItem('authUser'); // Clear invalid stored user
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Mock login function
+  // Implementation of login function
   const login = async (email: string, password: string) => {
     setLoading(true);
     setError(null);
     try {
-      console.log('Attempting login for:', email);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Mock response based on email/password (VERY INSECURE - FOR DEMO ONLY)
-      let loggedInUser: User | null = null;
-      if (email === 'super@test.com' && password === 'password') {
-        loggedInUser = { id: 'u001', email: 'super@test.com', name: 'Super Admin', role: 'super_admin' };
-      } else if (email === 'admin@test.com' && password === 'password') {
-        loggedInUser = { id: 'u002', email: 'admin@test.com', name: 'Account Admin', role: 'admin', accountId: 'acc001' };
-      } else if (email === 'clinician@test.com' && password === 'password') {
-        loggedInUser = { id: 'u003', email: 'clinician@test.com', name: 'Dr. Clinician', role: 'clinician', accountId: 'acc001' };
-      } else if (email === 'physician@test.com' && password === 'password') {
-        loggedInUser = { id: 'u004', email: 'physician@test.com', name: 'Dr. Jane Smith', role: 'physician', accountId: 'acc001' };
-      } else if (email === 'user@test.com' && password === 'password') {
-        loggedInUser = { id: 'u005', email: 'user@test.com', name: 'Regular User', role: 'user' };
+      // Call your authentication API here
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Login failed');
       }
-
-      if (loggedInUser) {
-        setUser(loggedInUser);
-        localStorage.setItem('authUser', JSON.stringify(loggedInUser)); // Store user info
-        // Redirect happens in the component/page after successful login
-      } else {
-        throw new Error('Invalid email or password');
-      }
-
-      // Replace with actual API call:
-      // const response = await axios.post('/api/auth/login', { email, password });
-      // setUser(response.data.user);
-      // localStorage.setItem('authToken', response.data.token); // Store token
-
-    } catch (err: any) {
-      console.error('Login failed:', err);
-      setError(err.message || 'Login failed. Please try again.');
-      setUser(null);
-      localStorage.removeItem('authUser');
+      
+      const userData = await response.json();
+      setUser(userData);
+      // Store token/user info in localStorage or sessionStorage
+      localStorage.setItem('authToken', userData.token);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred during login');
     } finally {
       setLoading(false);
     }
   };
 
-  // Mock logout function
+  // Implementation of logout function
   const logout = async () => {
     setLoading(true);
     setError(null);
     try {
-      console.log('Logging out...');
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Replace with actual API call:
-      // await axios.post('/api/auth/logout');
-
+      // Call logout API if needed
+      // Remove token/user info from storage
+      localStorage.removeItem('authToken');
       setUser(null);
-      localStorage.removeItem('authUser'); // Clear stored user/token
-      // Redirect happens in the component/page after logout
-      window.location.href = '/login'; // Force redirect to login
-    } catch (err: any) {
-      console.error('Logout failed:', err);
-      setError(err.message || 'Logout failed. Please try again.');
-      // Even if logout API fails, clear local state
-      setUser(null);
-      localStorage.removeItem('authUser');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred during logout');
     } finally {
       setLoading(false);
     }
   };
 
-  // Check authentication status when the provider mounts
-  useEffect(() => {
+  // Implementation of checkAuth function
+  const checkAuth = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        // No token found, user is not logged in
+        setUser(null);
+        return;
+      }
+      
+      // Verify the token with your API
+      const response = await fetch('/api/auth/verify', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Authentication failed');
+      }
+      
+      const userData = await response.json();
+      setUser(userData);
+    } catch (err) {
+      // Token validation failed, clear it
+      localStorage.removeItem('authToken');
+      setUser(null);
+      setError(err instanceof Error ? err.message : 'Authentication check failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Check authentication status when component mounts
+  React.useEffect(() => {
     checkAuth();
   }, []);
 

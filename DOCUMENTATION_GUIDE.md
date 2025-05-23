@@ -1,10 +1,10 @@
-# CancerGenix Documentation Guide
+# Genascope Documentation Guide
 
-Welcome to the CancerGenix documentation! This guide provides an overview of all available documentation to help developers, administrators, and users understand and work with the CancerGenix platform.
+Welcome to the Genascope documentation! This guide provides an overview of all available documentation to help developers, administrators, and users understand and work with the Genascope platform.
 
 ## Documentation Overview
 
-The CancerGenix documentation is organized into several sections:
+The Genascope documentation is organized into several sections:
 
 ### Core Documentation
 
@@ -95,4 +95,4 @@ If you cannot find the information you need in the documentation:
 
 1. Check the [Troubleshooting Guide](/docs/TROUBLESHOOTING_GUIDE.md) for common issues
 2. Submit an issue in the project repository
-3. Contact the development team at support@cancergenix.example.com
+3. Contact the development team at support@genascope.example.com

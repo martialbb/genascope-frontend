@@ -40,7 +40,7 @@ The development setup mounts the local directory to enable hot-reloading:
 | PUBLIC_BASE_URL | Frontend base URL | http://localhost:4321 |
 | FRONTEND_PORT | Local port to expose frontend | 4321 |
 | BACKEND_PORT | Local port to expose backend | 8000 |
-| DATABASE_URI | Database connection string | mysql+pymysql://user:password@db/cancergenix |
+| DATABASE_URI | Database connection string | mysql+pymysql://user:password@db/genascope |
 
 ### Configuration Files
 
@@ -53,7 +53,7 @@ The development setup mounts the local directory to enable hot-reloading:
 The services communicate through Docker's internal network:
 
 - Frontend -> Backend: `http://backend:8000`
-- Backend -> Database: `mysql+pymysql://user:password@db/cancergenix`
+- Backend -> Database: `mysql+pymysql://user:password@db/genascope`
 
 ## Volume Management
 

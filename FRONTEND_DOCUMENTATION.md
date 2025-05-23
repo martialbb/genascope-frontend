@@ -1,8 +1,8 @@
-# CancerGenix Frontend Documentation
+# Genascope Frontend Documentation
 
 ## Overview
 
-The CancerGenix frontend is built using Astro.js with React components for interactive UI elements. It provides a user interface for managing cancer risk assessment tools, patient management, lab test ordering, and account administration.
+The Genascope frontend is built using Astro.js with React components for interactive UI elements. It provides a user interface for managing cancer risk assessment tools, patient management, lab test ordering, and account administration.
 
 ## Project Structure
 

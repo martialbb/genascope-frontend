@@ -1,62 +1,59 @@
-version: '3.8'
+version: '3'
 
 services:
-  # Frontend Astro application in development mode
   frontend:
     build:
       context: .
-      target: deps  # Use the deps stage from the Dockerfile
-    command: npm run dev -- --host 0.0.0.0
+      dockerfile: Dockerfile
+      target: development
     ports:
-      - "${FRONTEND_PORT:-4321}:4321"
+      - "4321:4321"
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
     environment:
       - NODE_ENV=development
-      - HOST=0.0.0.0
-      # For development, we can use the backend running on the host machine or in Docker
-      - PUBLIC_API_URL=${PUBLIC_API_URL:-http://backend:8000}
-      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-http://localhost:4321}
-    volumes:
-      - .:/app  # Mount the current directory into the container
-      - node_modules:/app/node_modules  # Use a volume for node_modules
-    restart: unless-stopped
+      - ROLLUP_SKIP_NODEJS_CHECKS=true
+      - VITE_SKIP_NATIVE_EXTENSIONS=true
+    command: npm run dev
+    networks:
+      - genascope-network
     depends_on:
       - backend
-    
-  # Backend service configuration for development
+
   backend:
-    # Using local backend repository that we just set up
     build:
       context: ../cancer-genix-backend
       dockerfile: Dockerfile
+    command: bash -c "until nc -z db 3306; do echo 'Waiting for db...'; sleep 2; done; export PYTHONPATH=/app && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     ports:
-      - "${BACKEND_PORT:-8000}:8000"
+      - "8000:8000"
     environment:
-      - PORT=8000
-      - DATABASE_URI=${DATABASE_URI:-mysql+pymysql://user:password@db/cancergenix}
-      - CORS_ORIGINS=["http://localhost:4321"]
-      - SECRET_KEY=${SECRET_KEY:-dev_secret_key}
-    volumes:
-      # Mount the backend code for hot-reloading
-      - ../cancer-genix-backend:/app
-    restart: unless-stopped
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      - DATABASE_URL=mysql://genascope:genascope@db:3306/genascope
+    networks:
+      - genascope-network
     depends_on:
       - db
-      
-  # Database service
+    volumes:
+      - ../cancer-genix-backend:/app
+
   db:
     image: mysql:8.0
     ports:
-      - "${DB_PORT:-3307}:3306"
+      - "3306:3306"
     environment:
-      - MYSQL_DATABASE=cancergenix
-      - MYSQL_USER=${DB_USER:-user}
-      - MYSQL_PASSWORD=${DB_PASSWORD:-password}
-      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-rootpassword}
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=genascope
+      - MYSQL_USER=genascope
+      - MYSQL_PASSWORD=genascope
     volumes:
-      - mysql_data:/var/lib/mysql
-    restart: unless-stopped
+      - genascope-data:/var/lib/mysql
+    networks:
+      - genascope-network
+
+networks:
+  genascope-network:
+    driver: bridge
 
 volumes:
-  node_modules:  # Volume for node_modules to speed up builds
-  mysql_data:    # Volume for database persistence
+  genascope-data:

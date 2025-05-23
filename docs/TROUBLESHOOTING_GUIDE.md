@@ -1,6 +1,6 @@
-# CancerGenix Troubleshooting Guide
+# Genascope Troubleshooting Guide
 
-This guide addresses common issues that developers and users may encounter when working with the CancerGenix application.
+This guide addresses common issues that developers and users may encounter when working with the Genascope application.
 
 ## Table of Contents
 1. [Frontend Issues](#frontend-issues)
@@ -175,6 +175,33 @@ This guide addresses common issues that developers and users may encounter when 
 2. **Long-Running Transactions**
    - Look for transactions that aren't properly committed/rolled back
    - Optimize query performance to reduce transaction duration
+
+## Database Schema Mismatches
+
+**Symptom**: Alembic migration errors, missing columns, or model/DB mismatches.
+
+**Possible Causes & Solutions**:
+1. **Alembic Multiple Heads**
+   - Run `alembic heads` to see all heads.
+   - Create a merge migration if needed.
+2. **Missing Columns**
+   - Update the SQLAlchemy model and create a new Alembic migration.
+   - If migration fails, manually add the column using SQL (see DATABASE_SCHEMA.md for structure).
+3. **Manual Schema Sync**
+   - If migrations are out of sync, manually update the DB and model, then mark the migration as applied.
+
+## Test Failures Due to Model/DB Mismatch
+
+**Symptom**: Tests fail with errors like `TypeError: ... is an invalid keyword argument` or `AttributeError: ... has no attribute ...`.
+
+**Possible Causes & Solutions**:
+1. **Model and DB Out of Sync**
+   - Ensure all model fields exist in the DB (see DATABASE_SCHEMA.md).
+   - Re-run migrations or manually add missing columns.
+2. **Repository/Service/Model Mismatch**
+   - Update all layers to use the same field names and types.
+3. **Resetting the Database**
+   - If all else fails, reset the DB and re-apply all migrations.
 
 ## Patient Invite System
 

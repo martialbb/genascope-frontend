@@ -1,10 +1,10 @@
-# CancerGenix Database Schema Documentation
+# Genascope Database Schema Documentation
 
-This document provides a detailed overview of the CancerGenix database schema, including table structures, relationships, and data types.
+This document provides a detailed overview of the Genascope database schema, including table structures, relationships, and data types.
 
 ## Overview
 
-The CancerGenix database is designed to support the following key features:
+The Genascope database is designed to support the following key features:
 - User and account management with role-based permissions
 - Patient data storage and management
 - Chat-based risk assessment session tracking
@@ -16,7 +16,7 @@ The CancerGenix database is designed to support the following key features:
 
 ### Account
 
-Represents an organization using the CancerGenix platform.
+Represents an organization using the Genascope platform.
 
 | Column | Type | Description |
 |--------|------|-------------|
@@ -260,6 +260,67 @@ Stores genetic test results.
 - `FOREIGN KEY (order_id) REFERENCES LabOrder(id)`
 - `FOREIGN KEY (reviewer_id) REFERENCES User(id)`
 
+### Appointments
+
+Represents scheduled appointments between patients and clinicians.
+
+| Column             | Type         | Description                                 |
+|--------------------|--------------|---------------------------------------------|
+| id                 | UUID         | Primary key                                 |
+| patient_id         | UUID         | Foreign key to Patient                      |
+| clinician_id       | UUID         | Foreign key to User (clinician)             |
+| date               | DATE         | Appointment date                            |
+| time               | TIME         | Appointment time                            |
+| date_time          | DATETIME     | Combined date and time (legacy/compat)      |
+| appointment_type   | VARCHAR(20)  | 'virtual' or 'in-person'                    |
+| status             | VARCHAR(20)  | 'scheduled', 'completed', etc.              |
+| notes              | TEXT         | Optional notes                              |
+| confirmation_code  | VARCHAR(10)  | Unique confirmation code                    |
+| created_at         | DATETIME     | Creation timestamp                          |
+| updated_at         | DATETIME     | Last update timestamp                       |
+
+#### Indexes
+- `PRIMARY KEY (id)`
+- `INDEX (patient_id)`
+- `INDEX (clinician_id)`
+- `INDEX (date)`
+
+#### Relationships
+- `FOREIGN KEY (patient_id) REFERENCES Patient(id)`
+- `FOREIGN KEY (clinician_id) REFERENCES User(id)`
+
+### RecurringAvailability
+
+Defines recurring availability patterns for clinicians.
+
+| Column         | Type   | Description                                 |
+|----------------|--------|---------------------------------------------|
+| id             | UUID   | Primary key                                 |
+| clinician_id   | UUID   | Foreign key to User (clinician)             |
+| day_of_week    | INT    | 0=Monday, 6=Sunday                          |
+| time           | TIME   | Time of day                                 |
+| start_date     | DATE   | Start date of recurrence                    |
+| end_date       | DATE   | End date of recurrence                      |
+| valid_until    | DATE   | Last valid date                             |
+| days_of_week   | TEXT   | JSON-encoded list of days                   |
+| time_slots     | TEXT   | JSON-encoded list of time slots             |
+| created_at     | DATETIME | Creation timestamp                        |
+| updated_at     | DATETIME | Last update timestamp                     |
+
+#### Indexes
+- `PRIMARY KEY (id)`
+- `INDEX (clinician_id)`
+
+#### Relationships
+- `FOREIGN KEY (clinician_id) REFERENCES User(id)`
+
+---
+
+## Alembic Migrations & Schema Sync
+- All model fields are now kept in sync with the database using Alembic migrations.
+- If you encounter a migration error (e.g., missing columns, multiple heads), see the Troubleshooting Guide.
+- Manual schema changes may be required if migrations fail; always update both the model and the DB.
+
 ## Common Queries
 
 ### Patient Risk Assessment Status
@@ -339,6 +400,7 @@ Migrations are managed using Alembic. Key migration files include:
 3. `versions/003_invite_system.py` - Patient invitation system
 4. `versions/004_eligibility_analysis.py` - Eligibility results
 5. `versions/005_lab_integration.py` - Lab orders and results
+6. `versions/006_appointments.py` - Appointments and availability
 
 To apply migrations:
 

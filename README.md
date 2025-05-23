@@ -1,12 +1,12 @@
-# CancerGenix
+# Genascope
 
-CancerGenix is a comprehensive web application designed to help identify individuals who may benefit from genetic testing for hereditary cancer syndromes. The platform consists of a chat-based risk assessment tool, eligibility analysis, lab integration features, and appointment scheduling capabilities.
+Genascope is a comprehensive web application designed to help identify individuals who may benefit from genetic testing for hereditary cancer syndromes. The platform consists of a chat-based risk assessment tool, eligibility analysis, lab integration features, and appointment scheduling capabilities.
 
 ## 🔄 Project Architecture
 
 This project uses a multi-repository architecture:
 - **Frontend** (this repo): User interface built with Astro, React (TypeScript), and Tailwind CSS
-- **Backend**: [cancer-genix-backend](https://github.com/martialbb/cancer-genix-backend) - FastAPI backend service
+- **Backend**: [genascope-backend](https://github.com/martialbb/genascope-backend) - FastAPI backend service
 
 ## ✨ Key Features
 
@@ -49,7 +49,7 @@ All commands are run from the root of the project, from a terminal:
 
 ## 🔌 Backend Connection
 
-This frontend is designed to work with the [cancer-genix-backend](https://github.com/martialbb/cancer-genix-backend) repository. To connect to the backend:
+This frontend is designed to work with the [genascope-backend](https://github.com/martialbb/genascope-backend) repository. To connect to the backend:
 
 1. Create a `.env` file based on `.env.example`
 2. Set `PUBLIC_API_URL` to point to your backend URL (default: http://localhost:8000)
@@ -58,10 +58,10 @@ For local development, both repositories should be cloned separately:
 
 ```sh
 # Clone frontend (this repo)
-git clone https://github.com/martialbb/cancer-genix-frontend.git
+git clone https://github.com/martialbb/genascope-frontend.git
 
 # Clone backend repo (in a separate directory)
-git clone https://github.com/martialbb/cancer-genix-backend.git
+git clone https://github.com/martialbb/genascope-backend.git
 ```
 
 ## 🐳 Docker Support
@@ -94,7 +94,7 @@ PUBLIC_BASE_URL=http://localhost:4321
 
 # Backend configuration (if using the backend container)
 BACKEND_PORT=8000
-BACKEND_IMAGE=ghcr.io/martialbb/cancer-genix-backend:latest
+BACKEND_IMAGE=ghcr.io/martialbb/genascope-backend:latest
 SECRET_KEY=replace_with_secure_key
 
 # Database configuration
@@ -102,7 +102,7 @@ DB_PORT=3307
 DB_USER=user
 DB_PASSWORD=password
 DB_ROOT_PASSWORD=rootpassword
-DATABASE_URI=mysql+pymysql://user:password@db/cancergenix
+DATABASE_URI=mysql+pymysql://user:password@db/genascope
 EOF
 ```
 
@@ -161,13 +161,13 @@ Build and run the frontend container without docker-compose:
 
 ```sh
 # Build the Docker image
-docker build -t cancer-genix-frontend:latest .
+docker build -t genascope-frontend:latest .
 
 # Run the container
 docker run -p 4321:4321 \
   -e PUBLIC_API_URL=http://your-backend-url \
   -e PUBLIC_BASE_URL=http://your-frontend-url \
-  cancer-genix-frontend:latest
+  genascope-frontend:latest
 ```
 
 ### Docker Health Checks
@@ -179,7 +179,7 @@ The production configuration includes health checks for monitoring container hea
 docker ps
 
 # Detailed health check info
-docker inspect --format='{{json .State.Health}}' cancer-genix-frontend_frontend_1 | jq
+docker inspect --format='{{json .State.Health}}' genascope-frontend_frontend_1 | jq
 ```
 
 ## 📚 Documentation
