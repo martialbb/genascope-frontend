@@ -10,7 +10,8 @@
   "astro": "astro",
   "test:unit": "vitest run",
   "test:unit:watch": "vitest",
-  "test:e2e": "playwright test"
+  "test:e2e": "playwright test",
+  "cleanup": "node ./scripts/cleanup.js"
 },
   "dependencies": {
     "@astrojs/node": "^9.0.0",

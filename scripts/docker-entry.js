@@ -4,7 +4,7 @@ import { spawn } from 'child_process';
 
 console.log('Starting Docker container with M1/M2 Mac compatibility patches...');
 
-// The content for the native.js patch
+// The content for the native.js patch - inline definition, no need for external files
 const nativeJsContent = `// ES module version of native.js with stub implementations
 export function getBinaryPath() { 
   return null; 
