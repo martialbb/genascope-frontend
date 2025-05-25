@@ -1,7 +1,8 @@
 ---
 import '../styles/global.css';
 import { AuthProvider } from '../context/AuthContext.tsx'; // Import AuthProvider
-import Header from '../components/Header.tsx'; // Import a new Header component
+import AuthDebug from '../components/AuthDebug.tsx'; // Import the debugging component
+import HeaderFixed from '../components/HeaderFixed.tsx'; // Import the fixed header component
 
 interface Props {
 	title: string;
@@ -20,7 +21,8 @@ const { title } = Astro.props;
 	</head>
 	<body class="h-full">
 		<AuthProvider> { /* Wrap everything in AuthProvider */ }
-			<Header client:load /> { /* Add Header, needs client-side interactivity */ }
+			<AuthDebug client:load /> { /* Add debugging component */ }
+			<HeaderFixed client:load /> { /* Use the new fixed header component */ }
 			<slot /> { /* Page content goes here */ }
 		</AuthProvider>
 	</body>

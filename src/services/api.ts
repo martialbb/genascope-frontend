@@ -3,7 +3,8 @@
  * 
  * This service handles all communication with the backend API.
  */
-import axios, { AxiosInstance } from 'axios';
+import axios from 'axios';
+import type { AxiosInstance } from 'axios';
 
 // Types that match FastAPI Pydantic models
 export interface ChatQuestion {
@@ -80,116 +81,131 @@ class ApiService {
       },
     });
     
-    // Add auth interceptor
+    // Add auth interceptor with debug logging
     this.client.interceptors.request.use((config) => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('authToken');
+      console.log('API Debug: Request to', config.url);
+      console.log('API Debug: Auth token present?', !!token);
+
       if (token) {
+        config.headers = config.headers || {};
         config.headers.Authorization = `Bearer ${token}`;
+        console.log('API Debug: Added Authorization header');
+      } else {
+        console.warn('API Debug: No auth token available for request to', config.url);
       }
       return config;
     });
+
+    // Add response interceptor for debugging
+    this.client.interceptors.response.use(
+      (response) => {
+        console.log(`API Debug: Response from ${response.config.url} - Status: ${response.status}`);
+        return response;
+      },
+      (error) => {
+        console.error(`API Debug: Error in request to ${error.config?.url}:`, error.response?.status, error.response?.data);
+        return Promise.reject(error);
+      }
+    );
   }
-  
-  // Chat API methods
-  async startChat(sessionId: string): Promise<ChatResponse> {
-    const response = await this.client.post<ChatResponse>('/api/start_chat', { sessionId });
+
+  async getClinicianAppointments(clinicianId: string, startDate: string, endDate: string) {
+    const response = await this.client.get(`/api/appointments/clinician/${clinicianId}?start_date=${startDate}&end_date=${endDate}`);
     return response.data;
   }
-  
-  async submitAnswer(data: ChatAnswerData): Promise<ChatResponse> {
-    const response = await this.client.post<ChatResponse>('/api/submit_answer', data);
-    return response.data;
-  }
-  
-  async getChatHistory(sessionId: string) {
-    const response = await this.client.get(`/api/history/${sessionId}`);
-    return response.data;
-  }
-  
-  // Auth methods
-  async login(email: string, password: string) {
-    const response = await this.client.post('/api/auth/token', new URLSearchParams({
-      username: email,
-      password,
-    }));
-    
-    const { access_token } = response.data;
-    localStorage.setItem('token', access_token);
-    return access_token;
-  }
-  
-  // Eligibility methods
-  async analyzeEligibility(sessionId: string): Promise<EligibilityResult> {
-    const response = await this.client.post('/api/eligibility/analyze', { sessionId });
-    return response.data;
-  }
-  
-  // Admin methods
-  async createAccount(data: any) {
-    return this.client.post('/api/admin/create_account', data);
-  }
-  
-  async createUser(data: any) {
-    return this.client.post('/api/account/create_user', data);
-  }
-  
-  // Lab methods
-  async orderTest(data: any) {
-    return this.client.post('/api/labs/order_test', data);
-  }
-  
-  async getResults(orderId: string) {
-    return this.client.get(`/api/labs/results/${orderId}`);
-  }
-  
-  // Invite methods
+
   async generateInvite(patientData: any) {
     const response = await this.client.post('/api/generate_invite', patientData);
     return response.data;
   }
-  
-  // Patient methods
-  async getPatients() {
-    return this.client.get('/api/patients');
-  }
-  
-  async searchPatients(query: string) {
-    return this.client.get(`/api/patients/search?query=${encodeURIComponent(query)}`);
-  }
 
-  // Appointment methods
-  async getAvailability(clinicianId: string, date: string): Promise<AvailabilityResponse> {
-    const response = await this.client.get(`/api/availability?clinician_id=${clinicianId}&date=${date}`);
+  // Account management methods
+  async getAccounts() {
+    const response = await this.client.get('/api/accounts');
     return response.data;
   }
 
-  async bookAppointment(appointmentData: AppointmentRequest): Promise<AppointmentResponse> {
-    const response = await this.client.post('/api/book_appointment', appointmentData);
+  async getAccountById(id: string) {
+    const response = await this.client.get(`/api/accounts/${id}`);
     return response.data;
   }
 
-  async getClinicianAppointments(clinicianId: string, startDate: string, endDate: string) {
-    const response = await this.client.get(
-      `/api/appointments/clinician/${clinicianId}?start_date=${startDate}&end_date=${endDate}`
-    );
+  async createAccount(data: any) {
+    const response = await this.client.post('/api/accounts', data);
     return response.data;
   }
 
-  async getPatientAppointments(patientId: string) {
-    const response = await this.client.get(`/api/appointments/patient/${patientId}`);
+  async updateAccount(id: string, data: any) {
+    const response = await this.client.put(`/api/accounts/${id}`, data);
     return response.data;
   }
 
-  async updateAppointmentStatus(appointmentId: string, status: string) {
-    const response = await this.client.put(`/api/appointments/${appointmentId}?status=${status}`);
+  async deleteAccount(id: string) {
+    const response = await this.client.delete(`/api/accounts/${id}`);
     return response.data;
   }
-  
-  async setClinicianAvailability(clinicianId: string, availabilityData: any) {
-    const response = await this.client.post(`/api/availability/set?clinician_id=${clinicianId}`, availabilityData);
+
+  // User management methods
+  async getUsers(params?: any) {
+    const response = await this.client.get('/api/users', { params });
     return response.data;
+  }
+
+  async getUsersByAccount(accountId: string) {
+    const response = await this.client.get(`/api/users?account_id=${accountId}`);
+    return response.data;
+  }
+
+  async getUserById(id: string) {
+    const response = await this.client.get(`/api/users/${id}`);
+    return response.data;
+  }
+
+  async createUser(userData: any) {
+    const response = await this.client.post('/api/users', userData);
+    return response.data;
+  }
+
+  async updateUser(id: string, data: any) {
+    const response = await this.client.put(`/api/users/${id}`, data);
+    return response.data;
+  }
+
+  async deleteUser(id: string) {
+    const response = await this.client.delete(`/api/users/${id}`);
+    return response.data;
+  }
+
+  // Authentication verification
+  async verifyAuth() {
+    try {
+      console.log('API Debug: Verifying authentication status');
+      const token = localStorage.getItem('authToken');
+
+      if (!token) {
+        console.warn('API Debug: No auth token found in storage');
+        return { authenticated: false, error: 'No token found' };
+      }
+
+      // Try to get current user profile to verify token works
+      const response = await this.client.get('/api/auth/me');
+      console.log('API Debug: Auth verification successful', response.data);
+      return {
+        authenticated: true,
+        user: response.data
+      };
+    } catch (error: any) {
+      console.error('API Debug: Auth verification failed', error.response?.status, error.response?.data);
+      return {
+        authenticated: false,
+        error: error.response?.data?.detail || error.message,
+        status: error.response?.status
+      };
+    }
   }
 }
 
 export const apiService = new ApiService();
 export default apiService;
+

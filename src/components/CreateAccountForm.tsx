@@ -8,6 +8,7 @@ const CreateAccountForm: React.FC = () => {
   const [adminEmail, setAdminEmail] = useState<string>('');
   const [adminName, setAdminName] = useState<string>('');
   const [adminPassword, setAdminPassword] = useState<string>('');
+  const [adminConfirmPassword, setAdminConfirmPassword] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -18,6 +19,13 @@ const CreateAccountForm: React.FC = () => {
     setError(null);
     setSuccess(null);
 
+    // Validate passwords match
+    if (adminPassword !== adminConfirmPassword) {
+      setError('Passwords do not match');
+      setSubmitting(false);
+      return;
+    }
+
     console.log('Submitting new account:', { accountName, domain, adminEmail });
 
     try {
@@ -27,6 +35,7 @@ const CreateAccountForm: React.FC = () => {
         admin_email: adminEmail,
         admin_name: adminName,
         admin_password: adminPassword,
+        admin_confirm_password: adminConfirmPassword,
       });
 
       setSuccess(`Account "${accountName}" created successfully.`);
@@ -35,9 +44,25 @@ const CreateAccountForm: React.FC = () => {
       setAdminEmail('');
       setAdminName('');
       setAdminPassword('');
+      setAdminConfirmPassword('');
     } catch (err: any) {
       console.error('Error creating account:', err);
-      setError(err.response?.data?.detail || err.message || 'Failed to create account. Please try again.');
+
+      // Handle the error properly to avoid React rendering issues
+      if (err.response?.data?.detail) {
+        if (Array.isArray(err.response.data.detail)) {
+          // Join multiple validation errors
+          setError(err.response.data.detail.map((e: any) => e.msg).join(', '));
+        } else if (typeof err.response.data.detail === 'object') {
+          // Handle object-type errors
+          setError(JSON.stringify(err.response.data.detail));
+        } else {
+          // Handle string error
+          setError(err.response.data.detail);
+        }
+      } else {
+        setError(err.message || 'Failed to create account. Please try again.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -46,6 +71,19 @@ const CreateAccountForm: React.FC = () => {
   return (
     <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-2xl font-semibold mb-6 text-gray-700">Create New Account</h2>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4 mb-4">
+          <p className="text-sm">{error}</p>
+        </div>
+      )}
+
+      {success && (
+        <div className="bg-green-50 border border-green-200 text-green-800 rounded-md p-4 mb-4">
+          <p className="text-sm">{success}</p>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="accountName" className="block text-sm font-medium text-gray-600 mb-1">Account Name</label>
@@ -55,23 +93,22 @@ const CreateAccountForm: React.FC = () => {
             value={accountName}
             onChange={(e) => setAccountName(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            aria-label="Account Name"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
+
         <div>
-          <label htmlFor="domain" className="block text-sm font-medium text-gray-600 mb-1">Organization Domain</label>
+          <label htmlFor="domain" className="block text-sm font-medium text-gray-600 mb-1">Domain</label>
           <input
             type="text"
             id="domain"
             value={domain}
             onChange={(e) => setDomain(e.target.value)}
             required
-            placeholder="hospital.org"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            aria-label="Organization Domain"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
+
         <div>
           <label htmlFor="adminEmail" className="block text-sm font-medium text-gray-600 mb-1">Admin Email</label>
           <input
@@ -80,10 +117,10 @@ const CreateAccountForm: React.FC = () => {
             value={adminEmail}
             onChange={(e) => setAdminEmail(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            aria-label="Admin Email"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
+
         <div>
           <label htmlFor="adminName" className="block text-sm font-medium text-gray-600 mb-1">Admin Name</label>
           <input
@@ -92,10 +129,10 @@ const CreateAccountForm: React.FC = () => {
             value={adminName}
             onChange={(e) => setAdminName(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            aria-label="Admin Name"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
+
         <div>
           <label htmlFor="adminPassword" className="block text-sm font-medium text-gray-600 mb-1">Admin Password</label>
           <input
@@ -104,23 +141,33 @@ const CreateAccountForm: React.FC = () => {
             value={adminPassword}
             onChange={(e) => setAdminPassword(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            aria-label="Admin Password"
+            minLength={8}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        {success && <p className="text-sm text-green-600">{success}</p>}
+
         <div>
-          <button
-            type="submit"
-            disabled={submitting}
-            className={`w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-              submitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-            } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200`}
-          >
-            {submitting ? 'Creating Account...' : 'Create Account'}
-          </button>
+          <label htmlFor="adminConfirmPassword" className="block text-sm font-medium text-gray-600 mb-1">Confirm Password</label>
+          <input
+            type="password"
+            id="adminConfirmPassword"
+            value={adminConfirmPassword}
+            onChange={(e) => setAdminConfirmPassword(e.target.value)}
+            required
+            minLength={8}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
         </div>
+
+        <button
+          type="submit"
+          disabled={submitting}
+          className={`w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+            submitting ? 'opacity-70 cursor-not-allowed' : ''
+          }`}
+        >
+          {submitting ? 'Creating...' : 'Create Account'}
+        </button>
       </form>
     </div>
   );

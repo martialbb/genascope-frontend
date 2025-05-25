@@ -1,15 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import LoginForm from '../components/LoginForm.tsx';
-import { AuthProvider } from '../context/AuthContext.tsx'; // Import AuthProvider
+import LoginFormWrapper from '../components/LoginFormWrapper.tsx';
 ---
 
 <Layout title="Login - Genascope">
-  <AuthProvider> { /* Wrap with AuthProvider */ }
-    <main class="container mx-auto px-4 py-8">
-      <LoginForm client:load />
-    </main>
-  </AuthProvider>
+  <main class="container mx-auto px-4 py-8">
+    <LoginFormWrapper client:load />
+  </main>
 </Layout>
 
 <script>
