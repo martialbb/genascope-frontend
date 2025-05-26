@@ -168,8 +168,27 @@ class ApiService {
   }
 
   async updateUser(id: string, data: any) {
-    const response = await this.client.put(`/api/users/${id}`, data);
-    return response.data;
+    console.log("API Debug: Updating user with ID:", id);
+    console.log("API Debug: Update data:", JSON.stringify(data, null, 2));
+    
+    try {
+      const response = await this.client.put(`/api/users/${id}`, data);
+      console.log("API Debug: Update response:", JSON.stringify(response.data, null, 2));
+      
+      // Validate that we got back the updated values
+      const responseData = response.data;
+      if (data.name && responseData.name !== data.name) {
+        console.warn(`API Debug: Name mismatch - sent '${data.name}' but received '${responseData.name}'`);
+      }
+      if (data.role && responseData.role !== data.role) {
+        console.warn(`API Debug: Role mismatch - sent '${data.role}' but received '${responseData.role}'`);
+      }
+      
+      return responseData;
+    } catch (error: any) {
+      console.error("API Debug: Error updating user:", error.response?.status, error.response?.data);
+      throw error;
+    }
   }
 
   async deleteUser(id: string) {

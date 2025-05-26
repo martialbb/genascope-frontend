@@ -55,17 +55,72 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ userId }) => {
     setSuccess(null);
 
     try {
-      await apiService.updateUser(userId, {
-        name,
-        email,
-        role,
-        is_active: isActive
-      });
+      console.log('Form Debug: Submitting user update with values:', { name, email, role, is_active: isActive });
+      
+      // Create update object with only modified fields
+      const updateData: any = {};
+      
+      // Only include fields that are different from the original user
+      if (user?.name !== name) updateData.name = name;
+      if (user?.email !== email) updateData.email = email;
+      if (user?.role !== role) updateData.role = role;
+      if (user?.is_active !== isActive) updateData.is_active = isActive;
+      
+      if (Object.keys(updateData).length === 0) {
+        setSuccess('No changes detected.');
+        setSubmitting(false);
+        return;
+      }
+      
+      // Log the exact data being sent
+      console.log('Form Debug: Update data object:', JSON.stringify(updateData, null, 2));
+      
+      // Send the update request
+      const updatedUser = await apiService.updateUser(userId, updateData);
 
-      setSuccess('User updated successfully.');
+      console.log('Form Debug: Updated user response:', JSON.stringify(updatedUser, null, 2));
+      
+      // Validate the response contains the expected changes
+      let allChangesApplied = true;
+      let changeResults = [];
+      
+      if ('name' in updateData && updatedUser.name !== updateData.name) {
+        allChangesApplied = false;
+        changeResults.push(`Name: expected "${updateData.name}", got "${updatedUser.name}"`);
+      }
+      
+      if ('role' in updateData && updatedUser.role !== updateData.role) {
+        allChangesApplied = false;
+        changeResults.push(`Role: expected "${updateData.role}", got "${updatedUser.role}"`);
+      }
+      
+      if ('is_active' in updateData && updatedUser.is_active !== updateData.is_active) {
+        allChangesApplied = false;
+        changeResults.push(`Active status: expected "${updateData.is_active}", got "${updatedUser.is_active}"`);
+      }
+      
+      // Update local state with the response data
+      setUser(updatedUser);
+      setName(updatedUser.name);
+      setEmail(updatedUser.email);
+      setRole(updatedUser.role);
+      setIsActive(updatedUser.is_active);
+      
+      if (allChangesApplied) {
+        setSuccess('User updated successfully.');
+      } else {
+        setSuccess('User updated with some issues: ' + changeResults.join('; '));
+      }
+      
+      // Delay the fetch to ensure database updates have been committed
+      setTimeout(() => {
+        // Refresh user data to confirm changes were saved
+        fetchUserDetails();
+      }, 500);
     } catch (err: any) {
       setError(err.response?.data?.detail || err.message || 'Failed to update user. Please try again.');
       console.error('Error updating user:', err);
+      console.error('Error details:', err.response?.data);
     } finally {
       setSubmitting(false);
     }

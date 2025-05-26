@@ -49,6 +49,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ accountId }) => {
         name: `${firstName} ${lastName}`, // Combine first and last name as expected by backend
         role: userRole,
         password: password,
+        confirm_password: confirmPassword, // This is required by the backend schema
         account_id: accountId,
         is_active: true
       });
