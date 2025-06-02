@@ -1,10 +1,47 @@
-# Genascope API Usage Examples
+# Genascope API Usage Examples (Updated June 2025)
 
-This document provides detailed examples of how to interact with the Genascope API endpoints. These examples can be used for testing, development, and integration purposes.
+This document provides detailed examples of how to interact with the Genascope API endpoints. These examples can be used for testing, development, and integration purposes. This documentation reflects recent improvements including enhanced user management, invite system fixes, and improved authentication robustness.
+
+## Recent API Improvements (June 2025)
+
+### Enhanced Error Handling
+- **Null Value Handling**: Fixed "User not found" errors for invites with null clinician_id
+- **Validation Improvements**: Enhanced schema validation for edge cases
+- **Better Error Messages**: More descriptive error responses for debugging
+
+### User Management API Fixes
+- **Account ID Resolution**: Fixed 403 Forbidden errors caused by account_id mismatches
+- **Cascade Deletion**: Proper handling of foreign key constraints for user deletion
+- **Role Validation**: Improved role-based access control validation
+
+### Health Monitoring
+- **API Status Checking**: New endpoints for monitoring API health
+- **Fallback Mechanisms**: Graceful degradation when endpoints are unavailable
 
 ## Authentication
 
 ### Login
+
+#### Using curl
+
+```bash
+# Login to get authentication token
+curl -X POST 'http://localhost:8000/api/auth/token' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "email": "doctor@example.com",
+    "password": "securepassword"
+  }'
+
+# Response will contain:
+# {
+#   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+#   "token_type": "bearer",
+#   "user": {...}
+# }
+```
+
+#### Using JavaScript fetch API
 
 ```javascript
 // Using fetch API

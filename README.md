@@ -1,22 +1,37 @@
 # Genascope
 
-Genascope is a comprehensive web application designed to help identify individuals who may benefit from genetic testing for hereditary cancer syndromes. The platform consists of a chat-based risk assessment tool, eligibility analysis, lab integration features, and appointment scheduling capabilities.
+Genascope is a comprehensive web application designed to help identify individuals who may benefit from genetic testing for hereditary cancer syndromes. The platform consists of a chat-based risk assessment tool, eligibility analysis, lab integration features, patient invite management, user administration, and appointment scheduling capabilities.
 
 ## 🔄 Project Architecture
 
-This project uses a multi-repository architecture:
-- **Frontend** (this repo): User interface built with Astro, React (TypeScript), and Tailwind CSS
-- **Backend**: [genascope-backend](https://github.com/martialbb/genascope-backend) - FastAPI backend service
+This project uses a unified full-stack architecture:
+- **Frontend**: User interface built with Astro, React (TypeScript), and Tailwind CSS
+- **Backend**: FastAPI backend service with SQLAlchemy ORM and MySQL database
+- **Database**: MySQL database with proper referential integrity and cascading operations
+- **Authentication**: JWT-based authentication with role-based access control
+- **Docker**: Containerized development and deployment environment
 
 ## ✨ Key Features
 
+### Core Functionality
 - **Interactive Risk Assessment**: Chat-based interface for collecting cancer risk factors
 - **Eligibility Analysis**: Algorithms to determine testing eligibility based on NCCN guidelines and Tyrer-Cuzick model
-- **Patient Management**: Dashboard for clinicians to manage patients
+- **Patient Invite System**: Comprehensive patient invitation and management workflow
 - **Lab Integration**: Order genetic tests and view results
 - **Appointment Scheduling**: Self-scheduling for patients and availability management for clinicians
-- **Account Management**: Tools for creating and managing organizational accounts and users
-- **Role-Based Access Control**: Different permissions for different user roles
+
+### Administrative Features
+- **User Management**: Complete CRUD operations for user accounts with proper data integrity
+- **Account Management**: Tools for creating and managing organizational accounts
+- **Role-Based Access Control**: Different permissions for admin, clinician, lab tech, and patient roles
+- **API Health Monitoring**: Real-time API status checking with fallback mechanisms
+
+### Recent Improvements (June 2025)
+- ✅ **Fixed User Edit/Delete Operations**: Resolved foreign key constraints and account ID mismatches
+- ✅ **Enhanced API Reliability**: Fixed invite endpoint issues and improved error handling
+- ✅ **Improved Data Integrity**: Proper cascade deletion for related records
+- ✅ **Authentication Robustness**: Enhanced JWT token validation and user role management
+- ✅ **Frontend Route Fixes**: Corrected import paths and component references
 
 ## 📅 Appointment Scheduling
 
@@ -64,16 +79,73 @@ git clone https://github.com/martialbb/genascope-frontend.git
 git clone https://github.com/martialbb/genascope-backend.git
 ```
 
-## 🐳 Docker Support
+## 🐳 Docker Development Setup
 
-This application can be run using Docker for consistent development and deployment environments.
+This application uses Docker for development with a complete full-stack setup including frontend, backend, database, and email services.
 
-### Setup Environment Variables
+### Prerequisites
 
-1. Create environment files for development and production:
+- Docker and Docker Compose installed
+- Git for cloning the repository
+
+### Quick Start
+
+1. **Clone the repository**:
+```sh
+git clone <repository-url>
+cd genascope-frontend
+```
+
+2. **Environment Setup**:
+```sh
+# Copy environment template
+cp .env.example .env
+
+# Copy backend environment template
+cp backend/.env.example backend/.env
+```
+
+3. **Start Development Environment**:
+```sh
+# Start all services using development configuration
+docker-compose -f docker-compose.dev.yml up --build
+
+# Or run in detached mode
+docker-compose -f docker-compose.dev.yml up -d --build
+```
+
+### Services Overview
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| Frontend | http://localhost:4321 | Astro frontend application |
+| Backend API | http://localhost:8000 | FastAPI backend service |
+| API Docs | http://localhost:8000/docs | Interactive API documentation |
+| Database | localhost:3306 | MySQL database |
+| MailDev | http://localhost:1080 | Email testing interface |
+
+### Development Workflow
+
+1. **Code Changes**: Frontend and backend code changes are automatically reloaded
+2. **Database Access**: Connect to MySQL at `localhost:3306` with credentials from `.env`
+3. **Email Testing**: View sent emails at http://localhost:1080
+4. **API Testing**: Use http://localhost:8000/docs for interactive API testing
+
+### Docker Commands
 
 ```sh
-# Create development environment variables
+# Stop all services
+docker-compose -f docker-compose.dev.yml down
+
+# View logs
+docker-compose -f docker-compose.dev.yml logs -f
+
+# Rebuild specific service
+docker-compose -f docker-compose.dev.yml up --build backend
+
+# Access database shell
+docker exec -it genascope-frontend-db-1 mysql -u genascope -p genascope_db
+```
 cat > .env.development << EOF
 PUBLIC_API_URL=http://localhost:8000
 PUBLIC_BASE_URL=http://localhost:4321
