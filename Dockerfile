@@ -15,6 +15,8 @@ RUN npm ci --omit=dev
 # Development image
 FROM dev-deps AS development
 ENV NODE_ENV=development
+ENV DOCKER_ENV=true
+ENV PUBLIC_API_URL=http://backend:8000
 # Copy application code
 COPY . .
 
@@ -87,6 +89,8 @@ RUN npm run build
 # Production image
 FROM prod-deps AS production
 ENV NODE_ENV=production
+ENV DOCKER_ENV=true
+ENV PUBLIC_API_URL=http://backend:8000
 COPY --from=builder /app/dist ./dist
 EXPOSE 4321
 CMD ["node", "./dist/server/entry.mjs"]

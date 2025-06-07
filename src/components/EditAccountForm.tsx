@@ -9,15 +9,13 @@ interface EditAccountFormProps {
 interface Account {
   id: string;
   name: string;
-  domain: string;
-  is_active: boolean;
+  status: string;
 }
 
 const EditAccountForm: React.FC<EditAccountFormProps> = ({ accountId }) => {
   const [account, setAccount] = useState<Account | null>(null);
   const [name, setName] = useState<string>('');
-  const [domain, setDomain] = useState<string>('');
-  const [isActive, setIsActive] = useState<boolean>(true);
+  const [status, setStatus] = useState<string>('active');
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,8 +31,7 @@ const EditAccountForm: React.FC<EditAccountFormProps> = ({ accountId }) => {
       const data = await apiService.getAccountById(accountId);
       setAccount(data);
       setName(data.name);
-      setDomain(data.domain);
-      setIsActive(data.is_active);
+      setStatus(data.status);
       setError(null);
     } catch (err: any) {
       setError('Failed to load account details. Please try again.');
@@ -53,8 +50,7 @@ const EditAccountForm: React.FC<EditAccountFormProps> = ({ accountId }) => {
     try {
       await apiService.updateAccount(accountId, {
         name,
-        domain,
-        is_active: isActive
+        status
       });
 
       setSuccess('Account updated successfully.');
@@ -115,30 +111,18 @@ const EditAccountForm: React.FC<EditAccountFormProps> = ({ accountId }) => {
         </div>
 
         <div>
-          <label htmlFor="domain" className="block text-sm font-medium text-gray-600 mb-1">
-            Domain
+          <label htmlFor="status" className="block text-sm font-medium text-gray-600 mb-1">
+            Account Status
           </label>
-          <input
-            id="domain"
-            type="text"
-            value={domain}
-            onChange={(e) => setDomain(e.target.value)}
-            required
+          <select
+            id="status"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-
-        <div className="flex items-center">
-          <input
-            id="is-active"
-            type="checkbox"
-            checked={isActive}
-            onChange={(e) => setIsActive(e.target.checked)}
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-          />
-          <label htmlFor="is-active" className="ml-2 block text-sm text-gray-900">
-            Active Account
-          </label>
+          >
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
         </div>
 
         <div className="flex space-x-4">

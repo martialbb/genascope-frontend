@@ -1,0 +1,15 @@
+---
+import SimpleLayout from '../layouts/SimpleLayout.astro';
+import InviteDashboard from '../components/InviteDashboard';
+import InviteErrorBoundary from '../components/InviteErrorBoundary';
+
+// This page is for admins and clinicians only
+---
+
+<SimpleLayout title="Manage Invites - Genascope">
+  <main class="min-h-screen bg-gray-50">
+    <InviteErrorBoundary client:load>
+      <InviteDashboard client:load />
+    </InviteErrorBoundary>
+  </main>
+</SimpleLayout>

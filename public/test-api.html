@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Frontend API</title>
+</head>
+<body>
+    <h1>Test Frontend API</h1>
+    <button onclick="setAuthToken()">Set Auth Token</button>
+    <button onclick="testApiHealth()">Test API Health</button>
+    <button onclick="testInvitesAPI()">Test Invites API</button>
+    <div id="output"></div>
+
+    <script>
+        const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbkB0ZXN0aG9zcGl0YWwuY29tIiwiaWQiOiJhZG1pbi0wMDEiLCJyb2xlIjoiYWRtaW4iLCJleHAiOjE3NDg4MTUzMTF9.wt47RDsXtdxNcTFXUQjrof8wa5yopf0_5ImoSsn2D-k';
+        
+        function log(message) {
+            document.getElementById('output').innerHTML += '<p>' + message + '</p>';
+            console.log(message);
+        }
+        
+        function setAuthToken() {
+            localStorage.setItem('authToken', AUTH_TOKEN);
+            log('Auth token set in localStorage');
+        }
+        
+        async function testApiHealth() {
+            log('Testing API health...');
+            try {
+                // Check if API health module exists
+                const healthModule = await import('/src/utils/apiHealth.ts');
+                const result = await healthModule.checkApiHealth();
+                log('API Health Result: ' + JSON.stringify(result, null, 2));
+            } catch (error) {
+                log('Error testing API health: ' + error.message);
+            }
+        }
+        
+        async function testInvitesAPI() {
+            log('Testing invites API...');
+            try {
+                const response = await fetch('http://localhost:8000/api/invites', {
+                    headers: {
+                        'Authorization': 'Bearer ' + AUTH_TOKEN,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('Invites API Response: ' + JSON.stringify(data, null, 2));
+                } else {
+                    log('Invites API Error: ' + response.status + ' ' + response.statusText);
+                }
+            } catch (error) {
+                log('Error testing invites API: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

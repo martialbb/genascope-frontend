@@ -2,6 +2,14 @@ import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 
+console.log('Setting up Docker environment variables...');
+// Set environment variable to indicate Docker environment
+process.env.DOCKER_ENV = 'true';
+process.env.PUBLIC_API_URL = 'http://backend:8000';
+
+console.log(`Environment: ${process.env.DOCKER_ENV === 'true' ? 'Docker' : 'Local'}`);
+console.log(`API URL: ${process.env.PUBLIC_API_URL}`);
+
 console.log('Starting Docker container with M1/M2 Mac compatibility patches...');
 
 // The content for the native.js patch - inline definition, no need for external files

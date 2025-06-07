@@ -1,6 +1,6 @@
-# Docker Configuration for Cancer Genix Frontend
+# Docker Configuration for Genascope Frontend
 
-This document outlines the Docker setup for the Cancer Genix Frontend application.
+This document outlines the Docker setup for the Genascope Frontend application.
 
 ## Overview
 

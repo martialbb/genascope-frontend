@@ -80,6 +80,18 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ userId }) => {
 
       console.log('Form Debug: Updated user response:', JSON.stringify(updatedUser, null, 2));
       
+      // Check if this is the current user updating their own profile
+      const currentUserData = localStorage.getItem('authUser');
+      let isCurrentUser = false;
+      if (currentUserData) {
+        try {
+          const currentUser = JSON.parse(currentUserData);
+          isCurrentUser = currentUser.id === userId;
+        } catch (e) {
+          console.error('Error parsing current user data:', e);
+        }
+      }
+      
       // Validate the response contains the expected changes
       let allChangesApplied = true;
       let changeResults = [];
@@ -105,6 +117,27 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ userId }) => {
       setEmail(updatedUser.email);
       setRole(updatedUser.role);
       setIsActive(updatedUser.is_active);
+      
+      // If this is the current user, update localStorage to refresh the header
+      if (isCurrentUser) {
+        const updatedUserData = {
+          id: updatedUser.id,
+          email: updatedUser.email,
+          name: updatedUser.name,
+          role: updatedUser.role,
+          account_id: updatedUser.account_id
+        };
+        
+        localStorage.setItem('authUser', JSON.stringify(updatedUserData));
+        console.log('EditUserForm: Updated localStorage with new user data for header refresh');
+        
+        // Dispatch a storage event to notify the SimpleHeader component
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'authUser',
+          newValue: JSON.stringify(updatedUserData),
+          storageArea: localStorage
+        }));
+      }
       
       if (allChangesApplied) {
         setSuccess('User updated successfully.');

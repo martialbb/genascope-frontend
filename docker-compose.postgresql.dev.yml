@@ -1,0 +1,77 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "4321:4321"
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+    environment:
+      - NODE_ENV=development
+      - ROLLUP_SKIP_NODEJS_CHECKS=true
+      - VITE_SKIP_NATIVE_EXTENSIONS=true
+    command: >
+      bash -c "npm install antd @ant-design/icons &&
+      npm run dev"
+    networks:
+      - genascope-network
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ../genascope-backend
+      dockerfile: Dockerfile
+    command: bash -c "until nc -z db 5432; do echo 'Waiting for PostgreSQL...'; sleep 2; done; export PYTHONPATH=/app && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URI=postgresql://genascope:genascope@db:5432/genascope
+      - SMTP_SERVER=maildev
+      - SMTP_PORT=1025
+      - EMAIL_ENABLED=true
+      - FRONTEND_URL=http://localhost:4321
+    networks:
+      - genascope-network
+    depends_on:
+      - db
+      - maildev
+    volumes:
+      - ../genascope-backend:/app
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=genascope
+      - POSTGRES_USER=genascope
+      - POSTGRES_PASSWORD=genascope
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/docker/postgresql/init:/docker-entrypoint-initdb.d
+    networks:
+      - genascope-network
+
+  # MailDev for email testing
+  maildev:
+    image: maildev/maildev
+    ports:
+      - "1025:1025" # SMTP port
+      - "8025:1080" # Web UI port
+    networks:
+      - genascope-network
+    command: bin/maildev --web 1080 --smtp 1025 --hide-extensions STARTTLS
+
+networks:
+  genascope-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    external: true
+    name: genascope_postgres_data

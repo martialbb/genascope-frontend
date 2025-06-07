@@ -205,6 +205,69 @@ This guide addresses common issues that developers and users may encounter when 
 
 ## Patient Invite System
 
+### UUID Validation Errors in Invite Responses
+
+**Symptom**: Pydantic validation errors stating "Input should be a valid string" when creating or listing invites.
+
+**Cause**: Invite response schemas expect string values for `invite_id` but receive UUID objects from the database.
+
+**Solution**:
+1. Convert UUID objects to strings in invite API responses:
+   ```python
+   return PatientInviteResponse(
+       invite_id=str(invite.id),  # Convert UUID to string
+       # ... other fields
+   )
+   ```
+2. Check all instances in `/backend/app/api/invites.py` where `PatientInviteResponse` is constructed
+3. Ensure consistent string conversion for all UUID fields
+
+### Email Validation Errors During Invite Creation
+
+**Symptom**: HTTPException with "Invalid patient email" when creating invites.
+
+**Cause**: Patient records with null, empty, or invalid email addresses.
+
+**Solution**:
+1. Add email validation in `InviteService.create_invite()`:
+   ```python
+   if not patient.email or patient.email in ["unknown@example.com", "test@example.com"]:
+       raise HTTPException(
+           status_code=400,
+           detail="Patient email is required and must be valid for invite creation"
+       )
+   ```
+2. Update patient records to have valid email addresses before creating invites
+3. Filter out patients with invalid emails in invite creation scripts
+
+### Role-Based Access Control Issues
+
+**Symptom**: Users seeing invites from other accounts or unauthorized access errors.
+
+**Cause**: Insufficient access control filtering in invite list endpoints.
+
+**Solution**:
+1. Implement proper role-based filtering:
+   - Super admin: Access to all invites across accounts
+   - Admin: Access to invites within their account only
+   - Clinician: Access to only their own created invites
+2. Add account filtering in invite repository methods
+3. Verify user account association before granting access
+
+### Test Data Conflicts
+
+**Symptom**: "Patient already has a pending invite" errors during testing.
+
+**Cause**: Previous test invites still marked as pending in the database.
+
+**Solution**:
+1. Expire old test invites before creating new ones:
+   ```sql
+   UPDATE invites SET status = 'expired' WHERE status = 'pending' AND expires_at < NOW();
+   ```
+2. Use unique email addresses for test patients
+3. Implement cleanup scripts for test environments
+
 ### Invite Links Not Working
 
 **Symptom**: Patients cannot access the application via invite links.
@@ -228,12 +291,19 @@ This guide addresses common issues that developers and users may encounter when 
 
 **Possible Causes & Solutions**:
 1. **Email Service Configuration**
-   - Check email service credentials and configuration
+   - Check email service credentials and configuration in `.env` file
+   - Verify `EMAIL_ENABLED` is set to `true`
+   - Confirm SMTP credentials (`SMTP_SERVER`, `SMTP_USERNAME`, `SMTP_PASSWORD`) are correct
    - Verify email sending logs for errors
 
 2. **Spam Filtering**
    - Ensure emails are not being marked as spam
    - Add appropriate SPF and DKIM records
+   
+3. **Implementation Issues**
+   - Check if email service is properly integrated in `create_invite` and `resend_invite` methods
+   - Verify that invite objects have all required fields for email generation
+   - Run the `update_env.sh` script to ensure all required variables are set
 
 ## Lab Integration Issues
 

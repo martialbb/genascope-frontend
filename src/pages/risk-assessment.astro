@@ -1,0 +1,27 @@
+---
+import SimpleLayout from ../layouts/SimpleLayout.astro';
+import ChatComponent from '../components/ChatComponent';
+
+// Check if this is a new assessment from registration
+const isNewRegistration = Astro.url.searchParams.get('new') === 'true';
+---
+
+<SimpleLayout title="Cancer Risk Assessment - Genascope">
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-center mb-4 text-blue-700">Cancer Risk Assessment</h1>
+    
+    {isNewRegistration && (
+      <div class="max-w-2xl mx-auto mb-8 bg-blue-50 border border-blue-200 p-4 rounded-md">
+        <h2 class="font-semibold text-blue-800 mb-2">Welcome to Genascope!</h2>
+        <p class="text-blue-700">
+          To help us provide you with the best care, please complete this brief risk assessment.
+          Your responses will help determine if genetic testing might be beneficial for you.
+        </p>
+      </div>
+    )}
+    
+    <div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md">
+      <ChatComponent client:load isNewSession={isNewRegistration} />
+    </div>
+  </main>
+</SimpleLayout>

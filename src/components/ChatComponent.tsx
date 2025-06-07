@@ -1,5 +1,5 @@
 // src/components/ChatComponent.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import apiService, { type ChatQuestion, type EligibilityResult } from '../services/api';
 import SchedulingPrompt from './SchedulingPrompt';
 
@@ -9,10 +9,12 @@ interface Message {
 }
 
 interface ChatProps {
-  sessionId: string;
+  sessionId?: string;
+  isNewSession?: boolean;
 }
 
-const ChatComponent: React.FC<ChatProps> = ({ sessionId }) => {
+const ChatComponent: React.FC<ChatProps> = ({ sessionId: providedSessionId, isNewSession = false }) => {
+  const [sessionId, setSessionId] = useState<string | undefined>(providedSessionId);
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<ChatQuestion | null>(null);
   const [userInput, setUserInput] = useState<string>('');
@@ -21,28 +23,46 @@ const ChatComponent: React.FC<ChatProps> = ({ sessionId }) => {
   const [chatCompleted, setChatCompleted] = useState<boolean>(false);
   const [eligibilityResult, setEligibilityResult] = useState<EligibilityResult | null>(null);
 
-  useEffect(() => {
-    const startChat = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await apiService.startChat(sessionId);
-        if (response.question) {
-            setCurrentQuestion(response.question);
-            setMessages([{ sender: 'bot', text: response.question.text }]);
-        } else {
-            setError("Could not start chat session.");
-        }
-      } catch (err) {
-        console.error('Error starting chat:', err);
-        setError('Failed to connect to the chat service. Please try again later.');
-      } finally {
-        setIsLoading(false);
+  const initializeOrLoadChat = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      let activeSessionId = sessionId;
+      if (isNewSession || !activeSessionId) {
+        console.log('ChatComponent: Creating new session...');
+        const sessionData = await apiService.createChatSession();
+        activeSessionId = sessionData.sessionId;
+        setSessionId(activeSessionId);
+        // Store the new session ID if needed, e.g., in URL or parent component
+      } else {
+        console.log(`ChatComponent: Using existing session ID: ${activeSessionId}`);
       }
-    };
 
-    startChat();
-  }, [sessionId]);
+      if (activeSessionId) {
+        console.log(`ChatComponent: Starting chat for session: ${activeSessionId}`);
+        const response = await apiService.startChat(activeSessionId);
+        if (response.question) {
+          setCurrentQuestion(response.question);
+          setMessages([{ sender: 'bot', text: response.question.text }]);
+        } else {
+          setError('Could not retrieve the first question.');
+          console.error('ChatComponent: No question received from startChat');
+        }
+      } else {
+        setError('Failed to initialize chat session.');
+        console.error('ChatComponent: No active session ID after initialization attempt');
+      }
+    } catch (err) {
+      console.error('ChatComponent: Error initializing/loading chat:', err);
+      setError('Failed to connect to the chat service. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [sessionId, isNewSession]); // Dependencies for useCallback
+
+  useEffect(() => {
+    initializeOrLoadChat();
+  }, [initializeOrLoadChat]); // Run when initializeOrLoadChat changes (e.g. on mount)
 
   // When chat is completed, analyze eligibility
   useEffect(() => {

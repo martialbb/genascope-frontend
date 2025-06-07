@@ -1,12 +1,12 @@
 #!/bin/zsh
 
 # Create new backend repository
-echo "🔧 Setting up cancer-genix-backend repository"
+echo "🔧 Setting up genascope-backend repository"
 
 # Ask for directory location
-echo "Where would you like to create the backend repository? (default: ../cancer-genix-backend)"
+echo "Where would you like to create the backend repository? (default: ../genascope-backend)"
 read backend_dir
-backend_dir=${backend_dir:-"../cancer-genix-backend"}
+backend_dir=${backend_dir:-"../genascope-backend"}
 
 # Create directory
 mkdir -p "$backend_dir"
@@ -58,7 +58,7 @@ This is the backend repository for the CancerGenix application, built with FastA
 
 This project is part of a multi-repository architecture:
 - Backend (this repo): API server for the CancerGenix application
-- Frontend: [cancer-genix-frontend](https://github.com/martialbb/cancer-genix-frontend) - Astro/React UI
+- Frontend: [genascope-frontend](https://github.com/martialbb/genascope-frontend) - Astro/React UI
 
 ## 🚀 Project Setup
 
@@ -87,7 +87,7 @@ All commands are run from the root of the project, from a terminal:
 
 ## 🔌 Frontend Connection
 
-This backend is designed to work with the [cancer-genix-frontend](https://github.com/martialbb/cancer-genix-frontend) repository.
+This backend is designed to work with the [genascope-frontend](https://github.com/martialbb/genascope-frontend) repository.
 
 Make sure to configure CORS in `app/main.py` to allow requests from your frontend application.
 EOF
@@ -241,6 +241,6 @@ echo ""
 echo "GitHub commands:"
 echo "git add ."
 echo "git commit -m 'Initial backend setup'"
-echo "git remote add origin https://github.com/martialbb/cancer-genix-backend.git"
+echo "git remote add origin https://github.com/martialbb/genascope-backend.git"
 echo "git branch -M main"
 echo "git push -u origin main"

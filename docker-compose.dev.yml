@@ -15,7 +15,10 @@ services:
       - NODE_ENV=development
       - ROLLUP_SKIP_NODEJS_CHECKS=true
       - VITE_SKIP_NATIVE_EXTENSIONS=true
-    command: npm run dev
+    # Install missing packages and run the dev server
+    command: >
+      bash -c "npm install antd @ant-design/icons &&
+      npm run dev"
     networks:
       - genascope-network
     depends_on:
@@ -23,19 +26,24 @@ services:
 
   backend:
     build:
-      context: ../cancer-genix-backend
+      context: ../genascope-backend
       dockerfile: Dockerfile
-    command: bash -c "until nc -z db 3306; do echo 'Waiting for db...'; sleep 2; done; export PYTHONPATH=/app && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    command: bash -c "until nc -z db 3306; do echo 'Waiting for db...'; sleep 2; done; export PYTHONPATH=/app && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     ports:
       - "8000:8000"
     environment:
       - DATABASE_URL=mysql://genascope:genascope@db:3306/genascope
+      - SMTP_SERVER=maildev # Changed from mailhog to maildev
+      - SMTP_PORT=1025      # Same port
+      - EMAIL_ENABLED=true  # Ensure email is enabled
+      - FRONTEND_URL=http://localhost:4321 # Ensure frontend URL is set
     networks:
       - genascope-network
     depends_on:
       - db
+      - maildev # Changed from mailhog to maildev
     volumes:
-      - ../cancer-genix-backend:/app
+      - ../genascope-backend:/app
 
   db:
     image: mysql:8.0
@@ -51,9 +59,20 @@ services:
     networks:
       - genascope-network
 
+  maildev:
+    image: maildev/maildev
+    ports:
+      - "1025:1025" # SMTP port
+      - "8025:1080" # Web UI port (MailDev uses 1080 by default, but we map to 8025 to keep the same external port)
+    networks:
+      - genascope-network
+    command: bin/maildev --web 1080 --smtp 1025 --hide-extensions STARTTLS
+
 networks:
   genascope-network:
     driver: bridge
 
 volumes:
   genascope-data:
+    external: true
+    name: cancer-genix-frontend_genascope-data

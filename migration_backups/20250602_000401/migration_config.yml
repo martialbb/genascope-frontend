@@ -1,0 +1,18 @@
+mysql:
+  host: localhost
+  port: 3306
+  user: genascope
+  password: genascope
+  database: genascope
+
+postgresql:
+  host: localhost
+  port: 5432
+  user: genascope
+  password: genascope
+  database: genascope
+
+options:
+  continue_on_error: false
+  backup_before_migration: true
+  validate_after_migration: true

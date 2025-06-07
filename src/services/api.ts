@@ -5,6 +5,9 @@
  */
 import axios from 'axios';
 import type { AxiosInstance } from 'axios';
+import { getApiBaseUrl } from './apiConfig';
+import { checkApiHealth } from '../utils/apiHealth';
+import type { Patient, PatientCreate, PatientUpdate, PatientCSVImportResponse, PatientInviteRequest, PatientInviteResponse, BulkInviteRequest, BulkInviteResponse, Invite, InviteListParams, InviteListResponse, ResendInviteRequest, ResendInviteResponse, Clinician, InviteStatus } from '../types/patients';
 
 // Types that match FastAPI Pydantic models
 export interface ChatQuestion {
@@ -72,7 +75,8 @@ class ApiService {
   private client: AxiosInstance;
   
   constructor() {
-    const baseURL = import.meta.env.PUBLIC_API_URL || 'http://localhost:8000';
+    // Use centralized API configuration that handles client/server and Docker environments
+    const baseURL = getApiBaseUrl();
     
     this.client = axios.create({
       baseURL,
@@ -117,6 +121,37 @@ class ApiService {
 
   async generateInvite(patientData: any) {
     const response = await this.client.post('/api/generate_invite', patientData);
+    return response.data;
+  }
+  
+  async verifyInvite(token: string) {
+    const response = await this.client.post('/api/verify_invite', { token });
+    return response.data;
+  }
+  
+  async registerPatient(registrationData: any) {
+    const response = await this.client.post('/api/register_patient', registrationData);
+    return response.data;
+  }
+
+  // Chat session methods
+  async createChatSession(): Promise<ChatSessionData> {
+    const response = await this.client.post('/api/chat/session');
+    return response.data;
+  }
+
+  async startChat(sessionId: string): Promise<ChatResponse> {
+    const response = await this.client.post(`/api/chat/start`, { session_id: sessionId });
+    return response.data;
+  }
+
+  async submitAnswer(answerData: ChatAnswerData): Promise<ChatResponse> {
+    const response = await this.client.post('/api/chat/answer', answerData);
+    return response.data;
+  }
+
+  async analyzeEligibility(sessionId: string): Promise<EligibilityResult> {
+    const response = await this.client.post('/api/chat/analyze', { session_id: sessionId });
     return response.data;
   }
 
@@ -168,12 +203,12 @@ class ApiService {
   }
 
   async updateUser(id: string, data: any) {
-    console.log("API Debug: Updating user with ID:", id);
-    console.log("API Debug: Update data:", JSON.stringify(data, null, 2));
+    console.log('API Debug: Updating user with ID:', id);
+    console.log('API Debug: Update data:', JSON.stringify(data, null, 2));
     
     try {
       const response = await this.client.put(`/api/users/${id}`, data);
-      console.log("API Debug: Update response:", JSON.stringify(response.data, null, 2));
+      console.log('API Debug: Update response:', JSON.stringify(response.data, null, 2));
       
       // Validate that we got back the updated values
       const responseData = response.data;
@@ -186,13 +221,112 @@ class ApiService {
       
       return responseData;
     } catch (error: any) {
-      console.error("API Debug: Error updating user:", error.response?.status, error.response?.data);
+      console.error('API Debug: Error updating user:', error.response?.status, error.response?.data);
       throw error;
     }
   }
 
   async deleteUser(id: string) {
     const response = await this.client.delete(`/api/users/${id}`);
+    return response.data;
+  }
+
+  // Patient management methods
+  async getPatients(params: Record<string, any> = {}): Promise<Patient[]> {
+    const response = await this.client.get('/api/patients/', { params });
+    return response.data;
+  }
+
+  async getPatientById(id: string): Promise<Patient> {
+    const response = await this.client.get(`/api/patients/${id}`);
+    return response.data;
+  }
+
+  async createPatient(data: PatientCreate): Promise<Patient> {
+    const response = await this.client.post('/api/patients/', data);
+    return response.data;
+  }
+
+  async updatePatient(id: string, data: PatientUpdate): Promise<Patient> {
+    const response = await this.client.put(`/api/patients/${id}`, data);
+    return response.data;
+  }
+
+  async deletePatient(id: string): Promise<void> {
+    await this.client.delete(`/api/patients/${id}`);
+  }
+
+  async getClinicians(): Promise<Clinician[]> {
+    const response = await this.client.get('/api/clinicians');
+    return response.data;
+  }
+
+  async importPatientsCsv(formData: FormData): Promise<PatientCSVImportResponse> {
+    const response = await this.client.post('/api/patients/import-csv', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  }
+
+  async sendPatientInvite(inviteData: PatientInviteRequest): Promise<PatientInviteResponse> {
+    const response = await this.client.post('/api/generate_invite', inviteData);
+    return response.data;
+  }
+
+  async sendBulkInvites(bulkInviteData: BulkInviteRequest): Promise<BulkInviteResponse> {
+    const response = await this.client.post('/api/bulk_invite', bulkInviteData);
+    return response.data;
+  }
+
+  // Transform backend invite response to frontend interface
+  private transformInviteData(backendInvite: any): Invite {
+    return {
+      id: backendInvite.invite_id,
+      patient_id: backendInvite.email, // Use email as patient_id for now
+      patient_name: `${(backendInvite.first_name || '').trim()} ${(backendInvite.last_name || '').trim()}`.trim(),
+      patient_email: backendInvite.email,
+      provider_id: backendInvite.provider_id,
+      provider_name: backendInvite.provider_name,
+      status: backendInvite.status as InviteStatus,
+      invite_url: backendInvite.invite_url,
+      expires_at: backendInvite.expires_at,
+      created_at: backendInvite.created_at,
+      updated_at: backendInvite.updated_at || backendInvite.created_at, // Fallback to created_at
+      custom_message: backendInvite.custom_message,
+      email_sent: true // Assume email is sent if invite exists
+    };
+  }
+
+  // Invite management methods
+  async getInvites(params: InviteListParams = {}): Promise<InviteListResponse> {
+    const response = await this.client.get('/api/invites', { params });
+    const backendData = response.data;
+    
+    // Transform the invite data to match frontend interface
+    const transformedInvites = backendData.invites.map((invite: any) => this.transformInviteData(invite));
+    
+    return {
+      invites: transformedInvites,
+      total: backendData.total_count || backendData.total,
+      page: backendData.page,
+      limit: backendData.limit,
+      total_pages: backendData.total_pages
+    };
+  }
+
+  async getInviteById(id: string): Promise<Invite> {
+    const response = await this.client.get(`/api/invites/${id}`);
+    return this.transformInviteData(response.data);
+  }
+
+  async cancelInvite(id: string): Promise<void> {
+    await this.client.delete(`/api/invites/${id}`);
+  }
+
+  async resendInvite(id: string, data: ResendInviteRequest): Promise<ResendInviteResponse> {
+    const response = await this.client.post(`/api/invites/${id}/resend`, data);
     return response.data;
   }
 

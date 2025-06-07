@@ -1,7 +1,6 @@
 // src/components/SchedulingComponent.tsx
 import React, { useState, useEffect } from 'react';
 import apiService from '../services/api';
-import { useAuth } from '../context/AuthContext';
 
 interface TimeSlot {
   time: string;
@@ -26,7 +25,20 @@ const SchedulingComponent: React.FC<SchedulingProps> = ({
   patientId = '',
   afterBooking 
 }) => {
-  const { user } = useAuth();
+  // Get user from localStorage for simple auth
+  const [user, setUser] = useState<any>(null);
+  
+  useEffect(() => {
+    const userStr = localStorage.getItem('authUser');
+    if (userStr) {
+      try {
+        setUser(JSON.parse(userStr));
+      } catch (e) {
+        console.error('Failed to parse user from localStorage');
+      }
+    }
+  }, []);
+
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);

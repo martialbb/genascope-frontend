@@ -5,10 +5,9 @@ import apiService from '../services/api';
 interface Account {
   id: string;
   name: string;
-  domain: string;
-  is_active: boolean;
-  admin_email: string;
+  status: string;
   created_at: string;
+  updated_at?: string;
 }
 
 const AccountsList: React.FC = () => {
@@ -60,8 +59,7 @@ const AccountsList: React.FC = () => {
     const searchLower = searchTerm.toLowerCase();
     return (
       account.name.toLowerCase().includes(searchLower) ||
-      account.domain.toLowerCase().includes(searchLower) ||
-      account.admin_email.toLowerCase().includes(searchLower)
+      account.status.toLowerCase().includes(searchLower)
     );
   });
 
@@ -110,12 +108,6 @@ const AccountsList: React.FC = () => {
                   Name
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Domain
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Admin Email
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -133,16 +125,10 @@ const AccountsList: React.FC = () => {
                     <div className="text-sm font-medium text-gray-900">{account.name}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{account.domain}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{account.admin_email}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      account.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      account.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
-                      {account.is_active ? 'Active' : 'Inactive'}
+                      {account.status === 'active' ? 'Active' : 'Inactive'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

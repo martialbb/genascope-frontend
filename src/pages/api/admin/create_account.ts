@@ -31,7 +31,7 @@ export const POST: APIRoute = async ({ request }) => {
       }
     });
   } catch (error) {
-    console.error("API Error in /api/admin/create_account:", error);
+    console.error('API Error in /api/admin/create_account:', error);
     return new Response(JSON.stringify({ error: 'Failed to create account' }), {
       status: 500,
       headers: {

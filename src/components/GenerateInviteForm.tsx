@@ -1,5 +1,5 @@
 // src/components/GenerateInviteForm.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import apiService from '../services/api';
 
 interface GenerateInviteFormProps {
@@ -9,7 +9,7 @@ interface GenerateInviteFormProps {
 }
 
 const GenerateInviteForm: React.FC<GenerateInviteFormProps> = ({ 
-  providerId = 'default-provider',
+  providerId,
   patientId,
   patientName
 }) => {
@@ -22,10 +22,30 @@ const GenerateInviteForm: React.FC<GenerateInviteFormProps> = ({
   const [lastName, setLastName] = useState<string>(initialLastName);
   const [email, setEmail] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
+  const [currentUser, setCurrentUser] = useState<any>(null);
   
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Get current user for provider_id if not explicitly provided
+    const initializeUser = async () => {
+      try {
+        const authResult = await apiService.verifyAuth();
+        if (authResult.authenticated && authResult.user) {
+          setCurrentUser(authResult.user);
+          console.log('GenerateInvite: Current user:', authResult.user);
+        }
+      } catch (err) {
+        console.error('GenerateInvite: Error getting current user:', err);
+      }
+    };
+
+    if (!providerId) {
+      initializeUser();
+    }
+  }, [providerId]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -34,12 +54,26 @@ const GenerateInviteForm: React.FC<GenerateInviteFormProps> = ({
     setInviteUrl(null);
 
     try {
+      // Use provided providerId, or current user's ID, or throw error if neither available
+      let actualProviderId = providerId;
+      
+      if (!actualProviderId && currentUser?.id) {
+        actualProviderId = currentUser.id;
+        console.log('GenerateInvite: Using current user ID as provider:', actualProviderId);
+      }
+      
+      if (!actualProviderId) {
+        throw new Error('Unable to determine provider ID. Please ensure you are logged in.');
+      }
+
+      console.log('GenerateInvite: Submitting with provider_id:', actualProviderId);
+      
       const response = await apiService.generateInvite({
         email,
         first_name: firstName,
         last_name: lastName,
         phone,
-        provider_id: providerId
+        provider_id: actualProviderId
       });
 
       setInviteUrl(response.invite_url);

@@ -1,12 +1,13 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import SimpleLayout from '../layouts/SimpleLayout.astro';
 import DashboardTable from '../components/DashboardTable.tsx';
 import AppointmentsList from '../components/AppointmentsList.tsx';
+import InviteStatsWidget from '../components/InviteStatsWidget.tsx';
 ---
 
-<Layout title="Clinician Dashboard">
+<SimpleLayout title="Dashboard - Genascope">
   <main class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Clinician Dashboard</h1>
+    <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Dashboard</h1>
     
     <div class="mb-10">
       <div class="flex justify-between items-center mb-6">
@@ -32,7 +33,7 @@ import AppointmentsList from '../components/AppointmentsList.tsx';
       <DashboardTable client:load />
     </div>
     
-    <div class="mt-10 grid md:grid-cols-2 gap-6">
+    <div class="mt-10 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Manage Your Availability</h3>
         <p class="text-gray-600 mb-4">Set your availability to allow patients to book appointments with you.</p>
@@ -54,6 +55,40 @@ import AppointmentsList from '../components/AppointmentsList.tsx';
           Invite Patient
         </a>
       </div>
+
+      <!-- Invite Statistics Widget - Only show for admins and clinicians -->
+      <div id="invite-stats-section" class="bg-white rounded-lg shadow-sm border border-gray-100" style="display: none;">
+        <InviteStatsWidget client:load />
+      </div>
     </div>
   </main>
-</Layout>
+</SimpleLayout>
+
+<script>
+  // Protect dashboard - redirect to login if not authenticated
+  const token = localStorage.getItem('authToken');
+  const user = localStorage.getItem('authUser');
+  
+  if (!token || !user) {
+    console.log('Dashboard: User not authenticated, redirecting to login');
+    window.location.href = '/login';
+  } else {
+    try {
+      const userData = JSON.parse(user);
+      console.log('Dashboard: User authenticated', userData);
+      
+      // Show invite stats widget for admins and clinicians
+      if (userData.role === 'admin' || userData.role === 'clinician' || userData.role === 'physician') {
+        const inviteStatsSection = document.getElementById('invite-stats-section');
+        if (inviteStatsSection) {
+          inviteStatsSection.style.display = 'block';
+        }
+      }
+    } catch (error) {
+      console.error('Dashboard: Error parsing user data, redirecting to login');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('authUser');
+      window.location.href = '/login';
+    }
+  }
+</script>

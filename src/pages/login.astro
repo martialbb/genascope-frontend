@@ -1,35 +1,29 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import LoginFormWrapper from '../components/LoginFormWrapper.tsx';
+import SimpleLayout from '../layouts/SimpleLayout.astro';
+import SimpleLogin from '../components/SimpleLogin.tsx';
 ---
 
-<Layout title="Login - Genascope">
-  <main class="container mx-auto px-4 py-8">
-    <LoginFormWrapper client:load />
+<SimpleLayout title="Login - Genascope">
+  <main class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <SimpleLogin client:only="react" />
   </main>
-</Layout>
+</SimpleLayout>
 
 <script>
-  // Redirect if already logged in (using the mock localStorage check)
-  // This is a basic client-side check. Robust auth needs server-side checks.
-  const storedUser = localStorage.getItem('authUser');
-  if (storedUser) {
-    // Redirect based on role, or just to dashboard
-    try {
-      const user = JSON.parse(storedUser);
-      if (user && user.role) {
-        // Example: Redirect clinicians/admins to dashboard, super admins to their page
-        if (user.role === 'super_admin') {
-          window.location.href = '/admin/create-account';
-        } else {
-          window.location.href = '/dashboard';
-        }
-      } else {
-        window.location.href = '/dashboard'; // Default redirect
-      }
-    } catch (e) {
-      console.error("Error parsing stored user for redirect", e);
-      localStorage.removeItem('authUser'); // Clear corrupted data
-    }
+  // Handle logout cleanup if coming from logout
+  const urlParams = new URLSearchParams(window.location.search);
+  const isLogout = urlParams.get('logout') === 'true';
+  
+  if (isLogout) {
+    // Ensure all auth data is cleared
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('authUser');
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    console.log('Login page: Cleaned up auth data after logout');
+    
+    // Remove logout parameter from URL
+    const newUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, newUrl);
   }
 </script>

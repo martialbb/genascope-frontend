@@ -1,16 +1,17 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import SimpleLayout from '../layouts/SimpleLayout.astro';
 import SchedulingComponent from '../components/SchedulingComponent';
-import { useAuth } from '../context/AuthContext';
 
 // Get user type from URL parameters or session
-const { type, clinicianId, patientId } = Astro.url.searchParams;
+const type = Astro.url.searchParams.get('type');
+const clinicianId = Astro.url.searchParams.get('clinicianId');
+const patientId = Astro.url.searchParams.get('patientId');
 
 // Set page title based on user type
 const pageTitle = type === 'patient' ? 'Schedule Your Appointment' : 'Appointment Scheduling';
 ---
 
-<Layout title={pageTitle}>
+<SimpleLayout title={pageTitle}>
   <main class="container mx-auto px-4 py-8">
     <div class="max-w-3xl mx-auto">
       <h1 class="text-3xl font-bold text-gray-800 mb-6">{pageTitle}</h1>
@@ -64,4 +65,4 @@ const pageTitle = type === 'patient' ? 'Schedule Your Appointment' : 'Appointmen
       </div>
     </div>
   </main>
-</Layout>
+</SimpleLayout>

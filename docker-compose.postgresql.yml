@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # Frontend Astro application
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "${FRONTEND_PORT:-4321}:4321"
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=4321
+      - PUBLIC_API_URL=${PUBLIC_API_URL:-http://backend:8000}
+      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-http://localhost:4321}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:4321"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - backend
+    
+  # Backend service configuration
+  backend:
+    build:
+      context: ../genascope-backend
+      dockerfile: Dockerfile
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ../genascope-backend:/app
+    environment:
+      - PORT=8000
+      - DATABASE_URI=${DATABASE_URI:-postgresql://user:password@db:5432/genascope}
+      - CORS_ORIGINS=["http://localhost:4321"]
+      - SECRET_KEY=${SECRET_KEY:-your_default_secret_key_here}
+    restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      - db
+      
+  # PostgreSQL Database service
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    environment:
+      - POSTGRES_DB=genascope
+      - POSTGRES_USER=${DB_USER:-user}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/docker/postgresql/init:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    
+volumes:
+  postgres_data:
+    external: true
+    name: genascope_postgres_data

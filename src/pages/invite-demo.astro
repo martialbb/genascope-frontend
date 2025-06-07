@@ -1,0 +1,121 @@
+---
+title: "Invite Management Feature Demo"
+layout: "../layouts/Layout.astro"
+---
+
+<div id="invite-feature-demo" class="min-h-screen bg-gray-50">
+  <div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">
+          🎯 Invite Management System Demo
+        </h1>
+        <p class="text-lg text-gray-600">
+          Comprehensive patient invite management with mock data integration
+        </p>
+      </div>
+
+      <!-- Feature Test Component -->
+      <div class="mb-8">
+        <div id="feature-test-container"></div>
+      </div>
+
+      <!-- Feature Overview -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 class="text-xl font-semibold mb-4 text-blue-600">
+            📊 Statistics Dashboard
+          </h3>
+          <ul class="space-y-2 text-gray-600">
+            <li>• Real-time invite statistics</li>
+            <li>• Status breakdown (pending, completed, expired)</li>
+            <li>• Quick action buttons</li>
+            <li>• Responsive design</li>
+          </ul>
+          <div class="mt-4">
+            <a href="/dashboard" class="text-blue-500 hover:text-blue-700 font-medium">
+              View Dashboard →
+            </a>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 class="text-xl font-semibold mb-4 text-green-600">
+            🗂️ Invite Management
+          </h3>
+          <ul class="space-y-2 text-gray-600">
+            <li>• Complete invite table with filtering</li>
+            <li>• Cancel and resend functionality</li>
+            <li>• Provider and status filtering</li>
+            <li>• Pagination and search</li>
+          </ul>
+          <div class="mt-4">
+            <a href="/manage-invites" class="text-green-500 hover:text-green-700 font-medium">
+              Manage Invites →
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Technical Features -->
+      <div class="bg-white p-6 rounded-lg shadow-sm border mb-8">
+        <h3 class="text-xl font-semibold mb-4 text-purple-600">
+          ⚙️ Technical Implementation
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <h4 class="font-medium text-gray-900 mb-2">Mock Data Integration</h4>
+            <p class="text-sm text-gray-600">
+              Graceful API fallback with realistic sample data for development
+            </p>
+          </div>
+          <div>
+            <h4 class="font-medium text-gray-900 mb-2">Error Handling</h4>
+            <p class="text-sm text-gray-600">
+              Comprehensive error handling with user-friendly notifications
+            </p>
+          </div>
+          <div>
+            <h4 class="font-medium text-gray-900 mb-2">TypeScript Types</h4>
+            <p class="text-sm text-gray-600">
+              Full type safety with comprehensive interface definitions
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Information -->
+      <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+        <div class="flex items-start">
+          <div class="text-blue-500 mr-3 mt-1">ℹ️</div>
+          <div>
+            <h4 class="font-medium text-blue-900 mb-1">Development Status</h4>
+            <p class="text-blue-700 text-sm">
+              This demo uses mock data since the backend invite management endpoints are not yet implemented. 
+              All frontend functionality is complete and ready for backend integration.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import InviteFeatureTest from '../components/InviteFeatureTest';
+  import React from 'react';
+  import { createRoot } from 'react-dom/client';
+
+  // Render the feature test component
+  const container = document.getElementById('feature-test-container');
+  if (container) {
+    const root = createRoot(container);
+    root.render(React.createElement(InviteFeatureTest));
+  }
+</script>
+
+<style>
+  .container {
+    max-width: 1200px;
+  }
+</style>

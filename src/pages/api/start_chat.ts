@@ -11,7 +11,7 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     // Check if the request has a body
     if (!request.body) {
-      console.error("API Error in /api/start_chat: Request has no body.");
+      console.error('API Error in /api/start_chat: Request has no body.');
       return new Response(JSON.stringify({ error: 'Request body is missing' }), {
         status: 400, // Bad Request
         headers: { 'Content-Type': 'application/json' }
@@ -28,7 +28,7 @@ export const POST: APIRoute = async ({ request }) => {
     const sessionId = body.sessionId;
 
     if (!sessionId) {
-       console.error("API Error in /api/start_chat: sessionId is missing in request body.");
+       console.error('API Error in /api/start_chat: sessionId is missing in request body.');
        return new Response(JSON.stringify({ error: 'sessionId is missing' }), {
          status: 400, // Bad Request
          headers: { 'Content-Type': 'application/json' }
@@ -48,9 +48,9 @@ export const POST: APIRoute = async ({ request }) => {
   } catch (error) {
     // Log the specific error during JSON parsing
     if (error instanceof SyntaxError) {
-      console.error("API Error in /api/start_chat: Failed to parse JSON body.", error);
+      console.error('API Error in /api/start_chat: Failed to parse JSON body.', error);
     } else {
-      console.error("API Error in /api/start_chat:", error);
+      console.error('API Error in /api/start_chat:', error);
     }
     return new Response(JSON.stringify({ error: 'Failed to start chat session' }), {
       status: 500,

@@ -1,5 +1,5 @@
 ---
-import Layout from '../../layouts/Layout.astro';
+import SimpleLayout from '../../layouts/SimpleLayout.astro';
 import CreateUserForm from '../../components/CreateUserForm.tsx';
 
 // In a real app, add authentication/authorization checks here
@@ -8,9 +8,9 @@ import CreateUserForm from '../../components/CreateUserForm.tsx';
 const accountId = "account_abc"; // Placeholder
 ---
 
-<Layout title="Account Admin - Create User">
+<SimpleLayout title="Account Admin - Create User">
   <main class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Account Admin Panel</h1>
     <CreateUserForm accountId={accountId} client:load />
   </main>
-</Layout>
+</SimpleLayout>

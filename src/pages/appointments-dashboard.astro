@@ -1,10 +1,9 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import SimpleLayout from '../layouts/SimpleLayout.astro';
 import AppointmentsList from '../components/AppointmentsList';
-import { useAuth } from '../context/AuthContext';
 ---
 
-<Layout title="Appointments Dashboard">
+<SimpleLayout title="Appointments Dashboard - Genascope">
   <main class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto">
       <div class="sm:flex sm:items-center sm:justify-between">
@@ -102,4 +101,15 @@ import { useAuth } from '../context/AuthContext';
       </div>
     </div>
   </main>
-</Layout>
+</SimpleLayout>
+
+<script>
+  // Simple client-side authentication check
+  const token = localStorage.getItem('authToken');
+  const userStr = localStorage.getItem('authUser');
+  
+  if (!token || !userStr) {
+    console.log('Appointments Dashboard: Not authenticated, redirecting to login');
+    window.location.href = '/login?redirect=/appointments-dashboard';
+  }
+</script>

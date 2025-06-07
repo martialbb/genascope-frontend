@@ -1,14 +1,15 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import SimpleLayout from '../layouts/SimpleLayout.astro';
 import OrderLabTestForm from '../components/OrderLabTestForm';
 
 // Get any patient info from query params
-const { patientId, patientName } = Astro.url.searchParams;
+const patientId = Astro.url.searchParams.get('patientId') || undefined;
+const patientName = Astro.url.searchParams.get('patientName') || undefined;
 ---
 
-<Layout title="Order Laboratory Test - Genascope">
+<SimpleLayout title="Order Laboratory Test - Genascope">
   <main class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold text-center mb-8 text-blue-700">Order Laboratory Test</h1>
     <OrderLabTestForm client:load patientId={patientId} patientName={patientName} />
   </main>
-</Layout>
+</SimpleLayout>

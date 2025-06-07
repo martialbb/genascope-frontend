@@ -1,11 +1,11 @@
 ---
-import Layout from '../../layouts/Layout.astro';
+import SimpleLayout from '../../layouts/SimpleLayout.astro';
 import UsersList from '../../components/UsersList';
 ---
 
-<Layout title="Manage Users">
+<SimpleLayout title="Manage Users">
   <div class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold text-gray-800 mb-6">User Management</h1>
     <UsersList client:load />
   </div>
-</Layout>
+</SimpleLayout>
