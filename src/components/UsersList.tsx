@@ -7,7 +7,7 @@ interface User {
   email: string;
   name: string;
   role: string;
-  status: string;
+  is_active: boolean;
   account_id?: string;
 }
 
@@ -166,9 +166,9 @@ const UsersList: React.FC<UsersListProps> = ({ accountId }) => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
-                      {user.status === 'active' ? 'Active' : 'Inactive'}
+                      {user.is_active ? 'Active' : 'Inactive'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
