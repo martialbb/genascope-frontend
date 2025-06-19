@@ -30,6 +30,15 @@ The Genascope documentation is organized into several sections:
 |----------|-------------|
 | [Docker Setup](/DOCKER.md) | Docker configuration and deployment instructions |
 | [Troubleshooting Guide](/docs/TROUBLESHOOTING_GUIDE.md) | Solutions to common issues and debugging help |
+| [Test Execution Guide](/TEST_EXECUTION_GUIDE.md) | Comprehensive testing instructions and best practices |
+
+### Security & Infrastructure
+
+| Document | Description |
+|----------|-------------|
+| [Frontend Documentation - Security Section](/FRONTEND_DOCUMENTATION.md#backend-integration--security-architecture) | AWS S3 integration, IAM roles, and security architecture |
+| [Infrastructure as Code](/iac/) | Terraform/OpenTofu modules for AWS infrastructure provisioning |
+| [Environment Setup](/ENVIRONMENT_SETUP.md) | Environment configuration and AWS setup |
 
 ## Documentation for Different Audiences
 
@@ -65,7 +74,17 @@ Focus on these documents:
 
 1. [Docker Setup](/DOCKER.md) - Containerization and deployment
 2. [Repository Structure](/REPOSITORY-STRUCTURE.md) - Project organization
-3. [Troubleshooting Guide](/docs/TROUBLESHOOTING_GUIDE.md) - Debugging production issues
+3. [Frontend Documentation - Security Section](/FRONTEND_DOCUMENTATION.md#backend-integration--security-architecture) - AWS infrastructure and security setup
+4. [Infrastructure as Code](/iac/) - Terraform/OpenTofu modules for AWS provisioning
+5. [Troubleshooting Guide](/docs/TROUBLESHOOTING_GUIDE.md) - Debugging production issues
+
+### For Security Engineers
+
+Focus on these documents:
+
+1. [Frontend Documentation - Security Section](/FRONTEND_DOCUMENTATION.md#backend-integration--security-architecture) - Comprehensive security architecture documentation
+2. [Infrastructure as Code](/iac/) - IAM roles, policies, and S3 bucket security configuration
+3. [Environment Setup](/ENVIRONMENT_SETUP.md) - Secure environment configuration guidelines
 
 ## Documentation Maintenance
 
@@ -86,8 +105,9 @@ The following documentation improvements are planned:
 1. **User Guides**: Create end-user documentation for patients and clinicians
 2. **API Reference**: Generate OpenAPI documentation from the backend code
 3. **Development Standards**: Document coding standards and conventions
-4. **Security Documentation**: Add detailed security implementation guide
+4. ✅ **Security Documentation**: Comprehensive security implementation guide (completed)
 5. **Performance Optimization**: Document performance best practices and benchmarks
+6. ✅ **Infrastructure Documentation**: Terraform/OpenTofu modules and AWS setup (completed)
 
 ## Getting Help
 

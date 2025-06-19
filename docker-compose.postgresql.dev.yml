@@ -28,17 +28,14 @@ services:
     command: bash -c "until nc -z db 5432; do echo 'Waiting for PostgreSQL...'; sleep 2; done; export PYTHONPATH=/app && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     ports:
       - "8000:8000"
-    environment:
-      - DATABASE_URI=postgresql://genascope:genascope@db:5432/genascope
-      - SMTP_SERVER=maildev
-      - SMTP_PORT=1025
-      - EMAIL_ENABLED=true
-      - FRONTEND_URL=http://localhost:4321
+    env_file:
+      - backend/.env.local
     networks:
       - genascope-network
     depends_on:
       - db
       - maildev
+      - minio
     volumes:
       - ../genascope-backend:/app
 
@@ -66,7 +63,27 @@ services:
     networks:
       - genascope-network
     command: bin/maildev --web 1080 --smtp 1025 --hide-extensions STARTTLS
-
+  # MinIO for development/staging
+  minio:
+    image: minio/minio:latest
+    container_name: genascope-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+      MINIO_BROWSER_REDIRECT_URL: http://localhost:9001
+    command: server /data --console-address ":9001"
+    networks:
+      - genascope-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
 networks:
   genascope-network:
     driver: bridge
@@ -75,3 +92,6 @@ volumes:
   postgres_data:
     external: true
     name: genascope_postgres_data
+  minio_data:
+ 
+

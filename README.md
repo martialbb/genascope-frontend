@@ -4,11 +4,14 @@ Genascope is a comprehensive web application designed to help identify individua
 
 ## 🔄 Project Architecture
 
-This project uses a unified full-stack architecture:
+This project uses a unified full-stack architecture with enhanced security:
 - **Frontend**: User interface built with Astro, React (TypeScript), and Tailwind CSS
-- **Backend**: FastAPI backend service with SQLAlchemy ORM and MySQL database
-- **Database**: MySQL database with proper referential integrity and cascading operations
+- **Backend**: FastAPI backend service with SQLAlchemy ORM and PostgreSQL database
+- **Cloud Storage**: AWS S3 integration with IAM role-based access and TLS enforcement
+- **Security**: Least-privilege access with temporary credentials (no long-term AWS keys)
+- **Database**: PostgreSQL database with proper referential integrity and cascading operations
 - **Authentication**: JWT-based authentication with role-based access control
+- **Infrastructure**: Terraform/OpenTofu modules for reproducible AWS infrastructure
 - **Docker**: Containerized development and deployment environment
 
 ## ✨ Key Features
@@ -26,7 +29,13 @@ This project uses a unified full-stack architecture:
 - **Role-Based Access Control**: Different permissions for admin, clinician, lab tech, and patient roles
 - **API Health Monitoring**: Real-time API status checking with fallback mechanisms
 
-### Recent Improvements (June 2025)
+### Recent Improvements (December 2024)
+- ✅ **AWS S3 Integration**: Secure file storage with IAM role-based access and TLS enforcement
+- ✅ **Infrastructure as Code**: Terraform/OpenTofu modules for reproducible AWS infrastructure
+- ✅ **Security Enhancements**: Implemented least-privilege access with temporary credentials
+- ✅ **Component Cleanup**: Removed duplicate components and organized test scripts
+- ✅ **Environment Standardization**: Consistent configuration across frontend and backend services
+### Previous Improvements (June 2025)
 - ✅ **Fixed User Edit/Delete Operations**: Resolved foreign key constraints and account ID mismatches
 - ✅ **Enhanced API Reliability**: Fixed invite endpoint issues and improved error handling
 - ✅ **Improved Data Integrity**: Proper cascade deletion for related records
@@ -257,6 +266,49 @@ docker ps
 # Detailed health check info
 docker inspect --format='{{json .State.Health}}' genascope-frontend_frontend_1 | jq
 ```
+
+## 🏗️ Infrastructure Setup
+
+### AWS Infrastructure (Terraform/OpenTofu)
+
+The project includes Infrastructure as Code (IaC) for provisioning AWS resources:
+
+```sh
+# Navigate to infrastructure directory
+cd iac/environments/dev
+
+# Initialize Terraform/OpenTofu
+tofu init
+
+# Plan infrastructure changes
+tofu plan
+
+# Apply infrastructure (provision AWS resources)
+tofu apply
+
+# View outputs (S3 bucket name, IAM role ARN, etc.)
+tofu output
+```
+
+**Infrastructure Components**:
+- **S3 Bucket**: Secure file storage with versioning and encryption
+- **IAM Role**: Backend service role for least-privilege access
+- **IAM Policies**: Granular permissions for S3, CloudWatch, SES, and Secrets Manager
+- **Bucket Policy**: TLS enforcement and access control
+
+### Environment Configuration
+
+Create environment files for both frontend and backend:
+
+```sh
+# Frontend environment
+cp .env.example .env.local
+
+# Backend environment  
+cp backend/.env.example backend/.env.local
+```
+
+Update the files with your AWS credentials and S3 bucket information from the infrastructure outputs.
 
 ## 📚 Documentation
 

@@ -1,5 +1,5 @@
 ---
-import SimpleLayout from '../layouts/SimpleLayout.astro';
+import SidebarLayout from '../layouts/SidebarLayout.astro';
 import GenerateInviteForm from '../components/GenerateInviteForm';
 
 // Get any patient info from query params
@@ -7,9 +7,9 @@ const patientId = Astro.url.searchParams.get('patientId') || undefined;
 const patientName = Astro.url.searchParams.get('patientName') || undefined;
 ---
 
-<SimpleLayout title="Generate Patient Invite - Genascope">
+<SidebarLayout title="Generate Patient Invite - Genascope">
   <main class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold text-center mb-8 text-blue-700">Generate Patient Invite</h1>
     <GenerateInviteForm client:load patientId={patientId} patientName={patientName} />
   </main>
-</SimpleLayout>
+</SidebarLayout>
