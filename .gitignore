@@ -32,17 +32,3 @@ pnpm-debug.log*
 test-results/
 playwright-report/
 
-# Auto-created empty files
-M1_MAC_SETUP.md
-M1_README_SECTION.md
-docker-entrypoint.sh
-fix-frontend.sh
-frontend.Dockerfile
-parseAst.patch.js
-pytest.ini
-run_tests.sh
-run_tests_updated.sh
-start-backend.sh
-start-dev-local.sh
-universal-fix.sh
-yarn-start.sh

@@ -107,7 +107,6 @@ BACKEND_ROLE_NAME=genascope-dev-backend-role
 Located in `backend/scripts/`:
 - `test_s3_access.py`: Verifies role assumption and S3 access
 - `upload_test_file.py`: Tests end-to-end file upload with authentication
-- `create_test_invites.py`: Creates test data for system verification
 
 ### Verification Commands
 ```bash

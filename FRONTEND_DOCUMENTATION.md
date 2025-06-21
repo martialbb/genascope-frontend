@@ -39,8 +39,7 @@ src/
 ├── types/              # TypeScript type definitions
 └── utils/              # Utility functions
 
-backend/scripts/         # Test and utility scripts (moved from root)
-├── create_test_invites.py  # Backend test data creation
+backend/scripts/         # Test and utility scripts
 ├── upload_test_file.py     # S3 upload testing
 └── test_s3_access.py       # S3 role assumption testing
 ```
@@ -276,9 +275,8 @@ BACKEND_ROLE_NAME=genascope-dev-backend-role
 The project includes several testing utilities located in `backend/scripts/`:
 
 **S3 and AWS Integration Testing**:
-- `test_s3_access.py` - Tests AWS role assumption and S3 access
+- `test_s3_access.py` - Tests AWS role assumption and S3 access  
 - `upload_test_file.py` - Tests file upload functionality with authentication
-- `create_test_invites.py` - Creates test data for invite system testing
 
 **Usage Examples**:
 ```bash
@@ -287,9 +285,6 @@ cd backend && python scripts/test_s3_access.py
 
 # Test file upload with authentication
 cd backend && python scripts/upload_test_file.py
-
-# Create test invite data
-cd backend && python scripts/create_test_invites.py
 ```
 
 ### Environment Verification

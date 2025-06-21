@@ -77,13 +77,6 @@ backend/app/tests/
 │   │   └── README.md
 │   └── services/               # Service integration tests
 ├── scripts/                    # ✅ Test utility scripts
-│   ├── check_test_users.py
-│   ├── create_test_invites.py
-│   ├── create_test_invites_clean.py
-│   ├── debug_clinician_error.py
-│   ├── debug_invite_test.py
-│   ├── generate_hash.py
-│   ├── test_password.py
 │   ├── verify_invite_security.py
 │   └── README.md
 ├── unit/                       # Unit tests
@@ -126,11 +119,11 @@ python -m pytest app/tests/integration/invite_system/ -v
 # Run security tests
 python -m pytest app/tests/integration/security/ -v
 
-# Create test invites
-python app/tests/scripts/create_test_invites.py
-
 # Verify security
 python app/tests/scripts/verify_invite_security.py
+
+# Run full test suite
+python -m pytest backend/app/tests/ -v
 ```
 
 ## ✅ System Status

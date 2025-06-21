@@ -104,36 +104,22 @@ python app/tests/scripts/verify_invite_security.py
 ```bash
 # Run invite creation tests
 python -m pytest backend/app/tests/integration/invite_system/test_new_patient_invite.py -v
-
-# Or use the creation script
-cd backend
-python app/tests/scripts/create_test_invites.py
 ```
 
 ## 🛠️ Test Setup and Utilities
 
-### 1. Check Test Users
+### 1. Database Testing
 ```bash
 cd backend
-python app/tests/scripts/check_test_users.py
+# Run database tests
+python -m pytest backend/app/tests/integration/ -v
 ```
 
-### 2. Create Test Data
+### 2. API Testing
 ```bash
 cd backend
-# Create test invites
-python app/tests/scripts/create_test_invites_clean.py
-
-# Debug specific issues
-python app/tests/scripts/debug_invite_test.py
-python app/tests/scripts/debug_clinician_error.py
-```
-
-### 3. Password Testing
-```bash
-cd backend
-python app/tests/scripts/test_password.py
-python app/tests/scripts/generate_hash.py
+# Test API endpoints
+python -m pytest backend/app/tests/integration/api/ -v
 ```
 
 ## 📊 Running Comprehensive Test Suites
