@@ -23,9 +23,13 @@ export interface ChatStrategy {
 
 export interface ChatStrategyCreate {
   name: string;
-  description?: string;
+  description: string;
   goal: string;
-  is_active?: boolean;
+  patient_introduction: string;
+  specialty?: string;
+  knowledge_source_ids?: string[];
+  targeting_rules?: TargetingRuleCreate[];
+  outcome_actions?: OutcomeActionCreate[];
 }
 
 export interface ChatStrategyUpdate {
@@ -125,6 +129,13 @@ export interface TargetingRule {
   created_at?: string;
 }
 
+export interface TargetingRuleCreate {
+  field: string;
+  operator: string;
+  value: string | string[] | Record<string, any>;
+  sequence: number;
+}
+
 export interface OutcomeAction {
   id?: string;
   strategy_id?: string;
@@ -134,6 +145,13 @@ export interface OutcomeAction {
   trigger_condition: Record<string, any>;
   is_active?: boolean;
   created_at?: string;
+}
+
+export interface OutcomeActionCreate {
+  condition: string;
+  action_type: string;
+  details?: Record<string, any>;
+  sequence: number;
 }
 
 export interface StrategyExecution {
