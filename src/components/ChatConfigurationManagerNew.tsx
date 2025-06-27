@@ -96,6 +96,38 @@ const ChatConfigurationManagerNew: React.FC = () => {
     validateSteps();
   }, [strategyForm]);
 
+  // Populate form when editing a strategy
+  useEffect(() => {
+    if (selectedStrategy && activeView === 'wizard') {
+      setStrategyForm({
+        name: selectedStrategy.name || '',
+        description: selectedStrategy.description || '',
+        goal: selectedStrategy.goal || '',
+        patient_introduction: selectedStrategy.patient_introduction || '',
+        specialty: selectedStrategy.specialty || 'Oncology',
+        is_active: selectedStrategy.is_active || false,
+        knowledge_source_ids: selectedStrategy.knowledge_sources?.map((ks: any) => ks.id) || [],
+        targeting_rules: selectedStrategy.targeting_rules?.map((rule: any) => ({
+          name: rule.field || '',
+          field: rule.field || '',
+          operator: rule.operator || '',
+          value: rule.value || '',
+          sequence: rule.sequence || 0
+        })) || [],
+        outcome_actions: selectedStrategy.outcome_actions?.map((action: any) => ({
+          name: action.action_type || '',
+          condition: action.condition || '',
+          action_type: action.action_type || '',
+          details: action.details || {},
+          sequence: action.sequence || 0
+        })) || [],
+        clinical_guidelines: [], // Could be extracted from knowledge sources if needed
+        risk_models: [] // Could be extracted from knowledge sources if needed
+      });
+      setCurrentStep('overview'); // Start from the first step when editing
+    }
+  }, [selectedStrategy, activeView]);
+
   const loadStrategies = async () => {
     try {
       setLoading(true);
@@ -218,6 +250,21 @@ const ChatConfigurationManagerNew: React.FC = () => {
     } catch (error) {
       console.error('Failed to delete strategy:', error);
       setError('Failed to delete strategy. Please try again.');
+    }
+  };
+
+  const handleEditStrategy = async (strategyId: string) => {
+    try {
+      setLoading(true);
+      // Fetch the complete strategy with all relationships
+      const completeStrategy = await chatConfigurationAPI.getStrategy(strategyId);
+      setSelectedStrategy(completeStrategy);
+      setActiveView('wizard');
+    } catch (error) {
+      console.error('Failed to load strategy for editing:', error);
+      setError('Failed to load strategy details. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -544,10 +591,7 @@ const ChatConfigurationManagerNew: React.FC = () => {
                       
                       <div className="flex justify-between">
                         <button
-                          onClick={() => {
-                            setSelectedStrategy(strategy);
-                            setActiveView('wizard');
-                          }}
+                          onClick={() => handleEditStrategy(strategy.id!)}
                           className="text-blue-600 hover:text-blue-800 text-sm"
                         >
                           Edit
@@ -1619,30 +1663,29 @@ const ChatConfigurationManagerNew: React.FC = () => {
                             className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                           />
                           <span className="ml-3 text-sm text-gray-700">
-                            Activate strategy immediately after creation
+                          Activate strategy immediately after creation
+                        </span>
+                      </label>
+                      
+                      <div className={`p-3 rounded border ${
+                        stepValidation.overview && testResults?.success
+                          ? 'border-green-200 bg-green-50'
+                          : 'border-blue-200 bg-blue-50'
+                      }`}>
+                        <div className="flex items-center space-x-2">
+                          <svg className={`w-4 h-4 ${
+                            stepValidation.overview && testResults?.success ? 'text-green-600' : 'text-blue-600'
+                          }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className={`text-sm ${
+                            stepValidation.overview && testResults?.success ? 'text-green-700' : 'text-blue-700'
+                          }`}>
+                            {stepValidation.overview && testResults?.success
+                              ? 'Strategy is fully configured and tested - ready for production deployment'
+                              : 'Strategy has basic configuration and is ready for deployment'
+                            }
                           </span>
-                        </label>
-                        
-                        <div className={`p-3 rounded border ${
-                          stepValidation.overview && testResults?.success
-                            ? 'border-green-200 bg-green-50'
-                            : 'border-blue-200 bg-blue-50'
-                        }`}>
-                          <div className="flex items-center space-x-2">
-                            <svg className={`w-4 h-4 ${
-                              stepValidation.overview && testResults?.success ? 'text-green-600' : 'text-blue-600'
-                            }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span className={`text-sm ${
-                              stepValidation.overview && testResults?.success ? 'text-green-700' : 'text-blue-700'
-                            }`}>
-                              {stepValidation.overview && testResults?.success
-                                ? 'Strategy is fully configured and tested - ready for production deployment'
-                                : 'Strategy has basic configuration and is ready for deployment'
-                              }
-                            </span>
-                          </div>
                         </div>
                       </div>
                     </div>
