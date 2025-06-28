@@ -215,9 +215,57 @@ class ChatConfigurationAPI {
   }
 
   // Chat Strategy methods
-  async getStrategies(): Promise<ChatStrategy[]> {
-    const response = await this.client.get('/api/v1/chat-configuration/strategies');
-    return response.data;
+  async getStrategies(params?: {
+    skip?: number;
+    limit?: number;
+    active_only?: boolean;
+    specialty?: string;
+    search?: string;
+  }): Promise<{
+    strategies: ChatStrategy[];
+    total: number;
+    skip: number;
+    limit: number;
+  }> {
+    const queryParams = new URLSearchParams();
+    
+    if (params?.skip !== undefined) queryParams.append('skip', params.skip.toString());
+    if (params?.limit !== undefined) queryParams.append('limit', params.limit.toString());
+    if (params?.active_only !== undefined) queryParams.append('active_only', params.active_only.toString());
+    if (params?.specialty) queryParams.append('specialty', params.specialty);
+    if (params?.search) queryParams.append('search', params.search);
+    
+    const url = `/api/v1/chat-configuration/strategies${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    const response = await this.client.get(url);
+    
+    // Handle both array response (current backend) and paginated response (future)
+    if (Array.isArray(response.data)) {
+      const strategies = response.data;
+      const limit = params?.limit || strategies.length;
+      const skip = params?.skip || 0;
+      
+      // Estimate total count - if we got fewer results than limit, we're at the end
+      let estimatedTotal = skip + strategies.length;
+      if (strategies.length === limit && limit > 0) {
+        // We might have more results, estimate by adding some extra
+        estimatedTotal += limit;
+      }
+      
+      return {
+        strategies,
+        total: estimatedTotal,
+        skip,
+        limit
+      };
+    }
+    
+    // Handle future paginated response format
+    return {
+      strategies: response.data.strategies || response.data.items || [],
+      total: response.data.total || 0,
+      skip: response.data.skip || 0,
+      limit: response.data.limit || 10
+    };
   }
 
   async getStrategy(id: string): Promise<ChatStrategy> {
