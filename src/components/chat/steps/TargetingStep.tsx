@@ -25,14 +25,13 @@ export const TargetingStep: React.FC<TargetingStepProps> = ({
   ];
 
   const operatorOptions = [
-    { value: 'equals', label: 'Equals' },
-    { value: 'not_equals', label: 'Does not equal' },
+    { value: 'is', label: 'Equals' },
+    { value: 'is_not', label: 'Does not equal' },
     { value: 'contains', label: 'Contains' },
-    { value: 'not_contains', label: 'Does not contain' },
+    { value: 'does_not_contain', label: 'Does not contain' },
     { value: 'greater_than', label: 'Greater than' },
     { value: 'less_than', label: 'Less than' },
-    { value: 'greater_than_or_equal', label: 'Greater than or equal' },
-    { value: 'less_than_or_equal', label: 'Less than or equal' },
+    { value: 'is_between', label: 'Is between' },
     { value: 'in_list', label: 'In list' },
     { value: 'not_in_list', label: 'Not in list' }
   ];
