@@ -1,4 +1,4 @@
-// Component Breakdown Plan for ChatConfigurationManagerNewWorkingSimple.tsx
+// Component Breakdown Plan for ChatConfigurationPage.tsx
 // Current: 2189 lines → Target: ~15 focused components
 
 /**
