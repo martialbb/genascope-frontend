@@ -32,6 +32,7 @@ export interface ChatStrategyCreate {
   goal: string;
   patient_introduction: string;
   specialty?: string;
+  is_active?: boolean;
   knowledge_source_ids?: string[];
   targeting_rules?: TargetingRuleCreate[];
   outcome_actions?: OutcomeActionCreate[];
