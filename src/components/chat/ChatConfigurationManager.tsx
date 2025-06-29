@@ -130,32 +130,38 @@ export const ChatConfigurationManager: React.FC = () => {
   };
 
   const handleFileUpload = async (files: FileList): Promise<void> => {
-    // Simulate file upload process
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         console.log('Uploading file:', file.name);
         
-        // Simulate upload delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Create mock knowledge source from uploaded file
-        const newKnowledgeSource = {
-          id: `uploaded_${Date.now()}_${i}`,
+        // Upload file using the real API
+        const uploadResponse = await apiService.uploadFile({
+          file,
           name: file.name,
           description: `Uploaded file: ${file.name}`,
+          access_level: 'private'
+        });
+        
+        // Create knowledge source from upload response
+        const newKnowledgeSource = {
+          id: uploadResponse.id,
+          name: uploadResponse.name,
+          description: `Uploaded file: ${uploadResponse.name}`,
           source_type: 'file' as const,
           file_size: file.size,
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          file_path: uploadResponse.file_path,
+          processing_status: uploadResponse.processing_status
         };
         
-        // Add to mock knowledge sources (in real app, this would be an API call)
+        // Add to knowledge sources list
         knowledgeSources.push(newKnowledgeSource);
         
         // Automatically add to selected sources
         setStrategyForm(prev => ({
           ...prev,
-          knowledge_source_ids: [...prev.knowledge_source_ids, newKnowledgeSource.id]
+          knowledge_source_ids: [...prev.knowledge_source_ids, uploadResponse.id]
         }));
       }
     } catch (error) {
