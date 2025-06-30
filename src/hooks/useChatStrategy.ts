@@ -131,6 +131,7 @@ export const useChatStrategy = () => {
     saveStrategy,
     deleteStrategy,
     toggleStrategy,
-    setError
+    setError,
+    setKnowledgeSources
   };
 };

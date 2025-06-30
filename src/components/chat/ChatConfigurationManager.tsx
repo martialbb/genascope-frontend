@@ -6,6 +6,7 @@ import { ChatWizard } from './ChatWizard';
 import { useChatStrategy } from '../../hooks/useChatStrategy';
 import type { StrategyFormData, ChatStrategy } from '../../types/chatConfiguration';
 import { buttonStyles } from '../../constants/buttonStyles';
+import { chatConfigurationAPI } from '../../services/chatConfigurationApi';
 
 type ActiveView = 'dashboard' | 'wizard' | 'analytics';
 
@@ -38,7 +39,8 @@ export const ChatConfigurationManager: React.FC = () => {
     saveStrategy,
     deleteStrategy,
     toggleStrategy,
-    setError
+    setError,
+    setKnowledgeSources
   } = useChatStrategy();
 
   // Load data on component mount
@@ -136,7 +138,7 @@ export const ChatConfigurationManager: React.FC = () => {
         console.log('Uploading file:', file.name);
         
         // Upload file using the real API
-        const uploadResponse = await apiService.uploadFile({
+        const uploadResponse = await chatConfigurationAPI.uploadFile({
           file,
           name: file.name,
           description: `Uploaded file: ${file.name}`,
@@ -155,8 +157,8 @@ export const ChatConfigurationManager: React.FC = () => {
           processing_status: uploadResponse.processing_status
         };
         
-        // Add to knowledge sources list
-        knowledgeSources.push(newKnowledgeSource);
+        // Add to knowledge sources list using the state setter
+        setKnowledgeSources(prev => [...prev, newKnowledgeSource]);
         
         // Automatically add to selected sources
         setStrategyForm(prev => ({

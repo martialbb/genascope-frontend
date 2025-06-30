@@ -93,7 +93,7 @@ export const TargetingStep: React.FC<TargetingStepProps> = ({
                   // Add a default "all patients" rule to allow proceeding
                   onFormChange('targeting_rules', [{
                     field: 'all_patients',
-                    operator: 'equals',
+                    operator: 'is',
                     value: 'true',
                     sequence: 0
                   }]);
