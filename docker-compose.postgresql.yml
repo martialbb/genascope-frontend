@@ -36,7 +36,7 @@ services:
       - ../genascope-backend:/app
     environment:
       - PORT=8000
-      - DATABASE_URI=${DATABASE_URI:-postgresql://user:password@db:5432/genascope}
+      - DATABASE_URI=${DATABASE_URI:-postgresql://genascope:genascope@db:5432/genascope}
       - CORS_ORIGINS=["http://localhost:4321"]
       - SECRET_KEY=${SECRET_KEY:-your_default_secret_key_here}
     restart: unless-stopped
@@ -44,15 +44,15 @@ services:
     depends_on:
       - db
       
-  # PostgreSQL Database service
+  # PostgreSQL Database service with pgvector
   db:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg15
     ports:
       - "${DB_PORT:-5432}:5432"
     environment:
       - POSTGRES_DB=genascope
-      - POSTGRES_USER=${DB_USER:-user}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
+      - POSTGRES_USER=genascope
+      - POSTGRES_PASSWORD=genascope
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/docker/postgresql/init:/docker-entrypoint-initdb.d
