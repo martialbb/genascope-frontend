@@ -167,6 +167,51 @@ class ApiService {
     return response.data;
   }
 
+  // AI Chat session methods (new AI endpoints)
+  async startAIChatSession(sessionData: {
+    strategy_id: string;
+    patient_id: string;
+    session_type?: 'screening' | 'assessment' | 'follow_up' | 'consultation';
+    initial_context?: any;
+  }) {
+    const response = await this.client.post('/ai-chat/sessions', sessionData);
+    return response.data;
+  }
+
+  async sendAIMessage(sessionId: string, messageData: {
+    message: string;
+    message_metadata?: any;
+  }) {
+    const response = await this.client.post(`/ai-chat/sessions/${sessionId}/messages`, messageData);
+    return response.data;
+  }
+
+  async getAISessionMessages(sessionId: string, limit?: number) {
+    const params = limit ? `?limit=${limit}` : '';
+    const response = await this.client.get(`/ai-chat/sessions/${sessionId}/messages${params}`);
+    return response.data;
+  }
+
+  async getAIChatSession(sessionId: string) {
+    const response = await this.client.get(`/ai-chat/sessions/${sessionId}`);
+    return response.data;
+  }
+
+  async endAIChatSession(sessionId: string, reason: string = 'user_ended') {
+    const response = await this.client.post(`/ai-chat/sessions/${sessionId}/end?reason=${reason}`);
+    return response.data;
+  }
+
+  async getAIChatSessions(patientId?: string, sessionStatus?: string, limit: number = 10) {
+    const params = new URLSearchParams();
+    if (patientId) params.append('patient_id', patientId);
+    if (sessionStatus) params.append('session_status', sessionStatus);
+    params.append('limit', limit.toString());
+    
+    const response = await this.client.get(`/ai-chat/sessions?${params.toString()}`);
+    return response.data;
+  }
+
   // Account management methods
   async getAccounts() {
     const response = await this.client.get('/api/accounts');

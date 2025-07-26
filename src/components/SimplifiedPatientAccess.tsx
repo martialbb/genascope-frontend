@@ -106,9 +106,9 @@ const SimplifiedPatientAccess: React.FC<SimplifiedPatientAccessProps> = ({ invit
       
       setSuccess(true);
       
-      // Redirect to chat interface
+      // Redirect to AI chat sessions endpoint  
       setTimeout(() => {
-        window.location.href = '/chat';
+        window.location.href = '/ai-chat/sessions?new=true';
       }, 2000);
     } catch (err: any) {
       console.error('Error with simplified access:', err);

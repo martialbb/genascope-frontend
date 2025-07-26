@@ -8,6 +8,10 @@ interface TokenPayload {
   exp?: number;
   sub?: string;
   role?: string;
+  patient_id?: string;
+  user_id?: string;
+  name?: string;
+  email?: string;
 }
 
 export const getAuthToken = (): string | null => {
@@ -64,6 +68,29 @@ export const getRemainingTime = (): number | null => {
   
   const remaining = expiration.getTime() - Date.now();
   return remaining > 0 ? remaining : 0;
+};
+
+export const isTokenExpired = (token?: string): boolean => {
+  const authToken = token || getAuthToken();
+  if (!authToken) return true;
+  
+  try {
+    const payload = parseJWT(authToken);
+    return payload.exp ? payload.exp * 1000 <= Date.now() : true;
+  } catch {
+    return true;
+  }
+};
+
+export const getCurrentUser = (token?: string): TokenPayload | null => {
+  const authToken = token || getAuthToken();
+  if (!authToken) return null;
+  
+  try {
+    return parseJWT(authToken);
+  } catch {
+    return null;
+  }
 };
 
 // Helper function to parse JWT without verification (for client-side info only)
