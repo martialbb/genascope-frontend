@@ -134,6 +134,18 @@ class ApiService {
     return response.data;
   }
 
+  async simplifiedAccess(accessData: {
+    invite_token: string;
+    first_name: string;
+    last_name: string;
+    date_of_birth: string;
+    agree_to_terms: boolean;
+    agree_to_privacy: boolean;
+  }) {
+    const response = await this.client.post('/api/simplified_access', accessData);
+    return response.data;
+  }
+
   // Chat session methods
   async createChatSession(): Promise<ChatSessionData> {
     const response = await this.client.post('/api/chat/session');

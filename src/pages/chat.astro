@@ -1,12 +1,14 @@
 ---
 import SidebarLayout from '../layouts/SidebarLayout.astro';
 import ChatComponent from '../components/ChatComponent.tsx';
+import SessionTimer from '../components/SessionTimer.tsx';
 
 // Placeholder sessionId - in a real app, this would come from the URL or user session
 const sessionId = "session_12345";
 ---
 
 <SidebarLayout title="Genascope Chat">
+  <SessionTimer client:load />
   <main class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold text-center mb-8 text-blue-700">Genascope Chat</h1>
     <ChatComponent sessionId={sessionId} client:load />
