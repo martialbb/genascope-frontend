@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Form, Select, Input, Button, Table, message, Checkbox } from 'antd';
 import { MailOutlined } from '@ant-design/icons';
-import type { Patient, PatientInviteRequest } from '../types/patients';
+import type { Patient, PatientInviteRequest, ChatStrategy } from '../types/patients';
 import apiService from '../services/api';
 
 const { Option } = Select;
@@ -11,12 +11,14 @@ interface BulkInviteModalProps {
   onClose: () => void;
   patients: Patient[];
   clinicians: { id: string; name: string }[];
+  chatStrategies: ChatStrategy[];
   currentUserId: string;
   onSuccess: () => void;
 }
 
 interface BulkInviteFormData {
   provider_id: string;
+  chat_strategy: string;
   custom_message?: string;
   expiry_days: number;
   send_emails: boolean;
@@ -27,6 +29,7 @@ const BulkInviteModal: React.FC<BulkInviteModalProps> = ({
   onClose,
   patients,
   clinicians,
+  chatStrategies,
   currentUserId,
   onSuccess,
 }) => {
@@ -55,6 +58,7 @@ const BulkInviteModal: React.FC<BulkInviteModalProps> = ({
       const patientInvites = selectedRowKeys.map(patientId => ({
         patient_id: patientId as string,
         provider_id: values.provider_id,
+        chat_strategy: values.chat_strategy,
         custom_message: values.custom_message,
         expiry_days: values.expiry_days
       }));
@@ -62,6 +66,7 @@ const BulkInviteModal: React.FC<BulkInviteModalProps> = ({
       // Call the bulk invite API
       const response = await apiService.sendBulkInvites({
         patients: patientInvites,
+        chat_strategy: values.chat_strategy,
         send_emails: values.send_emails,
         custom_message: values.custom_message
       });
@@ -107,9 +112,6 @@ const BulkInviteModal: React.FC<BulkInviteModalProps> = ({
     },
   ];
 
-  // Filter out patients who already have pending invites
-  const eligiblePatients = patients.filter(patient => !patient.has_pending_invite);
-
   return (
     <Modal
       title={<><MailOutlined /> Bulk Send Patient Invites</>}
@@ -120,7 +122,7 @@ const BulkInviteModal: React.FC<BulkInviteModalProps> = ({
     >
       <div className="mb-4">
         <p>
-          Send invites to multiple patients at once. Only patients without pending invites are listed below.
+          Send invites to multiple patients at once. You can send multiple invites with different chat strategies to the same patient.
         </p>
       </div>
 
@@ -131,7 +133,7 @@ const BulkInviteModal: React.FC<BulkInviteModalProps> = ({
           onChange: setSelectedRowKeys,
         }}
         columns={columns}
-        dataSource={eligiblePatients}
+        dataSource={patients}
         rowKey="id"
         pagination={{ pageSize: 5 }}
         className="mb-4"
@@ -156,6 +158,21 @@ const BulkInviteModal: React.FC<BulkInviteModalProps> = ({
           <Select placeholder="Select provider">
             {clinicians.map(clinician => (
               <Option key={clinician.id} value={clinician.id}>{clinician.name}</Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="chat_strategy"
+          label="Chat Strategy"
+          tooltip="Select the AI chat strategy for these patients"
+          rules={[{ required: true, message: 'Please select a chat strategy' }]}
+        >
+          <Select placeholder="Select chat strategy">
+            {chatStrategies.map(strategy => (
+              <Option key={strategy.id} value={strategy.id}>
+                {strategy.name} {strategy.specialty && `(${strategy.specialty})`}
+              </Option>
             ))}
           </Select>
         </Form.Item>

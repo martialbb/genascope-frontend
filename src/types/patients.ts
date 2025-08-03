@@ -10,6 +10,15 @@ export enum PatientStatus {
   PENDING = "pending"
 }
 
+// Chat Strategy interface for invite requirements
+export interface ChatStrategy {
+  id: string;
+  name: string;
+  description?: string;
+  specialty?: string;
+  is_active?: boolean;
+}
+
 export interface Patient {
   id: string;
   email: string;
@@ -54,29 +63,40 @@ export interface PatientUpdate {
 export interface PatientInviteRequest {
   patient_id: string;
   provider_id: string;
+  chat_strategy: string;
   send_email?: boolean;
   custom_message?: string;
   expiry_days?: number;
 }
 
 export interface PatientInviteResponse {
-  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone?: string;
+  invite_id: string;
   invite_url: string;
-  expires_at: string;
-  created_at: string;
   provider_id: string;
-  patient_id: string;
+  provider_name: string;
+  status: InviteStatus;
+  created_at: string;
+  expires_at: string;
+  accepted_at?: string;
+  chat_strategy_id?: string;
+  chat_strategy_name?: string;
 }
 
 export interface BulkPatientInviteRequest {
   patient_id: string;
   provider_id: string;
+  chat_strategy: string;
   custom_message?: string;
   expiry_days?: number;
 }
 
 export interface BulkInviteRequest {
   patients: BulkPatientInviteRequest[];
+  chat_strategy: string;
   send_emails: boolean;
   custom_message?: string;
 }
@@ -112,9 +132,9 @@ export interface Clinician {
 // Invite Management Types
 export enum InviteStatus {
   PENDING = "pending",
-  COMPLETED = "completed", 
+  ACCEPTED = "accepted", 
   EXPIRED = "expired",
-  CANCELLED = "cancelled"
+  REVOKED = "revoked"
 }
 
 export interface Invite {

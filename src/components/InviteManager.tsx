@@ -8,7 +8,8 @@ import {
   ExclamationCircleOutlined,
   EyeOutlined,
   SendOutlined,
-  FilterOutlined
+  FilterOutlined,
+  HistoryOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import apiService from '../services/api';
@@ -40,6 +41,9 @@ const InviteManager: React.FC<InviteManagerProps> = ({ currentUserId, onApiUnava
   const [selectedInvite, setSelectedInvite] = useState<Invite | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showResendModal, setShowResendModal] = useState(false);
+  const [showPatientHistoryModal, setShowPatientHistoryModal] = useState(false);
+  const [patientInviteHistory, setPatientInviteHistory] = useState<Invite[]>([]);
+  const [loadingPatientHistory, setLoadingPatientHistory] = useState(false);
   const [clinicians, setClinicians] = useState<Clinician[]>([]);
   
   // Filter states
@@ -198,6 +202,69 @@ const InviteManager: React.FC<InviteManagerProps> = ({ currentUserId, onApiUnava
     });
   };
 
+  const fetchPatientInviteHistory = async (patientId: string) => {
+    setLoadingPatientHistory(true);
+    try {
+      const response = await apiService.getInvites({ patient_id: patientId });
+      setPatientInviteHistory(response.invites);
+    } catch (error) {
+      console.error('Failed to fetch patient invite history:', error);
+      
+      // Mock patient-specific invite history
+      const mockPatientHistory: Invite[] = [
+        {
+          id: '1',
+          patient_id: patientId,
+          patient_name: selectedInvite?.patient_name || 'Unknown Patient',
+          patient_email: selectedInvite?.patient_email || 'unknown@example.com',
+          provider_id: 'provider1',
+          provider_name: 'Dr. Smith',
+          status: 'pending' as InviteStatus,
+          invite_url: 'https://example.com/invite/token123',
+          created_at: '2024-01-15T10:00:00Z',
+          updated_at: '2024-01-15T10:00:00Z',
+          expires_at: '2024-02-15T10:00:00Z',
+          email_sent: true,
+          custom_message: 'Oncology strategy invite'
+        },
+        {
+          id: '4',
+          patient_id: patientId,
+          patient_name: selectedInvite?.patient_name || 'Unknown Patient',
+          patient_email: selectedInvite?.patient_email || 'unknown@example.com',
+          provider_id: 'provider2',
+          provider_name: 'Dr. Johnson',
+          status: 'accepted' as InviteStatus,
+          invite_url: 'https://example.com/invite/token456',
+          created_at: '2024-01-10T14:30:00Z',
+          updated_at: '2024-01-12T09:15:00Z',
+          expires_at: '2024-02-10T14:30:00Z',
+          email_sent: true,
+          custom_message: 'Cardiology strategy invite'
+        }
+      ];
+      
+      setPatientInviteHistory(mockPatientHistory);
+      message.warning('Using mock patient history data - backend API not available');
+    } finally {
+      setLoadingPatientHistory(false);
+    }
+  };
+
+  const handleViewPatientHistory = (invite: Invite) => {
+    setSelectedInvite(invite);
+    setShowPatientHistoryModal(true);
+    fetchPatientInviteHistory(invite.patient_id);
+  };
+
+  const copyInviteUrl = (url: string) => {
+    navigator.clipboard.writeText(url).then(() => {
+      message.success('Invite URL copied to clipboard');
+    }).catch(() => {
+      message.error('Failed to copy URL');
+    });
+  };
+
   const handleResendInvite = async (values: ResendInviteRequest) => {
     if (!selectedInvite) return;
 
@@ -293,6 +360,30 @@ const InviteManager: React.FC<InviteManagerProps> = ({ currentUserId, onApiUnava
       ),
     },
     {
+      title: 'Invite URL',
+      dataIndex: 'invite_url',
+      key: 'invite_url',
+      width: 120,
+      render: (url: string) => (
+        <Space size="small">
+          <Button
+            type="link"
+            size="small"
+            onClick={() => window.open(url, '_blank')}
+          >
+            Open
+          </Button>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => copyInviteUrl(url)}
+          >
+            Copy
+          </Button>
+        </Space>
+      ),
+    },
+    {
       title: 'Actions',
       key: 'actions',
       render: (_, record: Invite) => (
@@ -305,6 +396,14 @@ const InviteManager: React.FC<InviteManagerProps> = ({ currentUserId, onApiUnava
                 setSelectedInvite(record);
                 setShowDetailsModal(true);
               }}
+            />
+          </Tooltip>
+          
+          <Tooltip title="View Patient History">
+            <Button
+              icon={<HistoryOutlined />}
+              size="small"
+              onClick={() => handleViewPatientHistory(record)}
             />
           </Tooltip>
           
@@ -492,12 +591,29 @@ const InviteManager: React.FC<InviteManagerProps> = ({ currentUserId, onApiUnava
 
             <div>
               <Text strong>Invite URL:</Text>
-              <Input.TextArea
-                value={selectedInvite.invite_url}
-                autoSize={{ minRows: 2, maxRows: 4 }}
-                readOnly
-                className="mt-1"
-              />
+              <div className="mt-1 flex gap-2">
+                <Input.TextArea
+                  value={selectedInvite.invite_url}
+                  autoSize={{ minRows: 2, maxRows: 4 }}
+                  readOnly
+                  className="flex-1"
+                />
+                <div className="flex flex-col gap-1">
+                  <Button
+                    type="primary"
+                    size="small"
+                    onClick={() => window.open(selectedInvite.invite_url, '_blank')}
+                  >
+                    Open URL
+                  </Button>
+                  <Button
+                    size="small"
+                    onClick={() => copyInviteUrl(selectedInvite.invite_url)}
+                  >
+                    Copy URL
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -575,6 +691,121 @@ const InviteManager: React.FC<InviteManagerProps> = ({ currentUserId, onApiUnava
                 </Space>
               </Form.Item>
             </Form>
+          </div>
+        )}
+      </Modal>
+
+      {/* Patient Invite History Modal */}
+      <Modal
+        title={`Invite History - ${selectedInvite?.patient_name || 'Patient'}`}
+        open={showPatientHistoryModal}
+        onCancel={() => {
+          setShowPatientHistoryModal(false);
+          setPatientInviteHistory([]);
+          setSelectedInvite(null);
+        }}
+        footer={[
+          <Button 
+            key="close" 
+            onClick={() => {
+              setShowPatientHistoryModal(false);
+              setPatientInviteHistory([]);
+              setSelectedInvite(null);
+            }}
+          >
+            Close
+          </Button>
+        ]}
+        width={1000}
+      >
+        <div className="mb-4">
+          <Text type="secondary">
+            All invite history for {selectedInvite?.patient_name} ({selectedInvite?.patient_email})
+          </Text>
+        </div>
+        
+        <Table
+          dataSource={patientInviteHistory}
+          loading={loadingPatientHistory}
+          pagination={false}
+          rowKey="id"
+          columns={[
+            {
+              title: 'Invite ID',
+              dataIndex: 'id',
+              key: 'id',
+              render: (text: string) => text.substring(0, 8) + '...'
+            },
+            {
+              title: 'Provider',
+              dataIndex: 'provider_name',
+              key: 'provider_name'
+            },
+            {
+              title: 'Status',
+              dataIndex: 'status',
+              key: 'status',
+              render: (status: InviteStatus) => (
+                <InviteStatusIndicator status={status} />
+              ),
+            },
+            {
+              title: 'Created',
+              dataIndex: 'created_at',
+              key: 'created_at',
+              render: (date: string) => new Date(date).toLocaleDateString()
+            },
+            {
+              title: 'Expires',
+              dataIndex: 'expires_at',
+              key: 'expires_at',
+              render: (date: string) => {
+                const expiry = new Date(date);
+                const now = new Date();
+                const isExpired = expiry < now;
+                
+                return (
+                  <span className={isExpired ? 'text-red-500' : ''}>
+                    {expiry.toLocaleDateString()}
+                  </span>
+                );
+              },
+            },
+            {
+              title: 'Invite URL',
+              dataIndex: 'invite_url',
+              key: 'invite_url',
+              render: (url: string) => (
+                <Space size="small">
+                  <Button
+                    type="link"
+                    size="small"
+                    onClick={() => window.open(url, '_blank')}
+                  >
+                    Open
+                  </Button>
+                  <Button
+                    type="link"
+                    size="small"
+                    onClick={() => copyInviteUrl(url)}
+                  >
+                    Copy
+                  </Button>
+                </Space>
+              ),
+            },
+            {
+              title: 'Custom Message',
+              dataIndex: 'custom_message',
+              key: 'custom_message',
+              render: (message: string) => message || '-'
+            }
+          ]}
+        />
+        
+        {patientInviteHistory.length === 0 && !loadingPatientHistory && (
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            <p>No invite history found for this patient.</p>
           </div>
         )}
       </Modal>

@@ -1,6 +1,6 @@
 // src/components/AISessionComponent.tsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { getCurrentUser, isTokenExpired } from '../utils/auth';
+import { getCurrentUser, isTokenExpired, getAuthToken } from '../utils/auth';
 import { apiService } from '../services/api';
 
 interface Message {
@@ -42,25 +42,27 @@ const AISessionComponent: React.FC<AISessionProps> = ({ isNewSession = false }) 
     
     try {
       // Check if user is authenticated
-      const token = localStorage.getItem('authToken');
+      const token = getAuthToken();
       if (!token || isTokenExpired(token)) {
-        setError('Session expired. Please authenticate again.');
+        setError('Please authenticate to start a chat session. Use a valid patient invite link to access this feature.');
+        setIsLoading(false);
         return;
       }
 
       // Get current user info
       const user = getCurrentUser(token);
-      const patientId = user?.patient_id || user?.sub; // fallback to sub if patient_id not available
+      const patientId = user?.patient_id || user?.id; // use id field which contains the actual patient_id
       
       if (!patientId) {
-        setError('Unable to identify patient. Please try again.');
+        setError('Unable to identify patient information. Please ensure you accessed this page through a valid invite link.');
+        setIsLoading(false);
         return;
       }
 
       // Start a new AI chat session using the API service
       // Note: In production, strategy_id should be determined by the use case
       const sessionData: ChatSession = await apiService.startAIChatSession({
-        strategy_id: 'breast-cancer-screening', // Common strategy name
+        strategy_id: 'strategy-1', // Using Genetic Counseling Assessment strategy
         patient_id: patientId,
         session_type: 'screening',
         initial_context: {
@@ -75,7 +77,13 @@ const AISessionComponent: React.FC<AISessionProps> = ({ isNewSession = false }) 
 
     } catch (err: any) {
       console.error('Error starting session:', err);
-      setError(err.message || 'Failed to start chat session');
+      if (err.response?.status === 404) {
+        setError('Chat service temporarily unavailable. Please try again later or contact support.');
+      } else if (err.response?.status === 401) {
+        setError('Your session has expired. Please authenticate again using your invite link.');
+      } else {
+        setError(err.message || 'Failed to start chat session. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -97,7 +105,7 @@ const AISessionComponent: React.FC<AISessionProps> = ({ isNewSession = false }) 
     setError(null);
 
     try {
-      const token = localStorage.getItem('authToken');
+      const token = getAuthToken();
       if (!token || isTokenExpired(token)) {
         setError('Session expired. Please authenticate again.');
         return;
@@ -174,15 +182,31 @@ const AISessionComponent: React.FC<AISessionProps> = ({ isNewSession = false }) 
         </div>
         <p className="text-gray-700 text-center mb-6">{error}</p>
         <div className="text-center">
-          <button 
-            onClick={startNewSession}
-            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 mr-4"
-          >
-            Try Again
-          </button>
-          <a href="/" className="text-blue-600 hover:text-blue-800">
-            Return to homepage
-          </a>
+          {error.includes('authenticate') || error.includes('expired') ? (
+            <>
+              <a 
+                href="/patient-access" 
+                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 mr-4 inline-block"
+              >
+                Patient Access
+              </a>
+              <a href="/" className="text-blue-600 hover:text-blue-800">
+                Return to homepage
+              </a>
+            </>
+          ) : (
+            <>
+              <button 
+                onClick={startNewSession}
+                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 mr-4"
+              >
+                Try Again
+              </button>
+              <a href="/" className="text-blue-600 hover:text-blue-800">
+                Return to homepage
+              </a>
+            </>
+          )}
         </div>
       </div>
     );

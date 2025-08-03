@@ -194,7 +194,7 @@ class ChatConfigurationAPI {
 
     // Add request interceptor to include auth token
     this.client.interceptors.request.use((config) => {
-      const token = localStorage.getItem('authToken');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -207,8 +207,10 @@ class ChatConfigurationAPI {
       (error) => {
         if (error.response?.status === 401) {
           // Handle unauthorized - redirect to login
-          localStorage.removeItem('authToken');
-          window.location.href = '/login';
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('authToken');
+            window.location.href = '/login';
+          }
         }
         return Promise.reject(error);
       }

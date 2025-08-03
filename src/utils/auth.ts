@@ -7,6 +7,7 @@ interface TokenPayload {
   access_type?: 'regular' | 'simplified';
   exp?: number;
   sub?: string;
+  id?: string; // patient ID from simplified access tokens
   role?: string;
   patient_id?: string;
   user_id?: string;
@@ -15,14 +16,17 @@ interface TokenPayload {
 }
 
 export const getAuthToken = (): string | null => {
+  if (typeof window === 'undefined') return null; // Server-side rendering check
   return localStorage.getItem('authToken');
 };
 
 export const setAuthToken = (token: string): void => {
+  if (typeof window === 'undefined') return; // Server-side rendering check
   localStorage.setItem('authToken', token);
 };
 
 export const removeAuthToken = (): void => {
+  if (typeof window === 'undefined') return; // Server-side rendering check
   localStorage.removeItem('authToken');
 };
 

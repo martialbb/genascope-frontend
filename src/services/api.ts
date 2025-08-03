@@ -7,7 +7,7 @@ import axios from 'axios';
 import type { AxiosInstance } from 'axios';
 import { getApiBaseUrl } from './apiConfig';
 import { checkApiHealth } from '../utils/apiHealth';
-import type { Patient, PatientCreate, PatientUpdate, PatientCSVImportResponse, PatientInviteRequest, PatientInviteResponse, BulkInviteRequest, BulkInviteResponse, Invite, InviteListParams, InviteListResponse, ResendInviteRequest, ResendInviteResponse, Clinician, InviteStatus } from '../types/patients';
+import type { Patient, PatientCreate, PatientUpdate, PatientCSVImportResponse, PatientInviteRequest, PatientInviteResponse, BulkInviteRequest, BulkInviteResponse, Invite, InviteListParams, InviteListResponse, ResendInviteRequest, ResendInviteResponse, Clinician, InviteStatus, ChatStrategy } from '../types/patients';
 
 // Types that match FastAPI Pydantic models
 export interface ChatQuestion {
@@ -87,7 +87,7 @@ class ApiService {
     
     // Add auth interceptor with debug logging
     this.client.interceptors.request.use((config) => {
-      const token = localStorage.getItem('authToken');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
       console.log('API Debug: Request to', config.url);
       console.log('API Debug: Auth token present?', !!token);
 
@@ -387,11 +387,17 @@ class ApiService {
     return response.data;
   }
 
+  async getPatientInvites(patientId: string, status?: InviteStatus): Promise<PatientInviteResponse[]> {
+    const params = status ? { status } : {};
+    const response = await this.client.get(`/api/patients/${patientId}/invites`, { params });
+    return response.data;
+  }
+
   // Authentication verification
   async verifyAuth() {
     try {
       console.log('API Debug: Verifying authentication status');
-      const token = localStorage.getItem('authToken');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
 
       if (!token) {
         console.warn('API Debug: No auth token found in storage');
@@ -412,6 +418,34 @@ class ApiService {
         error: error.response?.data?.detail || error.message,
         status: error.response?.status
       };
+    }
+  }
+
+  // Chat Strategies
+  async getChatStrategies(params: { active_only?: boolean } = {}): Promise<ChatStrategy[]> {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params.active_only !== undefined) {
+        queryParams.append('active_only', params.active_only.toString());
+      }
+      
+      const url = `/api/v1/chat-configuration/strategies${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+      const response = await this.client.get(url);
+      
+      // Handle both array response and paginated response
+      if (Array.isArray(response.data)) {
+        return response.data;
+      }
+      return response.data.strategies || response.data.items || [];
+    } catch (error) {
+      console.error('Failed to fetch chat strategies:', error);
+      
+      // Return mock strategies for development
+      return [
+        { id: 'strategy-1', name: 'Genetic Counseling Assessment', specialty: 'Oncology', is_active: true },
+        { id: 'strategy-2', name: 'Breast Cancer Screening', specialty: 'Oncology', is_active: true },
+        { id: 'strategy-3', name: 'Cardiac Risk Assessment', specialty: 'Cardiology', is_active: true }
+      ];
     }
   }
 }

@@ -7,6 +7,9 @@ const SessionTimer: React.FC = () => {
   const [showWarning, setShowWarning] = useState(false);
 
   useEffect(() => {
+    // Only run on client-side
+    if (typeof window === 'undefined') return;
+    
     if (!isSimplifiedAccess()) return;
 
     const updateTimer = () => {

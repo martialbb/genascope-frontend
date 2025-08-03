@@ -20,12 +20,13 @@ import {
   MailOutlined,
   UsergroupAddOutlined,
   EditOutlined,
-  DeleteOutlined
+  DeleteOutlined,
+  HistoryOutlined
 } from '@ant-design/icons';
 import BulkInviteModal from './BulkInviteModal';
 import apiService from '../services/api';
 import { PatientStatus } from '../types/patients';
-import type { Patient, PatientCreate, PatientUpdate, Clinician, PatientInviteRequest, BulkInviteRequest, BulkInviteResponse } from '../types/patients';
+import type { Patient, PatientCreate, PatientUpdate, Clinician, PatientInviteRequest, PatientInviteResponse, BulkInviteRequest, BulkInviteResponse, ChatStrategy } from '../types/patients';
 import type { UploadFile } from 'antd/es/upload/interface';
 
 const { Search } = Input;
@@ -41,6 +42,9 @@ const PatientManager = () => {
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showBulkInviteModal, setShowBulkInviteModal] = useState(false);
+  const [showInviteHistoryModal, setShowInviteHistoryModal] = useState(false);
+  const [patientInvites, setPatientInvites] = useState<PatientInviteResponse[]>([]);
+  const [loadingInvites, setLoadingInvites] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [form] = Form.useForm<PatientCreate>();
@@ -48,6 +52,7 @@ const PatientManager = () => {
   const [bulkForm] = Form.useForm();
   const [inviteForm] = Form.useForm<PatientInviteRequest & { send_email: boolean }>();
   const [clinicians, setClinicians] = useState<Clinician[]>([]);
+  const [chatStrategies, setChatStrategies] = useState<ChatStrategy[]>([]);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   
   // Get user from localStorage for simple auth
@@ -71,6 +76,7 @@ const PatientManager = () => {
   useEffect(() => {
     fetchPatients();
     fetchClinicians();
+    fetchChatStrategies();
   }, []);
 
   // Fetch patient data
@@ -98,6 +104,16 @@ const PatientManager = () => {
       setClinicians(response.filter((user: any) => user.role === 'clinician'));
     } catch (error) {
       console.error('Error fetching clinicians:', error);
+    }
+  };
+
+  // Fetch chat strategies for invite configuration
+  const fetchChatStrategies = async () => {
+    try {
+      const strategies = await apiService.getChatStrategies({ active_only: true });
+      setChatStrategies(strategies);
+    } catch (error) {
+      console.error('Error fetching chat strategies:', error);
     }
   };
 
@@ -238,6 +254,27 @@ const PatientManager = () => {
     }
   };
 
+  // Fetch patient invites
+  const fetchPatientInvites = async (patientId: string) => {
+    setLoadingInvites(true);
+    try {
+      const invites = await apiService.getPatientInvites(patientId);
+      setPatientInvites(invites);
+    } catch (error) {
+      message.error('Failed to fetch patient invites');
+      console.error('Error fetching patient invites:', error);
+    } finally {
+      setLoadingInvites(false);
+    }
+  };
+
+  // Handle opening invite history modal
+  const handleOpenInviteHistory = async (patient: Patient) => {
+    setSelectedPatient(patient);
+    setShowInviteHistoryModal(true);
+    await fetchPatientInvites(patient.id);
+  };
+
   // Define table columns
   const columns = [
     {
@@ -279,9 +316,9 @@ const PatientManager = () => {
       render: (_: unknown, record: Patient) => (
         <span>
           {record.has_pending_invite ? (
-            <span className="status-tag active">Invite Sent</span>
+            <span className="status-tag active">Has Active Invites</span>
           ) : (
-            <span className="status-tag inactive">No Active Invite</span>
+            <span className="status-tag inactive">No Active Invites</span>
           )}
         </span>
       )
@@ -294,29 +331,45 @@ const PatientManager = () => {
           <Tooltip title="Edit Patient">
             <Button 
               icon={<EditOutlined />} 
-              onClick={() => handleOpenEditModal(record)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenEditModal(record);
+              }}
               style={{ marginRight: 8 }}
             />
           </Tooltip>
           
-          {!record.has_pending_invite && (
-            <Tooltip title="Send Invite">
-              <Button 
-                type="primary" 
-                icon={<MailOutlined />} 
-                onClick={() => {
-                  setSelectedPatient(record);
-                  setShowInviteModal(true);
-                }}
-                style={{ marginRight: 8 }}
-              />
-            </Tooltip>
-          )}
+          <Tooltip title="Send New Invite">
+            <Button 
+              type="primary" 
+              icon={<MailOutlined />} 
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedPatient(record);
+                setShowInviteModal(true);
+              }}
+              style={{ marginRight: 8 }}
+            />
+          </Tooltip>
+          
+          <Tooltip title="View Invite History">
+            <Button 
+              icon={<HistoryOutlined />} 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenInviteHistory(record);
+              }}
+              style={{ marginRight: 8 }}
+            />
+          </Tooltip>
           
           <Popconfirm
             title="Delete Patient"
             description={`Are you sure you want to delete ${record.first_name} ${record.last_name}?`}
-            onConfirm={() => handleDeletePatient(record)}
+            onConfirm={(e) => {
+              e?.stopPropagation();
+              handleDeletePatient(record);
+            }}
             okText="Yes"
             cancelText="No"
             okType="danger"
@@ -325,6 +378,7 @@ const PatientManager = () => {
               <Button 
                 danger 
                 icon={<DeleteOutlined />} 
+                onClick={(e) => e.stopPropagation()} 
               />
             </Tooltip>
           </Popconfirm>
@@ -352,6 +406,18 @@ const PatientManager = () => {
   // Render component
   return (
     <div className="patient-manager">
+      <style jsx>{`
+        .clickable-row:hover {
+          background-color: #f0f8ff !important;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          transition: all 0.2s ease;
+        }
+        .clickable-row {
+          transition: all 0.2s ease;
+        }
+      `}</style>
+      
       <div className="table-header">
         <h2>Patient Management</h2>
         <div className="table-actions">
@@ -389,6 +455,12 @@ const PatientManager = () => {
         </div>
       </div>
 
+      <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <p className="text-sm text-blue-700 mb-0">
+          💡 <strong>Quick Invite:</strong> Click on any patient row to quickly create an invite, or use the action buttons for more options.
+        </p>
+      </div>
+
       <Table 
         columns={columns} 
         dataSource={patients}
@@ -398,6 +470,16 @@ const PatientManager = () => {
           pageSize: 10,
           showSizeChanger: true,
         }}
+        onRow={(record) => ({
+          onClick: () => {
+            setSelectedPatient(record);
+            setShowInviteModal(true);
+          },
+          style: {
+            cursor: 'pointer'
+          }
+        })}
+        rowClassName="clickable-row"
       />
 
       {/* Create Patient Modal */}
@@ -651,7 +733,7 @@ const PatientManager = () => {
 
       {/* Send Invite Modal */}
       <Modal
-        title="Send Patient Invite"
+        title="Send New Patient Invite"
         open={showInviteModal}
         onCancel={() => {
           setShowInviteModal(false);
@@ -674,6 +756,10 @@ const PatientManager = () => {
               Sending invite to: <strong>{selectedPatient.first_name} {selectedPatient.last_name}</strong>
               <br />
               Email: <strong>{selectedPatient.email}</strong>
+              <br />
+              <small style={{ color: '#666' }}>
+                Note: You can send multiple invites with different chat strategies to the same patient.
+              </small>
             </p>
 
             <Form.Item
@@ -684,6 +770,21 @@ const PatientManager = () => {
               <Select placeholder="Select provider">
                 {clinicians.map(clinician => (
                   <Option key={clinician.id} value={clinician.id}>{clinician.name}</Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="chat_strategy"
+              label="Chat Strategy"
+              tooltip="Select the AI chat strategy for this patient"
+              rules={[{ required: true, message: 'Please select a chat strategy' }]}
+            >
+              <Select placeholder="Select chat strategy">
+                {chatStrategies.map(strategy => (
+                  <Option key={strategy.id} value={strategy.id}>
+                    {strategy.name} {strategy.specialty && `(${strategy.specialty})`}
+                  </Option>
                 ))}
               </Select>
             </Form.Item>
@@ -730,12 +831,93 @@ const PatientManager = () => {
         )}
       </Modal>
 
+      {/* Invite History Modal */}
+      <Modal
+        title={`Invite History - ${selectedPatient?.first_name} ${selectedPatient?.last_name}`}
+        open={showInviteHistoryModal}
+        onCancel={() => {
+          setShowInviteHistoryModal(false);
+          setSelectedPatient(null);
+          setPatientInvites([]);
+        }}
+        footer={[
+          <Button key="close" onClick={() => {
+            setShowInviteHistoryModal(false);
+            setSelectedPatient(null);
+            setPatientInvites([]);
+          }}>
+            Close
+          </Button>
+        ]}
+        width={800}
+      >
+        <Table
+          dataSource={patientInvites}
+          loading={loadingInvites}
+          pagination={false}
+          rowKey="invite_id"
+          columns={[
+            {
+              title: 'Invite ID',
+              dataIndex: 'invite_id',
+              key: 'invite_id',
+              render: (text: string) => text.substring(0, 8) + '...'
+            },
+            {
+              title: 'Provider',
+              dataIndex: 'provider_name',
+              key: 'provider_name'
+            },
+            {
+              title: 'Chat Strategy',
+              dataIndex: 'chat_strategy_name',
+              key: 'chat_strategy_name',
+              render: (text: string) => text || 'Not specified'
+            },
+            {
+              title: 'Status',
+              dataIndex: 'status',
+              key: 'status',
+              render: (status: string) => (
+                <span className={`status-tag ${status}`}>
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </span>
+              )
+            },
+            {
+              title: 'Created',
+              dataIndex: 'created_at',
+              key: 'created_at',
+              render: (text: string) => new Date(text).toLocaleDateString()
+            },
+            {
+              title: 'Expires',
+              dataIndex: 'expires_at',
+              key: 'expires_at',
+              render: (text: string) => new Date(text).toLocaleDateString()
+            },
+            {
+              title: 'Accepted',
+              dataIndex: 'accepted_at',
+              key: 'accepted_at',
+              render: (text: string) => text ? new Date(text).toLocaleDateString() : '-'
+            }
+          ]}
+        />
+        {patientInvites.length === 0 && !loadingInvites && (
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            <p>No invites found for this patient.</p>
+          </div>
+        )}
+      </Modal>
+
       {/* Bulk Invite Modal */}
       <BulkInviteModal
         visible={showBulkInviteModal}
         onClose={() => setShowBulkInviteModal(false)}
         patients={patients}
         clinicians={clinicians}
+        chatStrategies={chatStrategies}
         currentUserId={user?.id || ''}
         onSuccess={() => {
           fetchPatients();
@@ -782,6 +964,22 @@ const PatientManager = () => {
         .status-tag.archived {
           background-color: #f5f5f5;
           color: #666;
+        }
+        .status-tag.pending {
+          background-color: #fff7e6;
+          color: #fa8c16;
+        }
+        .status-tag.accepted {
+          background-color: #f6ffed;
+          color: #52c41a;
+        }
+        .status-tag.expired {
+          background-color: #fff2f0;
+          color: #ff4d4f;
+        }
+        .status-tag.revoked {
+          background-color: #f5f5f5;
+          color: #999;
         }
         .action-buttons button {
           margin-right: 8px;
