@@ -1,0 +1,25 @@
+# fly.toml app configuration file generated for genascope-frontend-bold-paper-7916 on 2025-08-10T00:55:16-06:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'genascope-frontend-bold-paper-7916'
+primary_region = 'den'
+
+[build]
+
+[env]
+  HOST = "0.0.0.0"
+
+[http_service]
+  internal_port = 4321
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1

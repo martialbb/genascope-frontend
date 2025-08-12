@@ -71,6 +71,24 @@ export interface AppointmentResponse {
   confirmation_code: string;
 }
 
+// Availability management types
+export interface AvailabilitySlot {
+  time: string;
+  available: boolean;
+}
+
+export interface SetAvailabilityRequest {
+  date: string;
+  time_slots: string[];
+  recurring?: boolean;
+}
+
+export interface AvailabilitySetResponse {
+  message: string;
+  date: string;
+  time_slots: string[];
+}
+
 class ApiService {
   private client: AxiosInstance;
   
@@ -116,6 +134,36 @@ class ApiService {
 
   async getClinicianAppointments(clinicianId: string, startDate: string, endDate: string) {
     const response = await this.client.get(`/api/appointments/clinician/${clinicianId}?start_date=${startDate}&end_date=${endDate}`);
+    return response.data;
+  }
+
+  // Get availability for a clinician on a specific date
+  async getAvailability(clinicianId: string, date: string): Promise<AvailabilityResponse> {
+    const response = await this.client.get(`/api/availability?clinician_id=${clinicianId}&date=${date}`);
+    return response.data;
+  }
+
+  // Book a new appointment
+  async bookAppointment(appointmentData: AppointmentRequest): Promise<AppointmentResponse> {
+    const response = await this.client.post('/api/book_appointment', appointmentData);
+    return response.data;
+  }
+
+  // Get appointments for a specific patient
+  async getPatientAppointments(patientId: string) {
+    const response = await this.client.get(`/api/appointments/patient/${patientId}`);
+    return response.data;
+  }
+
+  // Update appointment status
+  async updateAppointmentStatus(appointmentId: string, status: string) {
+    const response = await this.client.put(`/api/appointments/${appointmentId}?status=${status}`);
+    return response.data;
+  }
+
+  // Set clinician availability
+  async setClinicianAvailability(clinicianId: string, availabilityData: any) {
+    const response = await this.client.post(`/api/availability/set?clinician_id=${clinicianId}`, availabilityData);
     return response.data;
   }
 

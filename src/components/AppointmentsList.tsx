@@ -1,11 +1,14 @@
 // src/components/AppointmentsList.tsx
 import React, { useState, useEffect } from 'react';
+import { message } from 'antd';
 import apiService from '../services/api';
 
 interface AppointmentProps {
   clinicianId?: string;
   patientId?: string;
   isClinicianView?: boolean;
+  showFilters?: boolean;
+  pageSize?: number;
 }
 
 interface Appointment {
@@ -22,13 +25,16 @@ interface Appointment {
 const AppointmentsList: React.FC<AppointmentProps> = ({ 
   clinicianId,
   patientId,
-  isClinicianView = false
+  isClinicianView = false,
+  showFilters = true,
+  pageSize = 10
 }) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<string>('upcoming');
+  const [currentPage, setCurrentPage] = useState(1);
   
   // Calculate date ranges for filtering
   const today = new Date();
@@ -50,38 +56,34 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
   const formatDateForApi = (date: Date) => {
     return date.toISOString().split('T')[0];
   };
+
+  // Default date range: 30 days back and 90 days forward
+  const startDate = formatDateForApi(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
+  const endDate = formatDateForApi(new Date(Date.now() + 90 * 24 * 60 * 60 * 1000));
   
   // Load appointments
   useEffect(() => {
-    const fetchAppointments = async () => {
-      setIsLoading(true);
-      setError(null);
-      
-      try {
-        let response;
-        
-        if (isClinicianView && clinicianId) {
-          // For clinician view, fetch appointments within a date range
-          const startDate = formatDateForApi(today);
-          const endDate = formatDateForApi(new Date(today.setMonth(today.getMonth() + 3)));
-          response = await apiService.getClinicianAppointments(clinicianId, startDate, endDate);
-          setAppointments(response.appointments || []);
-        } else if (patientId) {
-          // For patient view, fetch all appointments
-          response = await apiService.getPatientAppointments(patientId);
-          setAppointments(response.appointments || []);
-        } else {
-          setError('Missing required ID parameter');
-        }
-      } catch (err) {
-        setError('Failed to load appointments. Please try again.');
-        console.error('Error fetching appointments:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const fetchAppointments = async () => {
+    if (!clinicianId && !patientId) return;
     
-    fetchAppointments();
+    setIsLoading(true);
+    try {
+      let response;
+      if (clinicianId) {
+        response = await apiService.getClinicianAppointments(clinicianId, startDate, endDate);
+        setAppointments(response.appointments || []);
+      } else if (patientId) {
+        response = await apiService.getPatientAppointments(patientId);
+        setAppointments(response.appointments || []);
+      }
+    } catch (error) {
+      console.error('Error fetching appointments:', error);
+      message.error('Failed to load appointments');
+      setAppointments([]); // Reset to empty array on error
+    } finally {
+      setIsLoading(false);
+    }
+  };    fetchAppointments();
   }, [clinicianId, patientId, isClinicianView]);
   
   // Update appointment status
@@ -103,7 +105,7 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
     }
   };
   
-  // Filter appointments based on status and date filters
+    // Filter appointments based on status and date filters
   const filteredAppointments = appointments.filter(appointment => {
     // Apply status filter
     if (statusFilter !== 'all' && appointment.status !== statusFilter) {
@@ -120,14 +122,27 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
         case 'thisWeek':
           return appointmentDate >= startOfWeek && appointmentDate <= endOfWeek;
         case 'upcoming':
-          return appointmentDate >= today;
+          return appointmentDate >= startOfToday;
         case 'past':
-          return appointmentDate < today;
+          return appointmentDate < startOfToday;
+        default:
+          return true;
       }
     }
     
     return true;
   });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredAppointments.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedAppointments = filteredAppointments.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, dateFilter]);
   
   // Format date and time for display
   const formatDateTime = (isoString: string) => {
@@ -189,48 +204,51 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
   
   return (
     <div>
-      <div className="mb-6 flex flex-col sm:flex-row sm:justify-between gap-4">
-        <div>
-          <label htmlFor="statusFilter" className="block text-sm font-medium text-gray-700 mb-1">Status:</label>
-          <select
-            id="statusFilter"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          >
-            <option value="all">All Statuses</option>
-            <option value="scheduled">Scheduled</option>
-            <option value="completed">Completed</option>
-            <option value="canceled">Canceled</option>
-            <option value="rescheduled">Rescheduled</option>
-          </select>
+      {showFilters && (
+        <div className="mb-6 flex flex-col sm:flex-row sm:justify-between gap-4">
+          <div>
+            <label htmlFor="statusFilter" className="block text-sm font-medium text-gray-700 mb-1">Status:</label>
+            <select
+              id="statusFilter"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value="all">All Statuses</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="completed">Completed</option>
+              <option value="canceled">Canceled</option>
+              <option value="rescheduled">Rescheduled</option>
+            </select>
+          </div>
+          
+          <div>
+            <label htmlFor="dateFilter" className="block text-sm font-medium text-gray-700 mb-1">Date:</label>
+            <select
+              id="dateFilter"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value="upcoming">Upcoming</option>
+              <option value="today">Today</option>
+              <option value="thisWeek">This Week</option>
+              <option value="past">Past</option>
+              <option value="all">All Dates</option>
+            </select>
+          </div>
         </div>
-        
-        <div>
-          <label htmlFor="dateFilter" className="block text-sm font-medium text-gray-700 mb-1">Date:</label>
-          <select
-            id="dateFilter"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          >
-            <option value="upcoming">Upcoming</option>
-            <option value="today">Today</option>
-            <option value="thisWeek">This Week</option>
-            <option value="past">Past</option>
-            <option value="all">All Dates</option>
-          </select>
-        </div>
-      </div>
+      )}
       
       {filteredAppointments.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-500">No appointments match your filters.</p>
         </div>
       ) : (
-        <div className="overflow-hidden bg-white shadow sm:rounded-md">
-          <ul role="list" className="divide-y divide-gray-200">
-            {filteredAppointments.map((appointment) => {
+        <>
+          <div className="overflow-hidden bg-white shadow sm:rounded-md">
+            <ul role="list" className="divide-y divide-gray-200">
+              {paginatedAppointments.map((appointment) => {
               const { date, time } = formatDateTime(appointment.date_time);
               return (
                 <li key={appointment.appointment_id}>
@@ -328,6 +346,53 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
             })}
           </ul>
         </div>
+        
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="mt-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-700">
+                Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
+                <span className="font-medium">{Math.min(endIndex, filteredAppointments.length)}</span> of{' '}
+                <span className="font-medium">{filteredAppointments.length}</span> results
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              
+              <div className="flex space-x-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${
+                      currentPage === page
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    } border`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+              
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+        </>
       )}
     </div>
   );

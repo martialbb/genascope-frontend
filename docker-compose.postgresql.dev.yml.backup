@@ -25,35 +25,7 @@ services:
     build:
       context: ../genascope-backend
       dockerfile: Dockerfile
-    command: >
-      bash -c "
-        until nc -z db 5432; do 
-          echo 'Waiting for PostgreSQL...'; 
-          sleep 2; 
-        done;
-        echo 'PostgreSQL is ready!';
-        echo 'Running database migrations...';
-        export PYTHONPATH=/app;
-        if alembic upgrade head; then
-          echo 'Migrations completed successfully!';
-        else
-          echo 'Warning: Migration had issues but continuing...';
-        fi;
-        echo 'Creating test users for development...';
-        if python scripts/create_test_users.py; then
-          echo 'Test users created successfully!';
-          echo '';
-          echo '🎯 QUICK LOGIN CREDENTIALS:';
-          echo '   Admin: admin@testhospital.com / Admin123!';
-          echo '   Clinician: clinician@testhospital.com / Clinician123!';
-          echo '   Patient: patient1@example.com / Patient123!';
-          echo '';
-        else
-          echo 'Note: Test users may already exist or creation failed';
-        fi;
-        echo 'Starting application...';
-        export PYTHONPATH=/app && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-      "
+    command: bash -c "until nc -z db 5432; do echo 'Waiting for PostgreSQL...'; sleep 2; done; export PYTHONPATH=/app && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     ports:
       - "8000:8000"
     env_file:
