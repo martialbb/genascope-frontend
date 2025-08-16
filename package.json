@@ -11,7 +11,13 @@
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "test:e2e": "playwright test",
-    "cleanup": "node ./scripts/cleanup.js"
+    "cleanup": "node ./scripts/cleanup.js",
+    "fly:config:dev": "node scripts/generate-fly-config.js development",
+    "fly:config:staging": "node scripts/generate-fly-config.js staging",
+    "fly:config:prod": "node scripts/generate-fly-config.js production",
+    "deploy:dev": "npm run fly:config:dev && flyctl deploy",
+    "deploy:staging": "npm run fly:config:staging && flyctl deploy",
+    "deploy:prod": "npm run fly:config:prod && flyctl deploy"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",

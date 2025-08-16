@@ -1,30 +1,131 @@
 # See https://fly.io/docs/app-guides/continuous-deployment-with-github-actions/
 
-name: Fly Deploy
+name: Deploy to Fly.io
+
 on:
-  push:
-    branches:
-      - main
+    - name: Generate production config
+      run: npm run fly:config:prod
+      env:
+        PUBLIC_API_URL: ${{ vars.BACKEND_URL }}
+    
+    - name: Setup Fly.io
+      uses: superfly/flyctl-actions/setup-flyctl@master
+    
+    - name: Deploy to Production
+      run: flyctl deploy --remote-only
+      env:
+        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}branches: [main, staging]
+  pull_request:
+    branches: [main, staging]
+    types: [opened, synchronize]
+
 jobs:
-  deploy:
-    name: Deploy app
+  deploy-development:
+    name: Deploy to Development
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    environment: dev  # Reference the dev environment where you created the secret
-    concurrency: deploy-group    # optional: ensure only one action runs at a time
+    environment: development
+    
     steps:
-      - uses: actions/checkout@v4
-      - uses: superfly/flyctl-actions/setup-flyctl@master
-      - name: Verify Fly.io token
-        run: |
-          if [ -z "$FLY_API_TOKEN" ]; then
-            echo "FLY_API_TOKEN is not set"
-            exit 1
-          else
-            echo "FLY_API_TOKEN is set"
-          fi
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-      - name: Deploy to Fly.io
-        run: flyctl deploy --remote-only
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Generate development config
+      run: npm run fly:config:dev
+      env:
+        PUBLIC_API_URL: ${{ vars.BACKEND_URL }}
+    
+    - name: Setup Fly.io
+      uses: superfly/flyctl-actions/setup-flyctl@master
+    
+    - name: Verify Fly.io token
+      run: |
+        if [ -z "$FLY_API_TOKEN" ]; then
+          echo "❌ FLY_API_TOKEN is not set"
+          exit 1
+        else
+          echo "✅ FLY_API_TOKEN is configured"
+        fi
+      env:
+        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    
+    - name: Deploy to Development
+      run: flyctl deploy --remote-only
+      env:
+        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  deploy-staging:
+    name: Deploy to Staging
+    if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: staging
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Generate staging config
+      run: npm run fly:config:staging
+      env:
+        PUBLIC_API_URL: ${{ vars.BACKEND_URL }}
+    
+    - name: Setup Fly.io
+      uses: superfly/flyctl-actions/setup-flyctl@master
+    
+    - name: Deploy to Staging
+      run: flyctl deploy --remote-only
+      env:
+        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  deploy-production:
+    name: Deploy to Production
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run tests
+      run: npm run test:unit
+    
+    - name: Generate production config
+      run: npm run fly:config:prod
+      env:
+        PUBLIC_API_URL: ${{ vars.BACKEND_URL }}
+    
+    - name: Setup Fly.io
+      uses: superfly/flyctl-actions/setup-flyctl@master
+    
+    - name: Deploy to Production
+      run: flyctl deploy --remote-only
+      env:
+        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
