@@ -5,7 +5,7 @@
  */
 import axios from 'axios';
 import type { AxiosInstance } from 'axios';
-import { getApiBaseUrl } from './apiConfig';
+import { API_CONFIG } from './apiConfig';
 import { checkApiHealth } from '../utils/apiHealth';
 import type { Patient, PatientCreate, PatientUpdate, PatientCSVImportResponse, PatientInviteRequest, PatientInviteResponse, BulkInviteRequest, BulkInviteResponse, Invite, InviteListParams, InviteListResponse, ResendInviteRequest, ResendInviteResponse, Clinician, InviteStatus, ChatStrategy } from '../types/patients';
 
@@ -94,7 +94,7 @@ class ApiService {
   
   constructor() {
     // Use centralized API configuration that handles client/server and Docker environments
-    const baseURL = getApiBaseUrl();
+    const baseURL = API_CONFIG.baseUrl;
     
     this.client = axios.create({
       baseURL,

@@ -5,7 +5,7 @@
  */
 import axios from 'axios';
 import type { AxiosInstance } from 'axios';
-import { getApiBaseUrl } from './apiConfig';
+import { API_CONFIG } from './apiConfig';
 
 // Types that match the backend Pydantic models
 export interface ChatStrategy {
@@ -186,7 +186,7 @@ class ChatConfigurationAPI {
 
   constructor() {
     this.client = axios.create({
-      baseURL: getApiBaseUrl(),
+      baseURL: API_CONFIG.baseUrl,
       headers: {
         'Content-Type': 'application/json',
       },

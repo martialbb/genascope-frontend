@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getApiBaseUrl } from '../services/apiConfig';
+import { API_CONFIG } from '../services/apiConfig';
 
 interface LoginResponse {
   access_token: string;
@@ -53,7 +53,7 @@ const SimpleLogin: React.FC = () => {
       params.append('password', password);
       params.append('grant_type', 'password');
 
-      const apiBaseUrl = getApiBaseUrl();
+      const apiBaseUrl = API_CONFIG.baseUrl;
       console.log('API Base URL:', apiBaseUrl);
 
       // Step 1: Get access token

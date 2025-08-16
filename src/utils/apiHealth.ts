@@ -2,7 +2,7 @@
 /**
  * Utility functions for checking API health and availability
  */
-import { getApiBaseUrl } from '../services/apiConfig';
+import { API_CONFIG } from '../services/apiConfig';
 
 interface ApiHealthCheck {
   endpoint: string;
@@ -25,7 +25,7 @@ const REQUIRED_ENDPOINTS = [
 export async function checkApiHealth(): Promise<ApiHealthStatus> {
   const endpointChecks: ApiHealthCheck[] = [];
   let availableCount = 0;
-  const baseUrl = getApiBaseUrl();
+  const baseUrl = API_CONFIG.baseUrl;
 
   // Get auth token for the health check - only on client side
   const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
