@@ -15,7 +15,7 @@ const __dirname = path.dirname(__filename);
 const DEFAULT_CONFIG = {
   development: {
     appName: 'genascope-frontend-dev',
-    backendUrl: 'https://genascope-backend.fly.dev/',
+    backendUrl: 'https://genascope-backend.fly.dev',
     memory: '1gb',
     cpus: 1,
     minMachines: 0,

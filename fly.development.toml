@@ -8,7 +8,7 @@ primary_region = 'den'
 
 [env]
   HOST = "0.0.0.0"
-  PUBLIC_API_URL = "https://genascope-backend.fly.dev/"
+  PUBLIC_API_URL = "https://genascope-backend.fly.dev"
   NODE_ENV = "development"
 
 [http_service]

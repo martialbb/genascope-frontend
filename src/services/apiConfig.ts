@@ -120,13 +120,12 @@ export const API_CONFIG = createApiConfig();
 
 /**
  * Create a full API endpoint URL
- * @param path The API endpoint path (without leading slash)
+ * @param path The API endpoint path (with or without leading slash)
  * @returns The complete API URL
  */
 export function getApiUrl(path: string): string {
-  const baseUrl = API_CONFIG.baseUrl;
-  // Ensure path doesn't start with a slash if baseUrl ends with one
-  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  const baseUrl = API_CONFIG.baseUrl.replace(/\/+$/, ''); // Remove trailing slashes
+  const cleanPath = path.replace(/^\/+/, ''); // Remove leading slashes
   return `${baseUrl}/${cleanPath}`;
 }
 
