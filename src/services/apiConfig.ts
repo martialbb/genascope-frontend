@@ -118,11 +118,6 @@ function createApiConfig(): ApiEnvironmentConfig {
 // Export the API configuration
 export const API_CONFIG = createApiConfig();
 
-// Legacy function for backward compatibility
-export function getApiBaseUrl(): string {
-  return API_CONFIG.baseUrl;
-}
-
 /**
  * Create a full API endpoint URL
  * @param path The API endpoint path (without leading slash)

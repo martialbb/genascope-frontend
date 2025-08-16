@@ -3,18 +3,8 @@
 name: Deploy to Fly.io
 
 on:
-    - name: Generate production config
-      run: npm run fly:config:prod
-      env:
-        PUBLIC_API_URL: ${{ vars.BACKEND_URL }}
-    
-    - name: Setup Fly.io
-      uses: superfly/flyctl-actions/setup-flyctl@master
-    
-    - name: Deploy to Production
-      run: flyctl deploy --remote-only
-      env:
-        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}branches: [main, staging]
+  push:
+    branches: [main, staging]
   pull_request:
     branches: [main, staging]
     types: [opened, synchronize]
