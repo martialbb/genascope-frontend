@@ -2,8 +2,7 @@ name: Build & Publish Frontend Docker Image
 
 on:
   push:
-    branches:
-      - [main]
+    branches: [main]
 
 permissions:
   contents: read
