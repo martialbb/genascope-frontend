@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_CONFIG } from '../services/apiConfig';
+import { API_CONFIG, getApiUrl } from '../services/apiConfig';
 
 interface LoginResponse {
   access_token: string;
@@ -53,11 +53,10 @@ const SimpleLogin: React.FC = () => {
       params.append('password', password);
       params.append('grant_type', 'password');
 
-      const apiBaseUrl = API_CONFIG.baseUrl;
-      console.log('API Base URL:', apiBaseUrl);
+      console.log('API Base URL:', API_CONFIG.baseUrl);
 
       // Step 1: Get access token
-      const tokenResponse = await fetch(`${apiBaseUrl}/api/auth/token`, {
+      const tokenResponse = await fetch(getApiUrl('api/auth/token'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -74,7 +73,7 @@ const SimpleLogin: React.FC = () => {
       console.log('Token received successfully');
 
       // Step 2: Get user details
-      const userResponse = await fetch(`${apiBaseUrl}/api/auth/me`, {
+      const userResponse = await fetch(getApiUrl('api/auth/me'), {
         headers: {
           'Authorization': `Bearer ${tokenData.access_token}`
         }

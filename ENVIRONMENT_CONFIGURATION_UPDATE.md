@@ -1,43 +1,26 @@
-# 🔄 Environment Configuration Update Summary
+# Local Environment Configuration Update Summary
 
 ## Changes Made
 
-Updated the deployment system to use **GitHub Environment Variables** for backend URLs instead of environment secrets, following security best practices.
+- Removed all Fly.io, flyctl, and FLY_API_TOKEN references
+- Decommissioned cloud deployment and GitHub Actions workflows
+- Updated documentation for local-only Docker Compose development
+- All configuration is now managed via `.env.local` files
 
-## 📝 What Changed
-
-### 1. GitHub Actions Workflow (`.github/workflows/fly-deploy.yml`)
-- **Before**: Used `secrets.BACKEND_URL` for all environments
-- **After**: Uses `vars.BACKEND_URL` for all environments
-- **Benefit**: Backend URLs are now visible in logs for easier debugging
-
-### 2. Documentation Updates
-
-#### `GITHUB_SECRETS_SETUP.md`
-- Updated title to "GitHub Environment Configuration Guide"
-- Added distinction between Environment Variables and Environment Secrets
-- Updated setup instructions to configure variables vs secrets appropriately
-
-#### `DEPLOYMENT_GUIDE.md`
-- Updated GitHub configuration section
-- Added clear distinction between secrets and variables
-- Added explanatory note about the security approach
-
-## 🎯 Current Configuration Structure
+## Current Configuration Structure
 
 | Configuration Type | Purpose | Examples |
 |-------------------|---------|----------|
-| **Environment Variables** | Non-sensitive configuration | `BACKEND_URL`, feature flags |
-| **Environment Secrets** | Sensitive data | `FLY_API_TOKEN`, API keys |
+| **Environment Variables** | Local configuration | `PUBLIC_API_URL`, feature flags |
+| **Environment Secrets** | (Not used) | |
 
-## 🚀 Next Steps
+## Next Steps
 
-1. **Configure GitHub Environment Variables**:
-   - Go to Repository Settings → Environments
-   - For each environment (dev, staging, prod):
-     - Add **Environment Variable**: `BACKEND_URL`
-     - Keep **Environment Secret**: `FLY_API_TOKEN`
-
+1. Copy `.env.example` to `.env.local` and edit as needed
+2. Copy `backend/.env.example` to `backend/.env.local` and edit as needed
+3. Start all services with Docker Compose:
+   - `docker-compose -f docker-compose.postgresql.dev.yml up -d --build`
+4. See `ENVIRONMENT_SETUP.md` for more details
 2. **Test the deployment**:
    - Create a test PR to verify dev environment deployment
    - Check that backend URLs are properly configured

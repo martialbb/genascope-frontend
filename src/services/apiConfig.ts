@@ -23,8 +23,8 @@ const ENVIRONMENT_BACKEND_URLS = {
   'genascope-frontend-staging.fly.dev': 'https://genascope-backend-staging.fly.dev',
   
   // Development URLs
-  'genascope-frontend-dev.fly.dev': 'https://genascope-backend.fly.dev/',
-  'genascope-frontend-bold-paper-7916.fly.dev': 'https://genascope-backend.fly.dev/',
+  'genascope-frontend-dev.fly.dev': 'https://genascope-backend.fly.dev',
+  'genascope-frontend-bold-paper-7916.fly.dev': 'https://genascope-backend.fly.dev',
   
   // Local development
   'localhost': 'http://localhost:8000',
@@ -70,34 +70,44 @@ function getCurrentEnvironment(): 'development' | 'staging' | 'production' {
  * Get the backend API URL based on current environment
  */
 function getApiBaseUrl(): string {
+  let baseUrl = '';
+  
   // 1. Check for explicit environment variable (highest priority)
   if (typeof process !== 'undefined' && process.env.PUBLIC_API_URL) {
-    return process.env.PUBLIC_API_URL;
+    baseUrl = process.env.PUBLIC_API_URL;
   }
-  
   // 2. Client-side hostname-based detection
-  if (typeof window !== 'undefined') {
+  else if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     
     // Check against known hostname mappings
     for (const [domain, backendUrl] of Object.entries(ENVIRONMENT_BACKEND_URLS)) {
       if (hostname.includes(domain)) {
-        return backendUrl;
+        baseUrl = backendUrl;
+        break;
       }
     }
   }
   
   // 3. Server-side environment-based detection
-  const environment = getCurrentEnvironment();
-  switch (environment) {
-    case 'production':
-      return 'https://genascope-backend.fly.dev';
-    case 'staging':
-      return 'https://genascope-backend-staging.fly.dev';
-    case 'development':
-    default:
-      return 'http://localhost:8000';
+  if (!baseUrl) {
+    const environment = getCurrentEnvironment();
+    switch (environment) {
+      case 'production':
+        baseUrl = 'https://genascope-backend.fly.dev';
+        break;
+      case 'staging':
+        baseUrl = 'https://genascope-backend-staging.fly.dev';
+        break;
+      case 'development':
+      default:
+        baseUrl = 'http://localhost:8000';
+        break;
+    }
   }
+  
+  // Always remove trailing slashes to prevent double slashes
+  return baseUrl.replace(/\/+$/, '');
 }
 
 /**
