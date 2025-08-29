@@ -3,7 +3,11 @@ name: Build & Publish Frontend Docker Image
 on:
   push:
     branches:
-      - '**'
+      - [main]
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   build-and-push:
