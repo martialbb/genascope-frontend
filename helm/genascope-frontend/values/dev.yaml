@@ -1,0 +1,35 @@
+# Development environment configuration
+config:
+  backendUrl: "http://genascope-backend.dev.svc.cluster.local:8000"
+  nodeEnv: "development"
+
+replicaCount: 1
+
+image:
+  tag: "latest"
+  pullPolicy: Always
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+probes:
+  liveness:
+    initialDelaySeconds: 10
+  readiness:
+    initialDelaySeconds: 5
+
+ingress:
+  enabled: true
+  className: "public"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: genascope-dev.local
+      paths:
+        - path: /
+          pathType: Prefix

@@ -1,0 +1,29 @@
+# Staging environment configuration
+config:
+  backendUrl: "http://genascope-backend.staging.svc.cluster.local:8000"
+  nodeEnv: "staging"
+
+replicaCount: 2
+
+image:
+  tag: "latest"
+  pullPolicy: Always
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+ingress:
+  enabled: true
+  className: "public"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: genascope-staging.local
+      paths:
+        - path: /
+          pathType: Prefix

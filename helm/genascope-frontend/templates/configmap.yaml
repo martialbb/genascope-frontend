@@ -1,0 +1,17 @@
+{{- if .Values.configMap.create }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "genascope-frontend.fullname" . }}-config
+  labels:
+    {{- include "genascope-frontend.labels" . | nindent 4 }}
+data:
+  # Application configuration
+  BACKEND_URL: {{ .Values.config.backendUrl | quote }}
+  NODE_ENV: {{ .Values.config.nodeEnv | quote }}
+  HOST: {{ .Values.config.host | quote }}
+  PORT: {{ .Values.config.port | quote }}
+  {{- with .Values.configMap.data }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+{{- end }}

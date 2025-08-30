@@ -14,17 +14,19 @@ interface ApiEnvironmentConfig {
 
 /**
  * Environment-specific backend URL mapping
+ * Kubernetes hostnames and local development
  */
 const ENVIRONMENT_BACKEND_URLS = {
-  // Production URLs
-  'genascope-frontend.fly.dev': 'https://genascope-backend.fly.dev',
+  // Production URLs (Kubernetes)
+  'genascope.yourdomain.com': 'http://genascope-backend.local:8000',
+  'genascope-frontend.local': 'http://genascope-backend.local:8000',
   
-  // Staging URLs  
-  'genascope-frontend-staging.fly.dev': 'https://genascope-backend-staging.fly.dev',
+  // Staging URLs (Kubernetes)
+  'genascope-frontend-staging.yourdomain.com': 'http://genascope-backend-staging.local:8000',
+  'genascope-frontend-staging.local': 'http://genascope-backend-staging.local:8000',
   
-  // Development URLs
-  'genascope-frontend-dev.fly.dev': 'https://genascope-backend.fly.dev',
-  'genascope-frontend-bold-paper-7916.fly.dev': 'https://genascope-backend.fly.dev',
+  // Development URLs (Kubernetes)
+  'genascope-frontend-dev.local': 'http://genascope-backend-dev.local:8000',
   
   // Local development
   'localhost': 'http://localhost:8000',
@@ -47,7 +49,7 @@ function getCurrentEnvironment(): 'development' | 'staging' | 'production' {
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     
-    if (hostname === 'genascope-frontend.fly.dev') {
+    if (hostname === 'genascope.yourdomain.com' || hostname === 'genascope-frontend.local') {
       return 'production';
     }
     
@@ -55,7 +57,7 @@ function getCurrentEnvironment(): 'development' | 'staging' | 'production' {
       return 'staging';
     }
     
-    if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+    if (hostname.includes('localhost') || hostname.includes('127.0.0.1') || hostname.includes('dev')) {
       return 'development';
     }
     
@@ -68,16 +70,25 @@ function getCurrentEnvironment(): 'development' | 'staging' | 'production' {
 
 /**
  * Get the backend API URL based on current environment
+ * Prioritizes Kubernetes environment variables over hostname detection
  */
 function getApiBaseUrl(): string {
   let baseUrl = '';
   
-  // 1. Check for explicit environment variable (highest priority)
-  if (typeof process !== 'undefined' && process.env.PUBLIC_API_URL) {
-    baseUrl = process.env.PUBLIC_API_URL;
+  // 1. Check for Kubernetes ConfigMap/environment variables (highest priority)
+  if (typeof process !== 'undefined') {
+    // Check for PUBLIC_API_URL (set directly in Kubernetes deployment)
+    if (process.env.PUBLIC_API_URL) {
+      baseUrl = process.env.PUBLIC_API_URL;
+    }
+    // Check for BACKEND_URL (from ConfigMap)
+    else if (process.env.BACKEND_URL) {
+      baseUrl = process.env.BACKEND_URL;
+    }
   }
-  // 2. Client-side hostname-based detection
-  else if (typeof window !== 'undefined') {
+  
+  // 2. Client-side hostname-based detection (fallback)
+  if (!baseUrl && typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     
     // Check against known hostname mappings
@@ -89,15 +100,15 @@ function getApiBaseUrl(): string {
     }
   }
   
-  // 3. Server-side environment-based detection
+  // 3. Environment-based fallback
   if (!baseUrl) {
     const environment = getCurrentEnvironment();
     switch (environment) {
       case 'production':
-        baseUrl = 'https://genascope-backend.fly.dev';
+        baseUrl = 'http://genascope-backend.local:8000';
         break;
       case 'staging':
-        baseUrl = 'https://genascope-backend-staging.fly.dev';
+        baseUrl = 'http://genascope-backend-staging.local:8000';
         break;
       case 'development':
       default:

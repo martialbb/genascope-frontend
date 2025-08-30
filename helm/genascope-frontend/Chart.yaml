@@ -1,0 +1,16 @@
+apiVersion: v2
+name: genascope-frontend
+description: A Helm chart for Genascope Frontend Application
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - frontend
+  - astro
+  - healthcare
+home: https://github.com/martialbb/genascope-frontend
+sources:
+  - https://github.com/martialbb/genascope-frontend
+maintainers:
+  - name: Martial Bah-Bioh
+    email: martial@genascope.com
