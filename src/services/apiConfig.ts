@@ -18,15 +18,16 @@ interface ApiEnvironmentConfig {
  */
 const ENVIRONMENT_BACKEND_URLS = {
   // Production URLs (Kubernetes)
-  'genascope.yourdomain.com': 'http://genascope-backend.local:8000',
-  'genascope-frontend.local': 'http://genascope-backend.local:8000',
+  'genascope.yourdomain.com': 'http://genascope-backend.production.svc.cluster.local:80',
+  'genascope-frontend.local': 'http://genascope-backend.production.svc.cluster.local:80',
   
   // Staging URLs (Kubernetes)
-  'genascope-frontend-staging.yourdomain.com': 'http://genascope-backend-staging.local:8000',
-  'genascope-frontend-staging.local': 'http://genascope-backend-staging.local:8000',
+  'genascope-frontend-staging.yourdomain.com': 'http://genascope-backend.staging.svc.cluster.local:80',
+  'genascope-frontend-staging.local': 'http://genascope-backend.staging.svc.cluster.local:80',
   
   // Development URLs (Kubernetes)
-  'genascope-frontend-dev.local': 'http://genascope-backend-dev.local:8000',
+  'genascope-dev.local': 'http://genascope-backend:80',
+  'genascope-frontend-dev.local': 'http://genascope-backend:80',
   
   // Local development
   'localhost': 'http://localhost:8000',
