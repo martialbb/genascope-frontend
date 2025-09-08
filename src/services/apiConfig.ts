@@ -70,47 +70,55 @@ function getCurrentEnvironment(): 'development' | 'staging' | 'production' {
 
 /**
  * Get the backend API URL based on current environment
- * Prioritizes Kubernetes environment variables over hostname detection
+ * Prioritizes runtime server endpoint over build-time environment variables
  */
 function getApiBaseUrl(): string {
   let baseUrl = '';
   
-  // 1. Check for Astro environment variables (highest priority)
-  // These are available both server-side and client-side
-  if (import.meta.env.PUBLIC_API_URL) {
-    baseUrl = import.meta.env.PUBLIC_API_URL;
-  }
-  // Also check process.env for server-side rendering
-  else if (typeof process !== 'undefined' && process.env.PUBLIC_API_URL) {
-    baseUrl = process.env.PUBLIC_API_URL;
-  }
-  
-  // 2. Client-side hostname-based detection (fallback)
-  if (!baseUrl && typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
+  // 1. Try to get runtime backend URL from a server endpoint (highest priority)
+  if (typeof window !== 'undefined') {
+    // Check if we can get the backend URL from the current page's base
+    const currentHost = window.location.hostname;
     
-    // Check against known hostname mappings
-    for (const [domain, backendUrl] of Object.entries(ENVIRONMENT_BACKEND_URLS)) {
-      if (hostname.includes(domain)) {
-        baseUrl = backendUrl;
-        break;
-      }
+    // Map known hostnames to their backend URLs
+    if (currentHost === 'genascope-dev.local' || currentHost.includes('dev')) {
+      baseUrl = 'http://genascope-backend.dev.svc.cluster.local:80';
+    } else if (currentHost.includes('staging')) {
+      baseUrl = 'http://genascope-backend.staging.svc.cluster.local:80';
+    } else if (currentHost === 'app.genascope.com' || currentHost.includes('genascope.com')) {
+      baseUrl = 'http://genascope-backend.production.svc.cluster.local:80';
     }
   }
   
-  // 3. Environment-based fallback
+  // 2. Check for Astro environment variables (build-time)
+  if (!baseUrl && import.meta.env.PUBLIC_API_URL) {
+    baseUrl = import.meta.env.PUBLIC_API_URL;
+  }
+  
+  // 3. Server-side environment check
+  if (!baseUrl && typeof process !== 'undefined' && process.env.PUBLIC_API_URL) {
+    baseUrl = process.env.PUBLIC_API_URL;
+  }
+  
+  // 4. Environment-based fallback
   if (!baseUrl) {
     const environment = getCurrentEnvironment();
     switch (environment) {
       case 'production':
-        baseUrl = 'http://genascope-backend.local:80';
+        baseUrl = 'http://genascope-backend.production.svc.cluster.local:80';
         break;
       case 'staging':
-        baseUrl = 'http://genascope-backend-staging.local:80';
+        baseUrl = 'http://genascope-backend.staging.svc.cluster.local:80';
         break;
       case 'development':
       default:
-        baseUrl = 'http://localhost:8000';
+        // For local development, use localhost
+        if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+          baseUrl = 'http://localhost:8000';
+        } else {
+          // For Kubernetes dev environment
+          baseUrl = 'http://genascope-backend.dev.svc.cluster.local:80';
+        }
         break;
     }
   }
