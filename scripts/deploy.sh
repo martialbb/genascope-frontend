@@ -93,6 +93,9 @@ kubectl get pods -n ${NAMESPACE} -l app.kubernetes.io/instance=genascope-fronten
 kubectl get services -n ${NAMESPACE} -l app.kubernetes.io/instance=genascope-frontend-${ENVIRONMENT}
 kubectl get ingress -n ${NAMESPACE} -l app.kubernetes.io/instance=genascope-frontend-${ENVIRONMENT}
 
+echo -e "${BLUE}🔒 Network Policy Status:${NC}"
+kubectl get networkpolicy -n ${NAMESPACE} || echo "No network policies found"
+
 echo -e "${GREEN}🌐 Access URLs:${NC}"
 case $ENVIRONMENT in
     dev)
@@ -108,3 +111,4 @@ esac
 
 echo -e "${YELLOW}💡 To check logs: kubectl logs -f deployment/genascope-frontend-${ENVIRONMENT} -n ${NAMESPACE}${NC}"
 echo -e "${YELLOW}💡 To port forward: kubectl port-forward svc/genascope-frontend-${ENVIRONMENT} 8080:80 -n ${NAMESPACE}${NC}"
+echo -e "${YELLOW}💡 To test network policy: ./scripts/test-network-policy.sh ${ENVIRONMENT}${NC}"

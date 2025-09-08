@@ -1,12 +1,23 @@
 # Staging environment configuration
 config:
-  backendUrl: "http://genascope-backend.staging.svc.cluster.local:8000"
+  backendUrl: "http://genascope-backend.staging.svc.cluster.local:80"
   nodeEnv: "staging"
+
+# Staging - Moderate security, similar to production but with some debugging access
+networkPolicy:
+  enabled: true
+  ingressNamespace: "ingress"
+  allowExternalHTTPS: true
+  allowedNamespaces:
+    - "monitoring"       # Monitoring tools
+  backendNamespaces:
+    - "staging"          # Backend services in staging namespace
+    - "shared-services"  # Shared services
 
 replicaCount: 2
 
 image:
-  tag: "latest"
+  tag: "staging"
   pullPolicy: Always
 
 resources:
@@ -17,13 +28,24 @@ resources:
     cpu: 100m
     memory: 128Mi
 
+probes:
+  liveness:
+    initialDelaySeconds: 30
+  readiness:
+    initialDelaySeconds: 10
+
 ingress:
   enabled: true
   className: "public"
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
   hosts:
-    - host: genascope-staging.local
+    - host: genascope-staging.yourdomain.com
       paths:
         - path: /
           pathType: Prefix
+  tls:
+    - secretName: genascope-staging-tls
+      hosts:
+        - genascope-staging.yourdomain.com

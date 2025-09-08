@@ -1,0 +1,63 @@
+{{- if and .Values.networkPolicy.enabled (eq .Values.config.nodeEnv "production") }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "genascope-frontend.fullname" . }}-production-strict
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "genascope-frontend.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "genascope-frontend.selectorLabels" . | nindent 6 }}
+  policyTypes:
+  - Ingress
+  - Egress
+  
+  ingress:
+  # Only allow traffic from ingress controller on HTTP port
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: {{ .Values.networkPolicy.ingressNamespace }}
+    ports:
+    - protocol: TCP
+      port: {{ .Values.config.port }}
+  
+  # Allow monitoring scraping if enabled
+  {{- if .Values.podAnnotations }}
+  {{- if index .Values.podAnnotations "prometheus.io/scrape" }}
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    - podSelector:
+        matchLabels:
+          app: prometheus
+    ports:
+    - protocol: TCP
+      port: {{ index .Values.podAnnotations "prometheus.io/port" | default "4321" }}
+  {{- end }}
+  {{- end }}
+  
+  egress:
+  # Only allow egress to backend API
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: {{ .Release.Namespace }}
+    - podSelector:
+        matchLabels:
+          app: genascope-backend
+    ports:
+    - protocol: TCP
+      port: 8000
+  
+  # DNS only
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+{{- end }}

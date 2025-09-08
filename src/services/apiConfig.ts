@@ -75,16 +75,14 @@ function getCurrentEnvironment(): 'development' | 'staging' | 'production' {
 function getApiBaseUrl(): string {
   let baseUrl = '';
   
-  // 1. Check for Kubernetes ConfigMap/environment variables (highest priority)
-  if (typeof process !== 'undefined') {
-    // Check for PUBLIC_API_URL (set directly in Kubernetes deployment)
-    if (process.env.PUBLIC_API_URL) {
-      baseUrl = process.env.PUBLIC_API_URL;
-    }
-    // Check for BACKEND_URL (from ConfigMap)
-    else if (process.env.BACKEND_URL) {
-      baseUrl = process.env.BACKEND_URL;
-    }
+  // 1. Check for Astro environment variables (highest priority)
+  // These are available both server-side and client-side
+  if (import.meta.env.PUBLIC_API_URL) {
+    baseUrl = import.meta.env.PUBLIC_API_URL;
+  }
+  // Also check process.env for server-side rendering
+  else if (typeof process !== 'undefined' && process.env.PUBLIC_API_URL) {
+    baseUrl = process.env.PUBLIC_API_URL;
   }
   
   // 2. Client-side hostname-based detection (fallback)
@@ -105,10 +103,10 @@ function getApiBaseUrl(): string {
     const environment = getCurrentEnvironment();
     switch (environment) {
       case 'production':
-        baseUrl = 'http://genascope-backend.local:8000';
+        baseUrl = 'http://genascope-backend.local:80';
         break;
       case 'staging':
-        baseUrl = 'http://genascope-backend-staging.local:8000';
+        baseUrl = 'http://genascope-backend-staging.local:80';
         break;
       case 'development':
       default:

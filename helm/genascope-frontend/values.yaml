@@ -21,7 +21,7 @@ fullnameOverride: ""
 # Environment-specific configuration
 config:
   # These will be overridden in environment-specific values files
-  backendUrl: "http://localhost:8000"
+  backendUrl: "http://genascope-backend.default.svc.cluster.local:80"
   nodeEnv: "development"
   host: "0.0.0.0"
   port: "4321"
@@ -118,3 +118,11 @@ probes:
 configMap:
   create: true
   data: {}
+
+# Network policy configuration
+networkPolicy:
+  enabled: true
+  ingressNamespace: "ingress"
+  allowExternalHTTPS: true
+  allowedNamespaces: []
+  backendNamespaces: []

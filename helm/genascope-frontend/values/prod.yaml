@@ -1,12 +1,23 @@
 # Production environment configuration
 config:
-  backendUrl: "http://genascope-backend.production.svc.cluster.local:8000"
+  backendUrl: "http://genascope-backend.production.svc.cluster.local:80"
   nodeEnv: "production"
+
+# Production - Strict security, minimal access
+networkPolicy:
+  enabled: true
+  ingressNamespace: "ingress"
+  allowExternalHTTPS: false  # Only if external APIs are not needed
+  allowedNamespaces:
+    - "monitoring"        # Essential monitoring only
+  backendNamespaces:
+    - "production"        # Backend services in production namespace
+    - "shared-services"   # Essential shared services only
 
 replicaCount: 3
 
 image:
-  tag: "latest"
+  tag: "production"
   pullPolicy: IfNotPresent
 
 resources:
@@ -24,16 +35,28 @@ autoscaling:
   targetCPUUtilizationPercentage: 70
   targetMemoryUtilizationPercentage: 70
 
+probes:
+  liveness:
+    initialDelaySeconds: 60
+  readiness:
+    initialDelaySeconds: 30
+
 ingress:
   enabled: true
   className: "public"
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
   hosts:
-    - host: genascope.local
+    - host: genascope.yourdomain.com
       paths:
         - path: /
           pathType: Prefix
+  tls:
+    - secretName: genascope-prod-tls
+      hosts:
+        - genascope.yourdomain.com
 
 podAnnotations:
   prometheus.io/scrape: "true"
