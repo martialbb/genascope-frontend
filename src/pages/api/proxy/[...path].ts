@@ -48,16 +48,34 @@ export const POST: APIRoute = async ({ params, request }) => {
   try {
     const backendPath = params.path || '';
     let body = null;
+    let headers: Record<string, string> = {};
     
     const contentType = request.headers.get('content-type');
+    
+    // Copy relevant headers to backend request
+    if (contentType) {
+      headers['Content-Type'] = contentType;
+    }
+    
+    // Handle different content types
     if (contentType?.includes('application/json')) {
       body = await request.json();
+      body = JSON.stringify(body); // Ensure it's a string for fetch
+    } else if (contentType?.includes('application/x-www-form-urlencoded')) {
+      // For form data, get the raw text (URLSearchParams string)
+      body = await request.text();
     } else if (contentType?.includes('multipart/form-data')) {
       body = await request.formData();
+    } else {
+      // Default: try to get as text
+      body = await request.text();
     }
 
     console.log(`🔄 Proxying POST request to backend: ${backendPath}`);
-    const result = await backendApi.post(backendPath, body);
+    console.log(`📋 Content-Type: ${contentType}`);
+    console.log(`📦 Body type: ${typeof body}`);
+    
+    const result = await backendApi.post(backendPath, body, headers);
 
     if (!result.success) {
       console.error(`❌ Backend POST request failed: ${result.error}`);

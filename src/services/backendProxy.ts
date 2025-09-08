@@ -46,27 +46,46 @@ export async function proxyBackendRequest<T = any>(
     const requestInit: RequestInit = {
       method,
       headers: {
-        'Content-Type': 'application/json',
         'Accept': 'application/json',
         ...headers
       },
       signal: controller.signal
     };
 
+    // Handle different body types
     if (body && method !== 'GET') {
-      requestInit.body = typeof body === 'string' ? body : JSON.stringify(body);
+      if (typeof body === 'string') {
+        // For form-urlencoded or pre-stringified JSON
+        requestInit.body = body;
+      } else if (body instanceof FormData) {
+        // For multipart form data - don't set Content-Type, let browser set it
+        requestInit.body = body;
+        // Remove Content-Type to let browser set proper boundary
+        delete requestInit.headers['Content-Type'];
+      } else {
+        // For objects, stringify as JSON
+        requestInit.body = JSON.stringify(body);
+        requestInit.headers['Content-Type'] = 'application/json';
+      }
     }
 
     const response = await fetch(url, requestInit);
     clearTimeout(timeoutId);
 
-    const responseData = await response.json().catch(() => null);
+    let responseData;
+    const contentType = response.headers.get('content-type');
+    
+    if (contentType?.includes('application/json')) {
+      responseData = await response.json().catch(() => null);
+    } else {
+      responseData = await response.text().catch(() => null);
+    }
 
     if (!response.ok) {
       console.error(`❌ Backend request failed: ${response.status} ${response.statusText}`, responseData);
       return {
         success: false,
-        error: responseData?.detail || response.statusText,
+        error: responseData?.detail || responseData || response.statusText,
         status: response.status
       };
     }
