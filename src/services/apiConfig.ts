@@ -1,8 +1,8 @@
 /**
- * API Configuration for Multi-Environment Setup
+ * API Configuration for Server-Side Proxied Requests
  * 
- * Provides environment-aware backend URL detection for development, staging, and production.
- * Automatically detects the appropriate backend URL based on the current environment.
+ * Uses local Astro server endpoints that proxy to the backend,
+ * eliminating the need for client-side cross-origin requests.
  */
 
 interface ApiEnvironmentConfig {
@@ -11,28 +11,6 @@ interface ApiEnvironmentConfig {
   retries: number;
   environment: 'development' | 'staging' | 'production';
 }
-
-/**
- * Environment-specific backend URL mapping
- * Kubernetes hostnames and local development
- */
-const ENVIRONMENT_BACKEND_URLS = {
-  // Production URLs (Kubernetes)
-  'genascope.yourdomain.com': 'http://genascope-backend.production.svc.cluster.local:80',
-  'genascope-frontend.local': 'http://genascope-backend.production.svc.cluster.local:80',
-  
-  // Staging URLs (Kubernetes)
-  'genascope-frontend-staging.yourdomain.com': 'http://genascope-backend.staging.svc.cluster.local:80',
-  'genascope-frontend-staging.local': 'http://genascope-backend.staging.svc.cluster.local:80',
-  
-  // Development URLs (Kubernetes)
-  'genascope-dev.local': 'http://genascope-backend:80',
-  'genascope-frontend-dev.local': 'http://genascope-backend:80',
-  
-  // Local development
-  'localhost': 'http://localhost:8000',
-  '127.0.0.1': 'http://localhost:8000'
-};
 
 /**
  * Determine the current environment based on hostname or environment variables
@@ -50,7 +28,7 @@ function getCurrentEnvironment(): 'development' | 'staging' | 'production' {
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     
-    if (hostname === 'genascope.yourdomain.com' || hostname === 'genascope-frontend.local') {
+    if (hostname === 'app.genascope.com' || hostname.includes('genascope.com')) {
       return 'production';
     }
     
@@ -70,62 +48,21 @@ function getCurrentEnvironment(): 'development' | 'staging' | 'production' {
 }
 
 /**
- * Get the backend API URL based on current environment
- * Prioritizes runtime server endpoint over build-time environment variables
+ * Get the API base URL - always uses local server endpoints that proxy to backend
+ * This eliminates CORS issues and allows backend to remain internal to Kubernetes
  */
 function getApiBaseUrl(): string {
-  let baseUrl = '';
+  // Always use the current frontend server's API endpoints
+  // These endpoints will proxy requests to the backend using internal Kubernetes DNS
   
-  // 1. Try to get runtime backend URL from a server endpoint (highest priority)
   if (typeof window !== 'undefined') {
-    // Check if we can get the backend URL from the current page's base
-    const currentHost = window.location.hostname;
-    
-    // Map known hostnames to their backend URLs
-    if (currentHost === 'genascope-dev.local' || currentHost.includes('dev')) {
-      baseUrl = 'http://genascope-backend:80';
-    } else if (currentHost.includes('staging')) {
-      baseUrl = 'http://genascope-backend.staging.svc.cluster.local:80';
-    } else if (currentHost === 'app.genascope.com' || currentHost.includes('genascope.com')) {
-      baseUrl = 'http://genascope-backend.production.svc.cluster.local:80';
-    }
+    // Client-side: use the current origin + /api/backend
+    const origin = window.location.origin;
+    return `${origin}/api/backend`;
+  } else {
+    // Server-side: use relative URL
+    return '/api/backend';
   }
-  
-  // 2. Check for Astro environment variables (build-time)
-  if (!baseUrl && import.meta.env.PUBLIC_API_URL) {
-    baseUrl = import.meta.env.PUBLIC_API_URL;
-  }
-  
-  // 3. Server-side environment check
-  if (!baseUrl && typeof process !== 'undefined' && process.env.PUBLIC_API_URL) {
-    baseUrl = process.env.PUBLIC_API_URL;
-  }
-  
-  // 4. Environment-based fallback
-  if (!baseUrl) {
-    const environment = getCurrentEnvironment();
-    switch (environment) {
-      case 'production':
-        baseUrl = 'http://genascope-backend.production.svc.cluster.local:80';
-        break;
-      case 'staging':
-        baseUrl = 'http://genascope-backend.staging.svc.cluster.local:80';
-        break;
-      case 'development':
-      default:
-        // For local development, use localhost
-        if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-          baseUrl = 'http://localhost:8000';
-        } else {
-          // For Kubernetes dev environment
-          baseUrl = 'http://genascope-backend.dev.svc.cluster.local:80';
-        }
-        break;
-    }
-  }
-  
-  // Always remove trailing slashes to prevent double slashes
-  return baseUrl.replace(/\/+$/, '');
 }
 
 /**
@@ -147,9 +84,9 @@ function createApiConfig(): ApiEnvironmentConfig {
 export const API_CONFIG = createApiConfig();
 
 /**
- * Create a full API endpoint URL
+ * Create a full API endpoint URL for server-side proxied requests
  * @param path The API endpoint path (with or without leading slash)
- * @returns The complete API URL
+ * @returns The complete API URL that will be proxied to the backend
  */
 export function getApiUrl(path: string): string {
   const baseUrl = API_CONFIG.baseUrl.replace(/\/+$/, ''); // Remove trailing slashes
@@ -159,11 +96,12 @@ export function getApiUrl(path: string): string {
 
 // Development logging
 if (typeof window !== 'undefined' && API_CONFIG.environment === 'development') {
-  console.log('🔧 API Configuration:', {
+  console.log('🔧 API Configuration (Server-Side Proxy):', {
     environment: API_CONFIG.environment,
     baseUrl: API_CONFIG.baseUrl,
     hostname: window.location.hostname,
     timeout: API_CONFIG.timeout,
-    retries: API_CONFIG.retries
+    retries: API_CONFIG.retries,
+    note: 'All API calls will be proxied through the frontend server to the backend'
   });
 }
