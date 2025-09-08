@@ -1,6 +1,6 @@
 # Development environment configuration
 config:
-  backendUrl: "http://genascope-backend.dev.svc.cluster.local:80"
+  backendUrl: "http://genascope-backend:80"
   nodeEnv: "development"
 
 # Development - More permissive for testing

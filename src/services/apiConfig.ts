@@ -83,7 +83,7 @@ function getApiBaseUrl(): string {
     
     // Map known hostnames to their backend URLs
     if (currentHost === 'genascope-dev.local' || currentHost.includes('dev')) {
-      baseUrl = 'http://genascope-backend.dev.svc.cluster.local:80';
+      baseUrl = 'http://genascope-backend:80';
     } else if (currentHost.includes('staging')) {
       baseUrl = 'http://genascope-backend.staging.svc.cluster.local:80';
     } else if (currentHost === 'app.genascope.com' || currentHost.includes('genascope.com')) {
