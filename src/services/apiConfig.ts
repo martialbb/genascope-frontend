@@ -52,16 +52,16 @@ function getCurrentEnvironment(): 'development' | 'staging' | 'production' {
  * This eliminates CORS issues and allows backend to remain internal to Kubernetes
  */
 function getApiBaseUrl(): string {
-  // Always use the current frontend server's API endpoints
-  // These endpoints will proxy requests to the backend using internal Kubernetes DNS
+  // Always use the current frontend server's API proxy endpoint
+  // This endpoint will proxy requests to the backend using internal Kubernetes DNS
   
   if (typeof window !== 'undefined') {
-    // Client-side: use the current origin + /api/backend
+    // Client-side: use the current origin + /api/proxy
     const origin = window.location.origin;
-    return `${origin}/api/backend`;
+    return `${origin}/api/proxy`;
   } else {
     // Server-side: use relative URL
-    return '/api/backend';
+    return '/api/proxy';
   }
 }
 
