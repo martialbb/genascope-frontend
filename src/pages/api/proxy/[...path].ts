@@ -12,6 +12,10 @@ export const GET: APIRoute = async ({ params, url, request }) => {
     const searchParams = new URLSearchParams(url.search);
     const queryParams = Object.fromEntries(searchParams.entries());
     
+    console.log(`🔍 Proxy Debug - Raw path: "${backendPath}"`);
+    console.log(`🔍 Proxy Debug - Path length: ${backendPath.length}`);
+    console.log(`🔍 Proxy Debug - Ends with slash: ${backendPath.endsWith('/')}`);
+    
     // Forward important headers (especially Authorization)
     let headers: Record<string, string> = {};
     const authHeader = request.headers.get('authorization');
@@ -26,7 +30,7 @@ export const GET: APIRoute = async ({ params, url, request }) => {
       apiPath += `?${queryString}`;
     }
 
-    console.log(`🔄 Proxying GET request to backend: ${backendPath}`);
+    console.log(`🔄 Proxying GET request to backend: "${apiPath}"`);
     const result = await backendApi.get(apiPath, headers);
 
     if (!result.success) {

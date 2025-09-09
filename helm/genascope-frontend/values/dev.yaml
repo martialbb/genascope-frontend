@@ -32,9 +32,15 @@ resources:
 
 probes:
   liveness:
-    initialDelaySeconds: 10
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
   readiness:
-    initialDelaySeconds: 5
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 10
+    failureThreshold: 5
 
 ingress:
   enabled: true

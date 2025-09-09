@@ -37,6 +37,9 @@ export async function proxyBackendRequest<T = any>(
 
   const url = getBackendApiUrl(endpoint);
   
+  console.log(`🔍 Backend Proxy Debug - Input endpoint: "${endpoint}"`);
+  console.log(`🔍 Backend Proxy Debug - Constructed URL: "${url}"`);
+  
   try {
     console.log(`🔄 Proxying ${method} request to: ${url}`);
 
