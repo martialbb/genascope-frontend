@@ -5,12 +5,20 @@
 import type { APIRoute } from 'astro';
 import { backendApi } from '../../../services/backendProxy';
 
-export const GET: APIRoute = async ({ params, url }) => {
+export const GET: APIRoute = async ({ params, url, request }) => {
   try {
     // Extract the path after /api/proxy/
     const backendPath = params.path || '';
     const searchParams = new URLSearchParams(url.search);
     const queryParams = Object.fromEntries(searchParams.entries());
+    
+    // Forward important headers (especially Authorization)
+    let headers: Record<string, string> = {};
+    const authHeader = request.headers.get('authorization');
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+      console.log(`🔐 Forwarding authorization header`);
+    }
     
     let apiPath = backendPath;
     if (Object.keys(queryParams).length > 0) {
@@ -18,8 +26,8 @@ export const GET: APIRoute = async ({ params, url }) => {
       apiPath += `?${queryString}`;
     }
 
-    console.log(`🔄 Proxying GET request to backend: ${apiPath}`);
-    const result = await backendApi.get(apiPath);
+    console.log(`🔄 Proxying GET request to backend: ${backendPath}`);
+    const result = await backendApi.get(apiPath, headers);
 
     if (!result.success) {
       console.error(`❌ Backend GET request failed: ${result.error}`);
@@ -55,6 +63,13 @@ export const POST: APIRoute = async ({ params, request }) => {
     // Copy relevant headers to backend request
     if (contentType) {
       headers['Content-Type'] = contentType;
+    }
+    
+    // Forward authorization header
+    const authHeader = request.headers.get('authorization');
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+      console.log(`🔐 Forwarding authorization header for POST`);
     }
     
     // Handle different content types
@@ -105,8 +120,16 @@ export const PUT: APIRoute = async ({ params, request }) => {
     const backendPath = params.path || '';
     const body = await request.json();
 
+    // Forward authorization header
+    let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const authHeader = request.headers.get('authorization');
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+      console.log(`🔐 Forwarding authorization header for PUT`);
+    }
+
     console.log(`🔄 Proxying PUT request to backend: ${backendPath}`);
-    const result = await backendApi.put(backendPath, body);
+    const result = await backendApi.put(backendPath, body, headers);
 
     if (!result.success) {
       console.error(`❌ Backend PUT request failed: ${result.error}`);
@@ -131,12 +154,20 @@ export const PUT: APIRoute = async ({ params, request }) => {
   }
 };
 
-export const DELETE: APIRoute = async ({ params }) => {
+export const DELETE: APIRoute = async ({ params, request }) => {
   try {
     const backendPath = params.path || '';
 
-    console.log(`🔄 Proxying DELETE request to backend: ${backendPath}`);
-    const result = await backendApi.delete(backendPath);
+    // Forward authorization header
+    let headers: Record<string, string> = {};
+    const authHeader = request.headers.get('authorization');
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+      console.log(`� Forwarding authorization header for DELETE`);
+    }
+
+    console.log(`�🔄 Proxying DELETE request to backend: ${backendPath}`);
+    const result = await backendApi.delete(backendPath, headers);
 
     if (!result.success) {
       console.error(`❌ Backend DELETE request failed: ${result.error}`);
