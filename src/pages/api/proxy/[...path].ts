@@ -5,16 +5,41 @@
 import type { APIRoute } from 'astro';
 import { backendApi } from '../../../services/backendProxy';
 
+/**
+ * Corrects the backend path by restoring trailing slashes that Astro strips
+ * from [...path] parameters
+ */
+function correctBackendPath(params: any, url: URL): string {
+  const backendPath = params.path || '';
+  
+  // Astro's [...path] parameter strips trailing slashes from the URL
+  // We need to restore them for backend endpoints that require them
+  let correctedPath = backendPath;
+  
+  // Check if the original URL had a trailing slash by examining the full URL
+  const originalUrl = url.pathname;
+  const proxyPrefix = '/api/proxy/';
+  if (originalUrl.startsWith(proxyPrefix)) {
+    const pathAfterProxy = originalUrl.substring(proxyPrefix.length);
+    // If the original path had a trailing slash, add it back
+    if (pathAfterProxy.endsWith('/') && !correctedPath.endsWith('/')) {
+      correctedPath += '/';
+    }
+  }
+  
+  console.log(`🔍 Path Correction - Original URL: "${originalUrl}"`);
+  console.log(`🔍 Path Correction - Raw path: "${backendPath}"`);
+  console.log(`🔍 Path Correction - Corrected path: "${correctedPath}"`);
+  
+  return correctedPath;
+}
+
 export const GET: APIRoute = async ({ params, url, request }) => {
   try {
-    // Extract the path after /api/proxy/
-    const backendPath = params.path || '';
+    // Extract and correct the backend path
+    const correctedPath = correctBackendPath(params, url);
     const searchParams = new URLSearchParams(url.search);
     const queryParams = Object.fromEntries(searchParams.entries());
-    
-    console.log(`🔍 Proxy Debug - Raw path: "${backendPath}"`);
-    console.log(`🔍 Proxy Debug - Path length: ${backendPath.length}`);
-    console.log(`🔍 Proxy Debug - Ends with slash: ${backendPath.endsWith('/')}`);
     
     // Forward important headers (especially Authorization)
     let headers: Record<string, string> = {};
@@ -24,7 +49,7 @@ export const GET: APIRoute = async ({ params, url, request }) => {
       console.log(`🔐 Forwarding authorization header`);
     }
     
-    let apiPath = backendPath;
+    let apiPath = correctedPath;
     if (Object.keys(queryParams).length > 0) {
       const queryString = new URLSearchParams(queryParams).toString();
       apiPath += `?${queryString}`;
@@ -56,9 +81,9 @@ export const GET: APIRoute = async ({ params, url, request }) => {
   }
 };
 
-export const POST: APIRoute = async ({ params, request }) => {
+export const POST: APIRoute = async ({ params, url, request }) => {
   try {
-    const backendPath = params.path || '';
+    const correctedPath = correctBackendPath(params, url);
     let body = null;
     let headers: Record<string, string> = {};
     
@@ -84,17 +109,15 @@ export const POST: APIRoute = async ({ params, request }) => {
       // For form data, get the raw text (URLSearchParams string)
       body = await request.text();
     } else if (contentType?.includes('multipart/form-data')) {
+      // For file uploads, get FormData
       body = await request.formData();
     } else {
-      // Default: try to get as text
+      // Default to text
       body = await request.text();
     }
 
-    console.log(`🔄 Proxying POST request to backend: ${backendPath}`);
-    console.log(`📋 Content-Type: ${contentType}`);
-    console.log(`📦 Body type: ${typeof body}`);
-    
-    const result = await backendApi.post(backendPath, body, headers);
+    console.log(`🔄 Proxying POST request to backend: ${correctedPath}`);
+    const result = await backendApi.post(correctedPath, body, headers);
 
     if (!result.success) {
       console.error(`❌ Backend POST request failed: ${result.error}`);
@@ -106,7 +129,7 @@ export const POST: APIRoute = async ({ params, request }) => {
 
     console.log(`✅ Backend POST request successful`);
     return new Response(JSON.stringify(result.data), {
-      status: result.status,
+      status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
 
@@ -119,21 +142,40 @@ export const POST: APIRoute = async ({ params, request }) => {
   }
 };
 
-export const PUT: APIRoute = async ({ params, request }) => {
+export const PUT: APIRoute = async ({ params, url, request }) => {
   try {
-    const backendPath = params.path || '';
-    const body = await request.json();
-
+    const correctedPath = correctBackendPath(params, url);
+    let body = null;
+    let headers: Record<string, string> = {};
+    
+    const contentType = request.headers.get('content-type');
+    
+    // Copy relevant headers to backend request
+    if (contentType) {
+      headers['Content-Type'] = contentType;
+    }
+    
     // Forward authorization header
-    let headers: Record<string, string> = { 'Content-Type': 'application/json' };
     const authHeader = request.headers.get('authorization');
     if (authHeader) {
       headers['Authorization'] = authHeader;
       console.log(`🔐 Forwarding authorization header for PUT`);
     }
+    
+    // Handle different content types (same as POST)
+    if (contentType?.includes('application/json')) {
+      body = await request.json();
+      body = JSON.stringify(body);
+    } else if (contentType?.includes('application/x-www-form-urlencoded')) {
+      body = await request.text();
+    } else if (contentType?.includes('multipart/form-data')) {
+      body = await request.formData();
+    } else {
+      body = await request.text();
+    }
 
-    console.log(`🔄 Proxying PUT request to backend: ${backendPath}`);
-    const result = await backendApi.put(backendPath, body, headers);
+    console.log(`🔄 Proxying PUT request to backend: ${correctedPath}`);
+    const result = await backendApi.put(correctedPath, body, headers);
 
     if (!result.success) {
       console.error(`❌ Backend PUT request failed: ${result.error}`);
@@ -158,20 +200,20 @@ export const PUT: APIRoute = async ({ params, request }) => {
   }
 };
 
-export const DELETE: APIRoute = async ({ params, request }) => {
+export const DELETE: APIRoute = async ({ params, url, request }) => {
   try {
-    const backendPath = params.path || '';
-
+    const correctedPath = correctBackendPath(params, url);
+    
     // Forward authorization header
     let headers: Record<string, string> = {};
     const authHeader = request.headers.get('authorization');
     if (authHeader) {
       headers['Authorization'] = authHeader;
-      console.log(`� Forwarding authorization header for DELETE`);
+      console.log(`🔐 Forwarding authorization header for DELETE`);
     }
 
-    console.log(`�🔄 Proxying DELETE request to backend: ${backendPath}`);
-    const result = await backendApi.delete(backendPath, headers);
+    console.log(`🔄 Proxying DELETE request to backend: ${correctedPath}`);
+    const result = await backendApi.delete(correctedPath, headers);
 
     if (!result.success) {
       console.error(`❌ Backend DELETE request failed: ${result.error}`);
@@ -182,8 +224,9 @@ export const DELETE: APIRoute = async ({ params, request }) => {
     }
 
     console.log(`✅ Backend DELETE request successful`);
-    return new Response(null, {
-      status: 204
+    return new Response(JSON.stringify(result.data), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
     });
 
   } catch (error) {
