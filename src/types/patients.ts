@@ -63,7 +63,7 @@ export interface PatientUpdate {
 export interface PatientInviteRequest {
   patient_id: string;
   provider_id: string;
-  chat_strategy: string;
+  chat_strategy_id: string;
   send_email?: boolean;
   custom_message?: string;
   expiry_days?: number;
@@ -89,14 +89,14 @@ export interface PatientInviteResponse {
 export interface BulkPatientInviteRequest {
   patient_id: string;
   provider_id: string;
-  chat_strategy: string;
+  chat_strategy_id: string;
   custom_message?: string;
   expiry_days?: number;
 }
 
 export interface BulkInviteRequest {
   patients: BulkPatientInviteRequest[];
-  chat_strategy: string;
+  chat_strategy_id: string;
   send_emails: boolean;
   custom_message?: string;
 }

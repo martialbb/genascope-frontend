@@ -58,7 +58,7 @@ const BulkInviteModal: React.FC<BulkInviteModalProps> = ({
       const patientInvites = selectedRowKeys.map(patientId => ({
         patient_id: patientId as string,
         provider_id: values.provider_id,
-        chat_strategy: values.chat_strategy,
+        chat_strategy_id: values.chat_strategy, // Map form field to API field
         custom_message: values.custom_message,
         expiry_days: values.expiry_days
       }));
@@ -66,7 +66,7 @@ const BulkInviteModal: React.FC<BulkInviteModalProps> = ({
       // Call the bulk invite API
       const response = await apiService.sendBulkInvites({
         patients: patientInvites,
-        chat_strategy: values.chat_strategy,
+        chat_strategy_id: values.chat_strategy, // Map form field to API field
         send_emails: values.send_emails,
         custom_message: values.custom_message
       });
