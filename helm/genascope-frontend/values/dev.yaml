@@ -52,3 +52,7 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
+    - host: chat-dev.genascope.com
+      paths:
+        - path: /
+          pathType: Prefix

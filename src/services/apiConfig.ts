@@ -28,16 +28,22 @@ function getCurrentEnvironment(): 'development' | 'staging' | 'production' {
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     
-    if (hostname === 'app.genascope.com' || hostname.includes('genascope.com')) {
+    if (hostname === 'app.genascope.com') {
       return 'production';
     }
     
-    if (hostname.includes('staging')) {
+    if (hostname.includes('staging') || hostname === 'staging.genascope.com') {
       return 'staging';
     }
     
-    if (hostname.includes('localhost') || hostname.includes('127.0.0.1') || hostname.includes('dev')) {
+    if (hostname.includes('localhost') || hostname.includes('127.0.0.1') || 
+        hostname.includes('dev') || hostname === 'chat-dev.genascope.com') {
       return 'development';
+    }
+    
+    // Default to production for other genascope.com subdomains
+    if (hostname.includes('genascope.com')) {
+      return 'production';
     }
     
     // Default to development for unknown hostnames
