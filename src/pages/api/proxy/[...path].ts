@@ -84,6 +84,9 @@ export const GET: APIRoute = async ({ params, url, request }) => {
 export const POST: APIRoute = async ({ params, url, request }) => {
   try {
     const correctedPath = correctBackendPath(params, url);
+    const searchParams = new URLSearchParams(url.search);
+    const queryParams = Object.fromEntries(searchParams.entries());
+    
     let body = null;
     let headers: Record<string, string> = {};
     
@@ -116,8 +119,14 @@ export const POST: APIRoute = async ({ params, url, request }) => {
       body = await request.text();
     }
 
-    console.log(`🔄 Proxying POST request to backend: ${correctedPath}`);
-    const result = await backendApi.post(correctedPath, body, headers);
+    let apiPath = correctedPath;
+    if (Object.keys(queryParams).length > 0) {
+      const queryString = new URLSearchParams(queryParams).toString();
+      apiPath += `?${queryString}`;
+    }
+
+    console.log(`🔄 Proxying POST request to backend: ${apiPath}`);
+    const result = await backendApi.post(apiPath, body, headers);
 
     if (!result.success) {
       console.error(`❌ Backend POST request failed: ${result.error}`);
@@ -145,6 +154,9 @@ export const POST: APIRoute = async ({ params, url, request }) => {
 export const PUT: APIRoute = async ({ params, url, request }) => {
   try {
     const correctedPath = correctBackendPath(params, url);
+    const searchParams = new URLSearchParams(url.search);
+    const queryParams = Object.fromEntries(searchParams.entries());
+    
     let body = null;
     let headers: Record<string, string> = {};
     
@@ -174,8 +186,14 @@ export const PUT: APIRoute = async ({ params, url, request }) => {
       body = await request.text();
     }
 
-    console.log(`🔄 Proxying PUT request to backend: ${correctedPath}`);
-    const result = await backendApi.put(correctedPath, body, headers);
+    let apiPath = correctedPath;
+    if (Object.keys(queryParams).length > 0) {
+      const queryString = new URLSearchParams(queryParams).toString();
+      apiPath += `?${queryString}`;
+    }
+
+    console.log(`🔄 Proxying PUT request to backend: ${apiPath}`);
+    const result = await backendApi.put(apiPath, body, headers);
 
     if (!result.success) {
       console.error(`❌ Backend PUT request failed: ${result.error}`);
@@ -203,6 +221,8 @@ export const PUT: APIRoute = async ({ params, url, request }) => {
 export const DELETE: APIRoute = async ({ params, url, request }) => {
   try {
     const correctedPath = correctBackendPath(params, url);
+    const searchParams = new URLSearchParams(url.search);
+    const queryParams = Object.fromEntries(searchParams.entries());
     
     // Forward authorization header
     let headers: Record<string, string> = {};
@@ -212,8 +232,14 @@ export const DELETE: APIRoute = async ({ params, url, request }) => {
       console.log(`🔐 Forwarding authorization header for DELETE`);
     }
 
-    console.log(`🔄 Proxying DELETE request to backend: ${correctedPath}`);
-    const result = await backendApi.delete(correctedPath, headers);
+    let apiPath = correctedPath;
+    if (Object.keys(queryParams).length > 0) {
+      const queryString = new URLSearchParams(queryParams).toString();
+      apiPath += `?${queryString}`;
+    }
+
+    console.log(`🔄 Proxying DELETE request to backend: ${apiPath}`);
+    const result = await backendApi.delete(apiPath, headers);
 
     if (!result.success) {
       console.error(`❌ Backend DELETE request failed: ${result.error}`);
