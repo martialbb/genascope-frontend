@@ -125,7 +125,6 @@ const ClinicianAvailabilityManager: React.FC<AvailabilityProps> = ({ clinicianId
 
     try {
       const availabilityData = {
-        clinician_id: effectiveClinicianId,
         date: selectedDate,
         time_slots: selectedTimeSlots,
         is_recurring: isRecurring,
