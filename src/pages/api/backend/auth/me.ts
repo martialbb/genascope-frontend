@@ -3,7 +3,7 @@
  * Proxies requests to the backend using Kubernetes internal DNS
  */
 import type { APIRoute } from 'astro';
-import { backendApi } from '../../../services/backendProxy.js';
+import { backendApi } from '../../../../services/backendProxy.js';
 
 export const GET: APIRoute = async ({ request }) => {
   try {
