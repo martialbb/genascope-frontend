@@ -10,14 +10,29 @@ export const POST: APIRoute = async ({ request }) => {
     const contentType = request.headers.get('content-type');
     let body = null;
     
+    console.log('🔐 Auth token request - Content-Type:', contentType);
+    
     if (contentType?.includes('application/json')) {
       body = await request.json();
+      console.log('🔐 Parsed JSON body:', body);
     } else if (contentType?.includes('application/x-www-form-urlencoded')) {
+      const formText = await request.text();
+      console.log('🔐 Raw form data:', formText);
+      
+      // Parse URL-encoded form data manually
+      const params = new URLSearchParams(formText);
+      body = Object.fromEntries(params.entries());
+      console.log('🔐 Parsed form body:', body);
+    } else if (contentType?.includes('multipart/form-data')) {
       const formData = await request.formData();
       body = Object.fromEntries(formData.entries());
+      console.log('🔐 Parsed multipart body:', body);
     }
 
-    const result = await backendApi.post('api/auth/token', body);
+    // Forward the request to backend with proper content type
+    const result = await backendApi.post('api/auth/token', body, {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    });
 
     if (!result.success) {
       return new Response(JSON.stringify({ error: result.error }), {

@@ -62,6 +62,18 @@ export async function proxyBackendRequest<T = any>(
           ...requestInit.headers
         };
         requestInit.body = body;
+      } else if (headers['Content-Type'] === 'application/x-www-form-urlencoded') {
+        // Convert object to URL-encoded string for auth endpoints
+        const params = new URLSearchParams();
+        Object.entries(body).forEach(([key, value]) => {
+          params.append(key, String(value));
+        });
+        requestInit.headers = {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          ...requestInit.headers
+        };
+        requestInit.body = params.toString();
+        console.log('🔄 Sending form-encoded data:', params.toString());
       } else {
         requestInit.headers = {
           'Content-Type': 'application/json',
