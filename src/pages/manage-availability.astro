@@ -15,8 +15,8 @@ import ClinicianAvailabilityManager from '../components/ClinicianAvailabilityMan
       </div>
       
       <div class="bg-white rounded-lg shadow-md overflow-hidden">
-        <!-- ClinicianAvailabilityManager will get the clinician ID from localStorage automatically when not provided -->
-        <ClinicianAvailabilityManager client:load />
+        <!-- We're using clinician-123 as a placeholder ID. In a real app, get this from the auth context -->
+        <ClinicianAvailabilityManager client:load clinicianId="clinician-123" />
       </div>
       
       <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">

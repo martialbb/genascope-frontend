@@ -211,17 +211,14 @@ const PatientManager = () => {
   };
 
   // Handle sending invite
-  const handleSendInvite = async (values: any) => {
+  const handleSendInvite = async (values: PatientInviteRequest & { send_email: boolean }) => {
     if (!selectedPatient || !user) return;
     
     try {
-      const inviteData: PatientInviteRequest = {
+      const inviteData = {
+        ...values,
         patient_id: selectedPatient.id,
-        provider_id: values.provider_id || user.id,
-        chat_strategy_id: values.chat_strategy, // Map form field to API field
-        send_email: values.send_email,
-        custom_message: values.custom_message,
-        expiry_days: values.expiry_days
+        provider_id: values.provider_id || user.id
       };
       
       const response = await apiService.sendPatientInvite(inviteData);

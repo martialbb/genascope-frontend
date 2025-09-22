@@ -28,22 +28,16 @@ function getCurrentEnvironment(): 'development' | 'staging' | 'production' {
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     
-    if (hostname === 'app.genascope.com') {
+    if (hostname === 'app.genascope.com' || hostname.includes('genascope.com')) {
       return 'production';
     }
     
-    if (hostname.includes('staging') || hostname === 'staging.genascope.com') {
+    if (hostname.includes('staging')) {
       return 'staging';
     }
     
-    if (hostname.includes('localhost') || hostname.includes('127.0.0.1') || 
-        hostname.includes('dev') || hostname === 'chat-dev.genascope.com') {
+    if (hostname.includes('localhost') || hostname.includes('127.0.0.1') || hostname.includes('dev')) {
       return 'development';
-    }
-    
-    // Default to production for other genascope.com subdomains
-    if (hostname.includes('genascope.com')) {
-      return 'production';
     }
     
     // Default to development for unknown hostnames
@@ -58,16 +52,16 @@ function getCurrentEnvironment(): 'development' | 'staging' | 'production' {
  * This eliminates CORS issues and allows backend to remain internal to Kubernetes
  */
 function getApiBaseUrl(): string {
-  // Always use the current frontend server's API proxy endpoint
-  // This endpoint will proxy requests to the backend using internal Kubernetes DNS
+  // Always use the current frontend server's API endpoints
+  // These endpoints will proxy requests to the backend using internal Kubernetes DNS
   
   if (typeof window !== 'undefined') {
-    // Client-side: use the current origin + /api/proxy
+    // Client-side: use the current origin + /api/backend
     const origin = window.location.origin;
-    return `${origin}/api/proxy`;
+    return `${origin}/api/backend`;
   } else {
     // Server-side: use relative URL
-    return '/api/proxy';
+    return '/api/backend';
   }
 }
 

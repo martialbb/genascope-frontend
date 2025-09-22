@@ -12,17 +12,4 @@ export default defineConfig({
     mode: "standalone"
   }),
   integrations: [react(), tailwind()],
-  security: {
-    checkOrigin: false  // Disable origin checking for CSRF protection to allow Cloudflare tunnel
-  },
-  vite: {
-    build: {
-      assetsInlineLimit: 0, // Force assets to be served as separate files
-    },
-    server: {
-      headers: {
-        'Cache-Control': 'public, max-age=31536000', // Cache static assets
-      }
-    }
-  }
 });

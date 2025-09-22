@@ -57,15 +57,8 @@ export const SERVER_API_CONFIG = getServerApiConfig();
  */
 export function getBackendApiUrl(path: string): string {
   const baseUrl = SERVER_API_CONFIG.baseUrl;
-  // Don't remove leading or trailing slashes - preserve them exactly as passed
-  const cleanPath = path.replace(/^\/+/, ''); // Only remove leading slashes
-  const fullUrl = `${baseUrl}/${cleanPath}`;
-  
-  console.log(`🔍 URL Construction - Input path: "${path}"`);
-  console.log(`🔍 URL Construction - Clean path: "${cleanPath}"`);
-  console.log(`🔍 URL Construction - Full URL: "${fullUrl}"`);
-  
-  return fullUrl;
+  const cleanPath = path.replace(/^\/+/, ''); // Remove leading slashes
+  return `${baseUrl}/${cleanPath}`;
 }
 
 // Server-side logging

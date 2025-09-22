@@ -64,37 +64,16 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
   // Load appointments
   useEffect(() => {
   const fetchAppointments = async () => {
-    // Get user ID from localStorage if not provided via props
-    let effectiveClinicianId = clinicianId;
-    let effectivePatientId = patientId;
-    
-    if (!effectiveClinicianId && !effectivePatientId && isClinicianView) {
-      try {
-        const userData = localStorage.getItem('authUser');
-        if (userData) {
-          const user = JSON.parse(userData);
-          effectiveClinicianId = user.id;
-        }
-      } catch (error) {
-        console.error('Error getting user from localStorage:', error);
-        setIsLoading(false);
-        return;
-      }
-    }
-    
-    if (!effectiveClinicianId && !effectivePatientId) {
-      setIsLoading(false);
-      return;
-    }
+    if (!clinicianId && !patientId) return;
     
     setIsLoading(true);
     try {
       let response;
-      if (effectiveClinicianId) {
-        response = await apiService.getClinicianAppointments(effectiveClinicianId, startDate, endDate);
+      if (clinicianId) {
+        response = await apiService.getClinicianAppointments(clinicianId, startDate, endDate);
         setAppointments(response.appointments || []);
-      } else if (effectivePatientId) {
-        response = await apiService.getPatientAppointments(effectivePatientId);
+      } else if (patientId) {
+        response = await apiService.getPatientAppointments(patientId);
         setAppointments(response.appointments || []);
       }
     } catch (error) {

@@ -1,9 +1,9 @@
 // src/components/ClinicianAvailabilityManager.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import apiService from '../services/api';
 
 interface AvailabilityProps {
-  clinicianId?: string;
+  clinicianId: string;
 }
 
 type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0 = Monday, 6 = Sunday
@@ -30,7 +30,6 @@ const TIME_SLOTS = [
 ];
 
 const ClinicianAvailabilityManager: React.FC<AvailabilityProps> = ({ clinicianId }) => {
-  const [effectiveClinicianId, setEffectiveClinicianId] = useState<string | null>(clinicianId || null);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>([]);
   const [isRecurring, setIsRecurring] = useState<boolean>(false);
@@ -40,22 +39,6 @@ const ClinicianAvailabilityManager: React.FC<AvailabilityProps> = ({ clinicianId
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
-
-  // Get clinician ID from localStorage if not provided as prop
-  useEffect(() => {
-    if (!effectiveClinicianId) {
-      try {
-        const userData = localStorage.getItem('authUser');
-        if (userData) {
-          const user = JSON.parse(userData);
-          setEffectiveClinicianId(user.id);
-        }
-      } catch (error) {
-        console.error('Error getting user from localStorage:', error);
-        setError('Unable to identify clinician. Please log in again.');
-      }
-    }
-  }, [effectiveClinicianId]);
   
   // Calculate min date (today) for date picker
   const today = new Date();
@@ -111,11 +94,6 @@ const ClinicianAvailabilityManager: React.FC<AvailabilityProps> = ({ clinicianId
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     
-    if (!effectiveClinicianId) {
-      setError('Unable to identify clinician. Please log in again.');
-      return;
-    }
-    
     if (!validateForm()) {
       return;
     }
@@ -125,6 +103,7 @@ const ClinicianAvailabilityManager: React.FC<AvailabilityProps> = ({ clinicianId
 
     try {
       const availabilityData = {
+        clinician_id: clinicianId,
         date: selectedDate,
         time_slots: selectedTimeSlots,
         is_recurring: isRecurring,
@@ -132,7 +111,7 @@ const ClinicianAvailabilityManager: React.FC<AvailabilityProps> = ({ clinicianId
         recurring_until: isRecurring ? recurringUntil : undefined
       };
 
-      await apiService.setClinicianAvailability(effectiveClinicianId!, availabilityData);
+      await apiService.setClinicianAvailability(availabilityData);
       
       setSuccess(true);
       setSelectedTimeSlots([]);

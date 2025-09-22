@@ -32,15 +32,9 @@ resources:
 
 probes:
   liveness:
-    initialDelaySeconds: 60
-    periodSeconds: 30
-    timeoutSeconds: 10
-    failureThreshold: 3
+    initialDelaySeconds: 10
   readiness:
-    initialDelaySeconds: 30
-    periodSeconds: 15
-    timeoutSeconds: 10
-    failureThreshold: 5
+    initialDelaySeconds: 5
 
 ingress:
   enabled: true
@@ -49,10 +43,6 @@ ingress:
     nginx.ingress.kubernetes.io/rewrite-target: /
   hosts:
     - host: genascope-dev.local
-      paths:
-        - path: /
-          pathType: Prefix
-    - host: chat-dev.genascope.com
       paths:
         - path: /
           pathType: Prefix

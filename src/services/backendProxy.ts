@@ -37,9 +37,6 @@ export async function proxyBackendRequest<T = any>(
 
   const url = getBackendApiUrl(endpoint);
   
-  console.log(`🔍 Backend Proxy Debug - Input endpoint: "${endpoint}"`);
-  console.log(`🔍 Backend Proxy Debug - Constructed URL: "${url}"`);
-  
   try {
     console.log(`🔄 Proxying ${method} request to: ${url}`);
 
@@ -49,46 +46,27 @@ export async function proxyBackendRequest<T = any>(
     const requestInit: RequestInit = {
       method,
       headers: {
+        'Content-Type': 'application/json',
         'Accept': 'application/json',
         ...headers
       },
       signal: controller.signal
     };
 
-    // Handle different body types
     if (body && method !== 'GET') {
-      if (typeof body === 'string') {
-        // For form-urlencoded or pre-stringified JSON
-        requestInit.body = body;
-      } else if (body instanceof FormData) {
-        // For multipart form data - don't set Content-Type, let browser set it
-        requestInit.body = body;
-        // Remove Content-Type to let browser set proper boundary
-        delete requestInit.headers['Content-Type'];
-      } else {
-        // For objects, stringify as JSON
-        requestInit.body = JSON.stringify(body);
-        requestInit.headers['Content-Type'] = 'application/json';
-      }
+      requestInit.body = typeof body === 'string' ? body : JSON.stringify(body);
     }
 
     const response = await fetch(url, requestInit);
     clearTimeout(timeoutId);
 
-    let responseData;
-    const contentType = response.headers.get('content-type');
-    
-    if (contentType?.includes('application/json')) {
-      responseData = await response.json().catch(() => null);
-    } else {
-      responseData = await response.text().catch(() => null);
-    }
+    const responseData = await response.json().catch(() => null);
 
     if (!response.ok) {
       console.error(`❌ Backend request failed: ${response.status} ${response.statusText}`, responseData);
       return {
         success: false,
-        error: responseData?.detail || responseData || response.statusText,
+        error: responseData?.detail || response.statusText,
         status: response.status
       };
     }
