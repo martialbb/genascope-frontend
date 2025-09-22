@@ -41,11 +41,15 @@ ingress:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
   hosts:
-    - host: genascope-staging.yourdomain.com
+    - host: genascope-staging.local
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: chat-staging.genascope.com
       paths:
         - path: /
           pathType: Prefix
   tls:
     - secretName: genascope-staging-tls
       hosts:
-        - genascope-staging.yourdomain.com
+        - chat-staging.genascope.com

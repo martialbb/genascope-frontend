@@ -46,7 +46,6 @@ export async function proxyBackendRequest<T = any>(
     const requestInit: RequestInit = {
       method,
       headers: {
-        'Content-Type': 'application/json',
         'Accept': 'application/json',
         ...headers
       },
@@ -54,7 +53,27 @@ export async function proxyBackendRequest<T = any>(
     };
 
     if (body && method !== 'GET') {
-      requestInit.body = typeof body === 'string' ? body : JSON.stringify(body);
+      if (body instanceof FormData) {
+        // Don't set Content-Type for FormData, let the browser set it with boundary
+        requestInit.body = body;
+      } else if (typeof body === 'string') {
+        requestInit.headers = {
+          'Content-Type': 'application/json',
+          ...requestInit.headers
+        };
+        requestInit.body = body;
+      } else {
+        requestInit.headers = {
+          'Content-Type': 'application/json',
+          ...requestInit.headers
+        };
+        requestInit.body = JSON.stringify(body);
+      }
+    } else {
+      requestInit.headers = {
+        'Content-Type': 'application/json',
+        ...requestInit.headers
+      };
     }
 
     const response = await fetch(url, requestInit);

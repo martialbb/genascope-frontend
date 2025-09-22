@@ -49,14 +49,14 @@ ingress:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
   hosts:
-    - host: genascope.yourdomain.com
+    - host: chat.genascope.com
       paths:
         - path: /
           pathType: Prefix
   tls:
     - secretName: genascope-prod-tls
       hosts:
-        - genascope.yourdomain.com
+        - chat.genascope.com
 
 podAnnotations:
   prometheus.io/scrape: "true"

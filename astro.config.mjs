@@ -12,4 +12,7 @@ export default defineConfig({
     mode: "standalone"
   }),
   integrations: [react(), tailwind()],
+  security: {
+    checkOrigin: false // Disable CSRF protection for API routes
+  }
 });
