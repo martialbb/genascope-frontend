@@ -3,7 +3,7 @@
  * Handles dynamic routing for endpoints not covered by specific proxy files
  */
 import type { APIRoute } from 'astro';
-import { backendApi } from '../../../services/backendProxy';
+import { backendApi } from '../../../services/backendProxy.js';
 
 export const GET: APIRoute = async ({ params, url }) => {
   try {

@@ -5,7 +5,7 @@
  * This service runs on the server and proxies requests from the frontend.
  */
 
-import { getBackendApiUrl, SERVER_API_CONFIG } from '../utils/serverApiConfig';
+import { getBackendApiUrl, SERVER_API_CONFIG } from '../utils/serverApiConfig.js';
 
 interface ProxyRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
