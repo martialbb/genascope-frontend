@@ -8,6 +8,15 @@ import { backendApi } from '../../../services/backendProxy.js';
 export const GET: APIRoute = async ({ params, url }) => {
   try {
     const endpoint = params.path || '';
+    
+    // Skip auth endpoints - they have their own specific handlers
+    if (endpoint.startsWith('api/auth/')) {
+      return new Response(JSON.stringify({ error: 'Auth endpoints should use specific handlers' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    
     const searchParams = new URLSearchParams(url.search);
     const queryParams = Object.fromEntries(searchParams.entries());
     
@@ -17,6 +26,7 @@ export const GET: APIRoute = async ({ params, url }) => {
       apiPath += `?${queryString}`;
     }
 
+    console.log(`🔄 Generic proxy handling: ${apiPath}`);
     const result = await backendApi.get(apiPath);
 
     if (!result.success) {
@@ -43,6 +53,15 @@ export const GET: APIRoute = async ({ params, url }) => {
 export const POST: APIRoute = async ({ params, request }) => {
   try {
     const endpoint = params.path || '';
+    
+    // Skip auth endpoints - they have their own specific handlers
+    if (endpoint.startsWith('api/auth/')) {
+      return new Response(JSON.stringify({ error: 'Auth endpoints should use specific handlers' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    
     let body = null;
     
     const contentType = request.headers.get('content-type');
@@ -52,6 +71,7 @@ export const POST: APIRoute = async ({ params, request }) => {
       body = await request.formData();
     }
 
+    console.log(`🔄 Generic proxy handling POST: ${endpoint}`);
     const result = await backendApi.post(endpoint, body);
 
     if (!result.success) {
