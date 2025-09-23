@@ -19,15 +19,9 @@ export default defineConfig({
     assets: '_astro' // Ensure assets directory is correct
   },
   vite: {
-    build: {
-      rollupOptions: {
-        output: {
-          // Force new asset names by adding timestamp
-          assetFileNames: '_astro/[name].[hash].[ext]',
-          chunkFileNames: '_astro/[name].[hash].js',
-          entryFileNames: '_astro/[name].[hash].js'
-        }
-      }
+    define: {
+      // Add timestamp to force cache busting
+      __BUILD_TIME__: JSON.stringify(new Date().toISOString())
     }
   }
 });
