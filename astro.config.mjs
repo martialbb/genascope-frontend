@@ -14,5 +14,20 @@ export default defineConfig({
   integrations: [react(), tailwind()],
   security: {
     checkOrigin: false // Disable CSRF protection for API routes
+  },
+  build: {
+    assets: '_astro' // Ensure assets directory is correct
+  },
+  vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          // Force new asset names by adding timestamp
+          assetFileNames: '_astro/[name].[hash].[ext]',
+          chunkFileNames: '_astro/[name].[hash].js',
+          entryFileNames: '_astro/[name].[hash].js'
+        }
+      }
+    }
   }
 });
