@@ -431,7 +431,7 @@ class ApiService {
     };
   }
 
-  // Get invite statistics in a single API call for better performance
+  // Get invite statistics by fetching all invites and calculating locally for better performance
   async getInviteStatistics(): Promise<{
     pending: number;
     completed: number;
@@ -440,12 +440,30 @@ class ApiService {
     total: number;
   }> {
     try {
-      // Try to use a dedicated statistics endpoint if it exists
-      const response = await this.client.get('/invite-statistics');
-      return response.data;
+      console.log('📊 Fetching all invites for local statistics calculation...');
+      
+      // Fetch all invites in one call (without pagination limit)
+      const allInvitesResponse = await this.getInvites({ limit: 10000 }); // Large limit to get all
+      const invites = allInvitesResponse.invites;
+      
+      console.log(`📊 Processing ${invites.length} invites for statistics...`);
+      
+      // Calculate statistics by filtering locally
+      const stats = {
+        pending: invites.filter(invite => invite.status === 'pending').length,
+        completed: invites.filter(invite => invite.status === 'completed').length,
+        expired: invites.filter(invite => invite.status === 'expired').length,
+        cancelled: invites.filter(invite => invite.status === 'cancelled').length,
+        total: invites.length
+      };
+
+      console.log('📊 Calculated invite statistics:', stats);
+      return stats;
     } catch (error: any) {
-      // Fallback to multiple calls if statistics endpoint doesn't exist
-      console.warn('Statistics endpoint not available, falling back to multiple calls');
+      console.error('📊 Error fetching invites for statistics:', error);
+      
+      // If all invites fetch fails, fallback to the old method of multiple calls
+      console.warn('Falling back to multiple API calls for statistics');
       const [pendingRes, completedRes, expiredRes, cancelledRes] = await Promise.all([
         this.getInvites({ status: 'pending' as InviteStatus, limit: 1 }),
         this.getInvites({ status: 'completed' as InviteStatus, limit: 1 }),
