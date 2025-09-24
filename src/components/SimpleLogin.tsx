@@ -56,7 +56,7 @@ const SimpleLogin: React.FC = () => {
       console.log('API Base URL:', API_CONFIG.baseUrl);
 
       // Step 1: Get access token
-      const tokenResponse = await fetch(getApiUrl('api/auth/token'), {
+      const tokenResponse = await fetch(getApiUrl('auth/token'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -73,7 +73,7 @@ const SimpleLogin: React.FC = () => {
       console.log('Token received successfully');
 
       // Step 2: Get user details
-      const userResponse = await fetch(getApiUrl('api/auth/me'), {
+      const userResponse = await fetch(getApiUrl('auth/me'), {
         headers: {
           'Authorization': `Bearer ${tokenData.access_token}`
         }
