@@ -441,7 +441,7 @@ class ApiService {
   }> {
     try {
       // Try to use a dedicated statistics endpoint if it exists
-      const response = await this.client.get('/api/invite-statistics');
+      const response = await this.client.get('/invite-statistics');
       return response.data;
     } catch (error: any) {
       // Fallback to multiple calls if statistics endpoint doesn't exist
