@@ -64,20 +64,45 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
   // Load appointments
   useEffect(() => {
   const fetchAppointments = async () => {
-    if (!clinicianId && !patientId) return;
+    // Get current user from localStorage if clinicianId not provided
+    let effectiveClinicianId = clinicianId;
+    if (!clinicianId && !patientId && isClinicianView) {
+      try {
+        const userData = localStorage.getItem('authUser');
+        if (userData) {
+          const user = JSON.parse(userData);
+          effectiveClinicianId = user.user_id || user.id;
+          console.log('🔄 Using current user ID for appointments:', effectiveClinicianId);
+        }
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        setError('Unable to load user information');
+        setIsLoading(false);
+        return;
+      }
+    }
+    
+    if (!effectiveClinicianId && !patientId) {
+      console.log('ℹ️ No clinician ID or patient ID provided, skipping appointment fetch');
+      setIsLoading(false);
+      return;
+    }
     
     setIsLoading(true);
     try {
       let response;
-      if (clinicianId) {
-        response = await apiService.getClinicianAppointments(clinicianId, startDate, endDate);
+      if (effectiveClinicianId) {
+        console.log('📅 Fetching appointments for clinician:', effectiveClinicianId);
+        response = await apiService.getClinicianAppointments(effectiveClinicianId, startDate, endDate);
         setAppointments(response.appointments || []);
+        console.log(`✅ Loaded ${response.appointments?.length || 0} appointments`);
       } else if (patientId) {
+        console.log('📅 Fetching appointments for patient:', patientId);
         response = await apiService.getPatientAppointments(patientId);
         setAppointments(response.appointments || []);
       }
     } catch (error) {
-      console.error('Error fetching appointments:', error);
+      console.error('❌ Error fetching appointments:', error);
       message.error('Failed to load appointments');
       setAppointments([]); // Reset to empty array on error
     } finally {
