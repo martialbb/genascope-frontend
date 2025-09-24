@@ -120,6 +120,7 @@ class ApiService {
       // Add cache busting parameter to bypass Cloudflare cache
       config.params = config.params || {};
       config.params._cb = Date.now();
+      config.params._v = '2.1'; // Force cache invalidation after pagination fix
       
       // Add cache control headers to prevent caching
       config.headers = config.headers || {};
@@ -442,19 +443,37 @@ class ApiService {
     try {
       console.log('📊 Fetching all invites for local statistics calculation...');
       
-      // Fetch all invites in one call (without pagination limit)
-      const allInvitesResponse = await this.getInvites({ limit: 10000 }); // Large limit to get all
-      const invites = allInvitesResponse.invites;
+      // Fetch all invites using pagination (backend limits to max 100 per request)
+      const allInvites: any[] = [];
+      let page = 1;
+      let hasMore = true;
       
-      console.log(`📊 Processing ${invites.length} invites for statistics...`);
+      while (hasMore) {
+        const response = await this.getInvites({ limit: 100, page });
+        allInvites.push(...response.invites);
+        
+        console.log(`📊 Fetched page ${page}: ${response.invites.length} invites (total so far: ${allInvites.length})`);
+        
+        // Check if we have more pages
+        hasMore = response.invites.length === 100 && page < (response.total_pages || 999);
+        page++;
+        
+        // Safety check to prevent infinite loops
+        if (page > 100) {
+          console.warn('📊 Reached maximum page limit (100), stopping pagination');
+          break;
+        }
+      }
+      
+      console.log(`📊 Processing ${allInvites.length} invites for statistics...`);
       
       // Calculate statistics by filtering locally
       const stats = {
-        pending: invites.filter(invite => invite.status === 'pending').length,
-        completed: invites.filter(invite => invite.status === 'completed').length,
-        expired: invites.filter(invite => invite.status === 'expired').length,
-        cancelled: invites.filter(invite => invite.status === 'cancelled').length,
-        total: invites.length
+        pending: allInvites.filter(invite => invite.status === 'pending').length,
+        completed: allInvites.filter(invite => invite.status === 'completed').length,
+        expired: allInvites.filter(invite => invite.status === 'expired').length,
+        cancelled: allInvites.filter(invite => invite.status === 'cancelled').length,
+        total: allInvites.length
       };
 
       console.log('📊 Calculated invite statistics:', stats);
@@ -462,7 +481,7 @@ class ApiService {
     } catch (error: any) {
       console.error('📊 Error fetching invites for statistics:', error);
       
-      // If all invites fetch fails, fallback to the old method of multiple calls
+      // If pagination fails, fallback to the old method of multiple calls
       console.warn('Falling back to multiple API calls for statistics');
       const [pendingRes, completedRes, expiredRes, cancelledRes] = await Promise.all([
         this.getInvites({ status: 'pending' as InviteStatus, limit: 1 }),
