@@ -3,7 +3,7 @@
  * Aggregates invite counts by status for better performance
  */
 import type { APIRoute } from 'astro';
-import { backendApi } from '../../../../../services/backendProxy.js';
+import { backendApi } from '../../../services/backendProxy.js';
 
 export const GET: APIRoute = async ({ request }) => {
   try {
@@ -14,13 +14,14 @@ export const GET: APIRoute = async ({ request }) => {
       headers['Authorization'] = authHeader;
     }
 
-    console.log('🔄 Fetching invite statistics...');
+    console.log('📊 Fetching invite statistics...');
     
     // Try to get statistics from backend (if endpoint exists)
     try {
       const result = await backendApi.get('api/invites/statistics', headers);
       
       if (result.success) {
+        console.log('📊 Got statistics from backend endpoint');
         return new Response(JSON.stringify(result.data), {
           status: 200,
           headers: { 'Content-Type': 'application/json' }
@@ -31,6 +32,7 @@ export const GET: APIRoute = async ({ request }) => {
     }
 
     // Fallback: Make parallel requests for each status to get counts
+    console.log('📊 Making parallel requests for statistics');
     const [pendingRes, completedRes, expiredRes, cancelledRes] = await Promise.all([
       backendApi.get('api/invites?status=pending&limit=1', headers),
       backendApi.get('api/invites?status=completed&limit=1', headers),

@@ -9,7 +9,7 @@ export const GET: APIRoute = async ({ params, url, request }) => {
   try {
     const endpoint = params.path || '';
     
-    // Skip auth endpoints - they have their own specific handlers
+    // Skip endpoints that have their own specific handlers
     if (endpoint.startsWith('api/auth/')) {
       return new Response(JSON.stringify({ error: 'Auth endpoints should use specific handlers' }), {
         status: 404,
