@@ -103,7 +103,7 @@ class ApiService {
       },
     });
     
-    // Add auth interceptor with debug logging
+    // Add auth interceptor with debug logging and cache busting
     this.client.interceptors.request.use((config) => {
       const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
       console.log('API Debug: Request to', config.url);
@@ -116,6 +116,16 @@ class ApiService {
       } else {
         console.warn('API Debug: No auth token available for request to', config.url);
       }
+
+      // Add cache busting parameter to bypass Cloudflare cache
+      config.params = config.params || {};
+      config.params._cb = Date.now();
+      
+      // Add cache control headers to prevent caching
+      config.headers = config.headers || {};
+      config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+      config.headers['Pragma'] = 'no-cache';
+      
       return config;
     });
 

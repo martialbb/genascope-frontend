@@ -74,6 +74,12 @@ ingress:
   #    hosts:
   #      - genascope-frontend.local
 
+# Backend service configuration for API routing
+backend:
+  enabled: false
+  serviceName: "genascope-backend"
+  servicePort: 80
+
 resources:
   limits:
     cpu: 500m

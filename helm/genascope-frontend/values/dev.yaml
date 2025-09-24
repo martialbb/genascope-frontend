@@ -43,6 +43,14 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-body-size: "10m"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/upstream-keep-alive-timeout: "300"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "Cache-Control: no-cache, no-store, must-revalidate" always;
+      more_set_headers "Pragma: no-cache" always;
+      more_set_headers "Expires: 0" always;
   hosts:
     - host: genascope-dev.local
       paths:
@@ -52,3 +60,9 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
+
+# Backend service configuration for API routing
+backend:
+  enabled: true
+  serviceName: "genascope-backend"
+  servicePort: 80

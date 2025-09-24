@@ -28,6 +28,25 @@ spec:
     - host: {{ .host | quote }}
       http:
         paths:
+          # Server-side proxy routes go to frontend (more specific paths first)
+          - path: /api/backend
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "genascope-frontend.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          # Direct backend API routes (if enabled)
+          {{- if $.Values.backend.enabled }}
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $.Values.backend.serviceName }}
+                port:
+                  number: {{ $.Values.backend.servicePort }}
+          {{- end }}
+          # Frontend routes (catch-all, must come last)
           {{- range .paths }}
           - path: {{ .path }}
             {{- if .pathType }}
