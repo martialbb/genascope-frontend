@@ -431,6 +431,40 @@ class ApiService {
     };
   }
 
+  // Get invite statistics in a single API call for better performance
+  async getInviteStatistics(): Promise<{
+    pending: number;
+    completed: number;
+    expired: number;
+    cancelled: number;
+    total: number;
+  }> {
+    try {
+      // Try to use a dedicated statistics endpoint if it exists
+      const response = await this.client.get('/api/invites/statistics');
+      return response.data;
+    } catch (error: any) {
+      // Fallback to multiple calls if statistics endpoint doesn't exist
+      console.warn('Statistics endpoint not available, falling back to multiple calls');
+      const [pendingRes, completedRes, expiredRes, cancelledRes] = await Promise.all([
+        this.getInvites({ status: 'pending' as InviteStatus, limit: 1 }),
+        this.getInvites({ status: 'completed' as InviteStatus, limit: 1 }),
+        this.getInvites({ status: 'expired' as InviteStatus, limit: 1 }),
+        this.getInvites({ status: 'cancelled' as InviteStatus, limit: 1 })
+      ]);
+
+      const stats = {
+        pending: pendingRes.total,
+        completed: completedRes.total,
+        expired: expiredRes.total,
+        cancelled: cancelledRes.total,
+        total: pendingRes.total + completedRes.total + expiredRes.total + cancelledRes.total
+      };
+
+      return stats;
+    }
+  }
+
   async getInviteById(id: string): Promise<Invite> {
     const response = await this.client.get(`/api/invites/${id}`);
     return this.transformInviteData(response.data);

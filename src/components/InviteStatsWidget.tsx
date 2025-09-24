@@ -40,22 +40,9 @@ const InviteStatsWidget: React.FC<InviteStatsWidgetProps> = ({ onApiUnavailable 
     try {
       setLoading(true);
       
-      // Fetch invites for each status to get counts
-      const [pendingRes, completedRes, expiredRes, cancelledRes] = await Promise.all([
-        apiService.getInvites({ status: 'pending' as InviteStatus, limit: 1 }),
-        apiService.getInvites({ status: 'completed' as InviteStatus, limit: 1 }),
-        apiService.getInvites({ status: 'expired' as InviteStatus, limit: 1 }),
-        apiService.getInvites({ status: 'cancelled' as InviteStatus, limit: 1 })
-      ]);
-
-      const newStats = {
-        pending: pendingRes.total,
-        completed: completedRes.total,
-        expired: expiredRes.total,
-        cancelled: cancelledRes.total,
-        total: pendingRes.total + completedRes.total + expiredRes.total + cancelledRes.total
-      };
-
+      // Fetch invite statistics in a single API call for better performance
+      const newStats = await apiService.getInviteStatistics();
+      
       setStats(newStats);
     } catch (error) {
       console.error('Failed to fetch invite statistics:', error);
