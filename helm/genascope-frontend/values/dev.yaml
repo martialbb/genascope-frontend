@@ -16,7 +16,7 @@ networkPolicy:
     - "dev"              # Backend services in dev namespace
     - "shared-services"  # Shared services if any
 
-replicaCount: 1
+replicaCount: 2
 
 image:
   tag: "latest"
@@ -48,9 +48,16 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-buffering: "off"
     nginx.ingress.kubernetes.io/upstream-keep-alive-timeout: "300"
     nginx.ingress.kubernetes.io/configuration-snippet: |
-      more_set_headers "Cache-Control: no-cache, no-store, must-revalidate" always;
-      more_set_headers "Pragma: no-cache" always;
-      more_set_headers "Expires: 0" always;
+      # Only apply no-cache headers to API routes, not static assets
+      location ~* ^/api/ {
+        more_set_headers "Cache-Control: no-cache, no-store, must-revalidate" always;
+        more_set_headers "Pragma: no-cache" always;
+        more_set_headers "Expires: 0" always;
+      }
+      # Allow normal caching for static assets
+      location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        more_set_headers "Cache-Control: public, max-age=31536000, immutable" always;
+      }
   hosts:
     - host: genascope-dev.local
       paths:

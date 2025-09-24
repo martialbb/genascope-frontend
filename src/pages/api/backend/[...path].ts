@@ -5,7 +5,7 @@
 import type { APIRoute } from 'astro';
 import { backendApi } from '../../../services/backendProxy.js';
 
-export const GET: APIRoute = async ({ params, url }) => {
+export const GET: APIRoute = async ({ params, url, request }) => {
   try {
     const endpoint = params.path || '';
     
@@ -26,8 +26,15 @@ export const GET: APIRoute = async ({ params, url }) => {
       apiPath += `?${queryString}`;
     }
 
+    // Extract Authorization header from the incoming request
+    const authHeader = request.headers.get('Authorization');
+    const headers: Record<string, string> = {};
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    }
+
     console.log(`🔄 Generic proxy handling: ${apiPath}`);
-    const result = await backendApi.get(apiPath);
+    const result = await backendApi.get(apiPath, headers);
 
     if (!result.success) {
       return new Response(JSON.stringify({ error: result.error }), {
@@ -71,8 +78,15 @@ export const POST: APIRoute = async ({ params, request }) => {
       body = await request.formData();
     }
 
+    // Extract Authorization header from the incoming request
+    const authHeader = request.headers.get('Authorization');
+    const headers: Record<string, string> = {};
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    }
+
     console.log(`🔄 Generic proxy handling POST: ${endpoint}`);
-    const result = await backendApi.post(endpoint, body);
+    const result = await backendApi.post(endpoint, body, headers);
 
     if (!result.success) {
       return new Response(JSON.stringify({ error: result.error }), {
@@ -100,7 +114,14 @@ export const PUT: APIRoute = async ({ params, request }) => {
     const endpoint = params.path || '';
     const body = await request.json();
 
-    const result = await backendApi.put(endpoint, body);
+    // Extract Authorization header from the incoming request
+    const authHeader = request.headers.get('Authorization');
+    const headers: Record<string, string> = {};
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    }
+
+    const result = await backendApi.put(endpoint, body, headers);
 
     if (!result.success) {
       return new Response(JSON.stringify({ error: result.error }), {
@@ -123,11 +144,18 @@ export const PUT: APIRoute = async ({ params, request }) => {
   }
 };
 
-export const DELETE: APIRoute = async ({ params }) => {
+export const DELETE: APIRoute = async ({ params, request }) => {
   try {
     const endpoint = params.path || '';
 
-    const result = await backendApi.delete(endpoint);
+    // Extract Authorization header from the incoming request
+    const authHeader = request.headers.get('Authorization');
+    const headers: Record<string, string> = {};
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    }
+
+    const result = await backendApi.delete(endpoint, headers);
 
     if (!result.success) {
       return new Response(JSON.stringify({ error: result.error }), {
