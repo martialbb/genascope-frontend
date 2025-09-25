@@ -48,20 +48,20 @@ function getCurrentEnvironment(): 'development' | 'staging' | 'production' {
 }
 
 /**
- * Get the API base URL - always uses local server endpoints that proxy to backend
- * This eliminates CORS issues and allows backend to remain internal to Kubernetes
+ * Get the API base URL - uses direct backend endpoints that work correctly
+ * The ingress correctly routes /api requests to the backend service
  */
 function getApiBaseUrl(): string {
-  // Always use the current frontend server's API endpoints
-  // These endpoints will proxy requests to the backend using internal Kubernetes DNS
+  // Use direct backend API endpoints via the ingress
+  // The ingress routes /api paths directly to genascope-backend service
   
   if (typeof window !== 'undefined') {
-    // Client-side: use the current origin + /api/backend
+    // Client-side: use the current origin + /api (direct to backend)
     const origin = window.location.origin;
-    return `${origin}/api/backend`;
+    return `${origin}/api`;
   } else {
     // Server-side: use relative URL
-    return '/api/backend';
+    return '/api';
   }
 }
 

@@ -40,27 +40,17 @@ const EnhancedAppointmentStatsWidget: React.FC<EnhancedAppointmentStatsWidgetPro
     try {
       setLoading(true);
       
-      // Get current user from localStorage
-      const userData = localStorage.getItem('authUser');
-      if (!userData) {
-        throw new Error('User not authenticated');
-      }
+      console.log('📅 Fetching organization-wide appointment statistics...');
       
-      const user = JSON.parse(userData);
-      const userId = user.user_id || user.id;
-      
-      console.log('📅 Fetching appointment statistics for user:', userId);
-      
-      // Fetch appointments for current user
+      // Fetch organization-wide appointments with date range
       const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       const endDate = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       
-      let response;
-      if (user.role === 'clinician' || user.role === 'physician') {
-        response = await apiService.getClinicianAppointments(userId, startDate, endDate);
-      } else {
-        response = await apiService.getPatientAppointments(userId);
-      }
+      const response = await apiService.getOrganizationAppointments({
+        start_date: startDate,
+        end_date: endDate,
+        limit: 1000  // Get a large number to calculate all statistics
+      });
       
       const appointments = response.appointments || [];
       

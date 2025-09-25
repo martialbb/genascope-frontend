@@ -50,14 +50,11 @@ const InviteStatsChart: React.FC<InviteStatsChartProps> = ({
     angleField: 'value',
     colorField: 'type',
     radius: 0.8,
-    innerRadius: 0.4,
     label: {
-      type: 'inner',
-      offset: '-30%',
       content: ({ percent }: any) => `${(percent * 100).toFixed(0)}%`,
       style: {
         fontSize: 14,
-        textAlign: 'center' as const,
+        fontWeight: 'bold',
       },
     },
     interactions: [

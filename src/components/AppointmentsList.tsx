@@ -7,6 +7,7 @@ interface AppointmentProps {
   clinicianId?: string;
   patientId?: string;
   isClinicianView?: boolean;
+  isOrganizationView?: boolean;
   showFilters?: boolean;
   pageSize?: number;
 }
@@ -26,6 +27,7 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
   clinicianId,
   patientId,
   isClinicianView = false,
+  isOrganizationView = false,
   showFilters = true,
   pageSize = 10
 }) => {
@@ -64,42 +66,60 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
   // Load appointments
   useEffect(() => {
   const fetchAppointments = async () => {
-    // Get current user from localStorage if clinicianId not provided
-    let effectiveClinicianId = clinicianId;
-    if (!clinicianId && !patientId && isClinicianView) {
-      try {
-        const userData = localStorage.getItem('authUser');
-        if (userData) {
-          const user = JSON.parse(userData);
-          effectiveClinicianId = user.user_id || user.id;
-          console.log('🔄 Using current user ID for appointments:', effectiveClinicianId);
-        }
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-        setError('Unable to load user information');
-        setIsLoading(false);
-        return;
-      }
-    }
-    
-    if (!effectiveClinicianId && !patientId) {
-      console.log('ℹ️ No clinician ID or patient ID provided, skipping appointment fetch');
-      setIsLoading(false);
-      return;
-    }
-    
     setIsLoading(true);
+    setError(null);
+    
     try {
       let response;
-      if (effectiveClinicianId) {
-        console.log('📅 Fetching appointments for clinician:', effectiveClinicianId);
-        response = await apiService.getClinicianAppointments(effectiveClinicianId, startDate, endDate);
+      
+      if (isOrganizationView) {
+        // Fetch organization-wide appointments
+        console.log('📅 Fetching organization-wide appointments...');
+        response = await apiService.getOrganizationAppointments({
+          start_date: startDate,
+          end_date: endDate,
+          limit: 100
+        });
         setAppointments(response.appointments || []);
-        console.log(`✅ Loaded ${response.appointments?.length || 0} appointments`);
+        console.log(`✅ Loaded ${response.appointments?.length || 0} organization appointments`);
       } else if (patientId) {
         console.log('📅 Fetching appointments for patient:', patientId);
         response = await apiService.getPatientAppointments(patientId);
         setAppointments(response.appointments || []);
+        console.log(`✅ Loaded ${response.appointments?.length || 0} patient appointments`);
+      } else if (isClinicianView || clinicianId) {
+        // Get current user from localStorage if clinicianId not provided
+        let effectiveClinicianId = clinicianId;
+        if (!clinicianId && isClinicianView) {
+          try {
+            const userData = localStorage.getItem('authUser');
+            if (userData) {
+              const user = JSON.parse(userData);
+              effectiveClinicianId = user.user_id || user.id;
+              console.log('🔄 Using current user ID for appointments:', effectiveClinicianId);
+            }
+          } catch (error) {
+            console.error('Error parsing user data:', error);
+            setError('Unable to load user information');
+            setIsLoading(false);
+            return;
+          }
+        }
+        
+        if (effectiveClinicianId) {
+          console.log('📅 Fetching appointments for clinician:', effectiveClinicianId);
+          response = await apiService.getClinicianAppointments(effectiveClinicianId, startDate, endDate);
+          setAppointments(response.appointments || []);
+          console.log(`✅ Loaded ${response.appointments?.length || 0} clinician appointments`);
+        } else {
+          console.log('ℹ️ No clinician ID provided, skipping appointment fetch');
+          setIsLoading(false);
+          return;
+        }
+      } else {
+        console.log('ℹ️ No appointment fetch criteria provided');
+        setIsLoading(false);
+        return;
       }
     } catch (error) {
       console.error('❌ Error fetching appointments:', error);
@@ -108,8 +128,10 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };    fetchAppointments();
-  }, [clinicianId, patientId, isClinicianView]);
+  };
+  
+  fetchAppointments();
+  }, [clinicianId, patientId, isClinicianView, isOrganizationView]);
   
   // Update appointment status
   const updateAppointmentStatus = async (appointmentId: string, status: string) => {

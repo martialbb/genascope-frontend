@@ -148,6 +148,11 @@ class ApiService {
     return response.data;
   }
 
+  async getOrganizationAppointments(params?: Record<string, any>) {
+    const response = await this.client.get('/api/organization/appointments', { params });
+    return response.data;
+  }
+
   // Get availability for a clinician on a specific date
   async getAvailability(clinicianId: string, date: string): Promise<AvailabilityResponse> {
     const response = await this.client.get(`/api/availability?clinician_id=${clinicianId}&date=${date}`);

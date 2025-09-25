@@ -42,7 +42,7 @@ export async function onRequest(context: APIContext, next: MiddlewareNext) {
   
   // Prefetch important resources for dashboard performance
   if (pathname === '/dashboard') {
-    headers.set('Link', '</api/backend/api/patients?limit=10>; rel=preload; as=fetch; crossorigin, </api/backend/api/invites?limit=100&page=1>; rel=preload; as=fetch; crossorigin');
+    headers.set('Link', '</api/patients/?limit=10>; rel=preload; as=fetch; crossorigin, </api/invites?limit=100&offset=0>; rel=preload; as=fetch; crossorigin');
   }
   
   return new Response(response.body, {
