@@ -40,10 +40,8 @@ export async function onRequest(context: APIContext, next: MiddlewareNext) {
   headers.set('X-Frame-Options', 'DENY');
   headers.set('X-XSS-Protection', '1; mode=block');
   
-  // Prefetch important resources for dashboard performance
-  if (pathname === '/dashboard') {
-    headers.set('Link', '</api/patients/?limit=10>; rel=preload; as=fetch; crossorigin, </api/invites?limit=100&offset=0>; rel=preload; as=fetch; crossorigin');
-  }
+  // Note: Removed API preloading as it causes 401 errors before auth is established
+  // The dashboard components will load data client-side after authentication
   
   return new Response(response.body, {
     status: response.status,
