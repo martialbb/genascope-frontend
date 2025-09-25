@@ -20,7 +20,9 @@
     "deploy:prod": "npm run fly:config:prod && flyctl deploy"
   },
   "dependencies": {
+    "@ant-design/charts": "^2.6.5",
     "@ant-design/icons": "^6.0.0",
+    "@ant-design/plots": "^2.6.5",
     "@astrojs/node": "^9.4.0",
     "@astrojs/react": "^4.2.5",
     "@astrojs/tailwind": "^6.0.2",

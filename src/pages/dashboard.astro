@@ -3,6 +3,8 @@ import SidebarLayout from '../layouts/SidebarLayout.astro';
 import DashboardTable from '../components/DashboardTable.tsx';
 import AppointmentsList from '../components/AppointmentsList.tsx';
 import InviteStatsWidget from '../components/InviteStatsWidget.tsx';
+import EnhancedInviteStatsWidget from '../components/EnhancedInviteStatsWidget.tsx';
+import EnhancedAppointmentStatsWidget from '../components/EnhancedAppointmentStatsWidget.tsx';
 ---
 
 <SidebarLayout title="Dashboard - Genascope">
@@ -32,32 +34,44 @@ import InviteStatsWidget from '../components/InviteStatsWidget.tsx';
       <DashboardTable client:load />
     </div>
     
-    <div class="mt-10 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Manage Your Availability</h3>
-        <p class="text-gray-600 mb-4">Set your availability to allow patients to book appointments with you.</p>
-        <a 
-          href="/manage-availability" 
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Set Availability
-        </a>
-      </div>
-      
-      <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Invite a New Patient</h3>
-        <p class="text-gray-600 mb-4">Send an invitation to a new patient to join the platform.</p>
-        <a 
-          href="/invite" 
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Invite Patient
-        </a>
-      </div>
+    <!-- Analytics Dashboard with Pie Charts -->
+    <div class="mt-10">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">Analytics Overview</h2>
+      <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6 mb-10">
+        <!-- Appointment Analytics -->
+        <div id="appointment-stats-section">
+          <EnhancedAppointmentStatsWidget client:load />
+        </div>
 
-      <!-- Invite Statistics Widget - Only show for admins and clinicians -->
-      <div id="invite-stats-section" class="bg-white rounded-lg shadow-sm border border-gray-100" style="display: none;">
-        <InviteStatsWidget client:load />
+        <!-- Invite Analytics - Only show for admins and clinicians -->
+        <div id="invite-stats-section" style="display: none;">
+          <EnhancedInviteStatsWidget client:load />
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+          <div class="space-y-4">
+            <div>
+              <h4 class="text-sm font-medium text-gray-700 mb-2">Patient Management</h4>
+              <a 
+                href="/invite" 
+                class="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Invite Patient
+              </a>
+            </div>
+            <div>
+              <h4 class="text-sm font-medium text-gray-700 mb-2">Schedule Management</h4>
+              <a 
+                href="/manage-availability" 
+                class="block w-full text-center px-4 py-2 border border-blue-600 text-blue-600 text-sm font-medium rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Set Availability
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </main>
