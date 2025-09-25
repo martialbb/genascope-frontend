@@ -144,57 +144,57 @@ class ApiService {
   }
 
   async getClinicianAppointments(clinicianId: string, startDate: string, endDate: string) {
-    const response = await this.client.get(`/api/appointments/clinician/${clinicianId}?start_date=${startDate}&end_date=${endDate}`);
+    const response = await this.client.get(`/appointments/clinician/${clinicianId}?start_date=${startDate}&end_date=${endDate}`);
     return response.data;
   }
 
   async getOrganizationAppointments(params?: Record<string, any>) {
-    const response = await this.client.get('/api/organization/appointments', { params });
+    const response = await this.client.get('/organization/appointments', { params });
     return response.data;
   }
 
   // Get availability for a clinician on a specific date
   async getAvailability(clinicianId: string, date: string): Promise<AvailabilityResponse> {
-    const response = await this.client.get(`/api/availability?clinician_id=${clinicianId}&date=${date}`);
+    const response = await this.client.get(`/availability?clinician_id=${clinicianId}&date=${date}`);
     return response.data;
   }
 
   // Book a new appointment
   async bookAppointment(appointmentData: AppointmentRequest): Promise<AppointmentResponse> {
-    const response = await this.client.post('/api/book_appointment', appointmentData);
+    const response = await this.client.post('/book_appointment', appointmentData);
     return response.data;
   }
 
   // Get appointments for a specific patient
   async getPatientAppointments(patientId: string) {
-    const response = await this.client.get(`/api/appointments/patient/${patientId}`);
+    const response = await this.client.get(`/appointments/patient/${patientId}`);
     return response.data;
   }
 
   // Update appointment status
   async updateAppointmentStatus(appointmentId: string, status: string) {
-    const response = await this.client.put(`/api/appointments/${appointmentId}?status=${status}`);
+    const response = await this.client.put(`/appointments/${appointmentId}?status=${status}`);
     return response.data;
   }
 
   // Set clinician availability
   async setClinicianAvailability(clinicianId: string, availabilityData: any) {
-    const response = await this.client.post(`/api/availability/set?clinician_id=${clinicianId}`, availabilityData);
+    const response = await this.client.post(`/availability/set?clinician_id=${clinicianId}`, availabilityData);
     return response.data;
   }
 
   async generateInvite(patientData: any) {
-    const response = await this.client.post('/api/generate_invite', patientData);
+    const response = await this.client.post('/generate_invite', patientData);
     return response.data;
   }
   
   async verifyInvite(token: string) {
-    const response = await this.client.post('/api/verify_invite', { token });
+    const response = await this.client.post('/verify_invite', { token });
     return response.data;
   }
   
   async registerPatient(registrationData: any) {
-    const response = await this.client.post('/api/register_patient', registrationData);
+    const response = await this.client.post('/register_patient', registrationData);
     return response.data;
   }
 
@@ -206,28 +206,28 @@ class ApiService {
     agree_to_terms: boolean;
     agree_to_privacy: boolean;
   }) {
-    const response = await this.client.post('/api/simplified_access', accessData);
+    const response = await this.client.post('/simplified_access', accessData);
     return response.data;
   }
 
   // Chat session methods
   async createChatSession(): Promise<ChatSessionData> {
-    const response = await this.client.post('/api/chat/session');
+    const response = await this.client.post('/chat/session');
     return response.data;
   }
 
   async startChat(sessionId: string): Promise<ChatResponse> {
-    const response = await this.client.post(`/api/chat/start`, { session_id: sessionId });
+    const response = await this.client.post(`/chat/start`, { session_id: sessionId });
     return response.data;
   }
 
   async submitAnswer(answerData: ChatAnswerData): Promise<ChatResponse> {
-    const response = await this.client.post('/api/chat/answer', answerData);
+    const response = await this.client.post('/chat/answer', answerData);
     return response.data;
   }
 
   async analyzeEligibility(sessionId: string): Promise<EligibilityResult> {
-    const response = await this.client.post('/api/chat/analyze', { session_id: sessionId });
+    const response = await this.client.post('/chat/analyze', { session_id: sessionId });
     return response.data;
   }
 
@@ -278,48 +278,48 @@ class ApiService {
 
   // Account management methods
   async getAccounts() {
-    const response = await this.client.get('/api/accounts');
+    const response = await this.client.get('/accounts');
     return response.data;
   }
 
   async getAccountById(id: string) {
-    const response = await this.client.get(`/api/accounts/${id}`);
+    const response = await this.client.get(`/accounts/${id}`);
     return response.data;
   }
 
   async createAccount(data: any) {
-    const response = await this.client.post('/api/accounts', data);
+    const response = await this.client.post('/accounts', data);
     return response.data;
   }
 
   async updateAccount(id: string, data: any) {
-    const response = await this.client.put(`/api/accounts/${id}`, data);
+    const response = await this.client.put(`/accounts/${id}`, data);
     return response.data;
   }
 
   async deleteAccount(id: string) {
-    const response = await this.client.delete(`/api/accounts/${id}`);
+    const response = await this.client.delete(`/accounts/${id}`);
     return response.data;
   }
 
   // User management methods
   async getUsers(params?: any) {
-    const response = await this.client.get('/api/users', { params });
+    const response = await this.client.get('/users', { params });
     return response.data;
   }
 
   async getUsersByAccount(accountId: string) {
-    const response = await this.client.get(`/api/users?account_id=${accountId}`);
+    const response = await this.client.get(`/users?account_id=${accountId}`);
     return response.data;
   }
 
   async getUserById(id: string) {
-    const response = await this.client.get(`/api/users/${id}`);
+    const response = await this.client.get(`/users/${id}`);
     return response.data;
   }
 
   async createUser(userData: any) {
-    const response = await this.client.post('/api/users', userData);
+    const response = await this.client.post('/users', userData);
     return response.data;
   }
 
@@ -328,7 +328,7 @@ class ApiService {
     console.log('API Debug: Update data:', JSON.stringify(data, null, 2));
     
     try {
-      const response = await this.client.put(`/api/users/${id}`, data);
+      const response = await this.client.put(`/users/${id}`, data);
       console.log('API Debug: Update response:', JSON.stringify(response.data, null, 2));
       
       // Validate that we got back the updated values
@@ -348,42 +348,42 @@ class ApiService {
   }
 
   async deleteUser(id: string) {
-    const response = await this.client.delete(`/api/users/${id}`);
+    const response = await this.client.delete(`/users/${id}`);
     return response.data;
   }
 
   // Patient management methods
   async getPatients(params: Record<string, any> = {}): Promise<Patient[]> {
-    const response = await this.client.get('/api/patients/', { params });
+    const response = await this.client.get('/patients/', { params });
     return response.data;
   }
 
   async getPatientById(id: string): Promise<Patient> {
-    const response = await this.client.get(`/api/patients/${id}`);
+    const response = await this.client.get(`/patients/${id}`);
     return response.data;
   }
 
   async createPatient(data: PatientCreate): Promise<Patient> {
-    const response = await this.client.post('/api/patients/', data);
+    const response = await this.client.post('/patients/', data);
     return response.data;
   }
 
   async updatePatient(id: string, data: PatientUpdate): Promise<Patient> {
-    const response = await this.client.put(`/api/patients/${id}`, data);
+    const response = await this.client.put(`/patients/${id}`, data);
     return response.data;
   }
 
   async deletePatient(id: string): Promise<void> {
-    await this.client.delete(`/api/patients/${id}`);
+    await this.client.delete(`/patients/${id}`);
   }
 
   async getClinicians(): Promise<Clinician[]> {
-    const response = await this.client.get('/api/clinicians');
+    const response = await this.client.get('/clinicians');
     return response.data;
   }
 
   async importPatientsCsv(formData: FormData): Promise<PatientCSVImportResponse> {
-    const response = await this.client.post('/api/patients/import-csv', formData, {
+    const response = await this.client.post('/patients/import-csv', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -392,12 +392,12 @@ class ApiService {
   }
 
   async sendPatientInvite(inviteData: PatientInviteRequest): Promise<PatientInviteResponse> {
-    const response = await this.client.post('/api/generate_invite', inviteData);
+    const response = await this.client.post('/generate_invite', inviteData);
     return response.data;
   }
 
   async sendBulkInvites(bulkInviteData: BulkInviteRequest): Promise<BulkInviteResponse> {
-    const response = await this.client.post('/api/bulk_invite', bulkInviteData);
+    const response = await this.client.post('/bulk_invite', bulkInviteData);
     return response.data;
   }
 
@@ -422,7 +422,7 @@ class ApiService {
 
   // Invite management methods
   async getInvites(params: InviteListParams = {}): Promise<InviteListResponse> {
-    const response = await this.client.get('/api/invites', { params });
+    const response = await this.client.get('/invites', { params });
     const backendData = response.data;
     
     // Transform the invite data to match frontend interface
@@ -508,22 +508,22 @@ class ApiService {
   }
 
   async getInviteById(id: string): Promise<Invite> {
-    const response = await this.client.get(`/api/invites/${id}`);
+    const response = await this.client.get(`/invites/${id}`);
     return this.transformInviteData(response.data);
   }
 
   async cancelInvite(id: string): Promise<void> {
-    await this.client.delete(`/api/invites/${id}`);
+    await this.client.delete(`/invites/${id}`);
   }
 
   async resendInvite(id: string, data: ResendInviteRequest): Promise<ResendInviteResponse> {
-    const response = await this.client.post(`/api/invites/${id}/resend`, data);
+    const response = await this.client.post(`/invites/${id}/resend`, data);
     return response.data;
   }
 
   async getPatientInvites(patientId: string, status?: InviteStatus): Promise<PatientInviteResponse[]> {
     const params = status ? { status } : {};
-    const response = await this.client.get(`/api/patients/${patientId}/invites`, { params });
+    const response = await this.client.get(`/patients/${patientId}/invites`, { params });
     return response.data;
   }
 
@@ -539,7 +539,7 @@ class ApiService {
       }
 
       // Try to get current user profile to verify token works
-      const response = await this.client.get('/api/auth/me');
+      const response = await this.client.get('/auth/me');
       console.log('API Debug: Auth verification successful', response.data);
       return {
         authenticated: true,
@@ -563,7 +563,7 @@ class ApiService {
         queryParams.append('active_only', params.active_only.toString());
       }
       
-      const url = `/api/v1/chat-configuration/strategies${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+      const url = `/v1/chat-configuration/strategies${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
       const response = await this.client.get(url);
       
       // Handle both array response and paginated response
