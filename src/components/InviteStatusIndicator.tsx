@@ -28,7 +28,7 @@ const InviteStatusIndicator: React.FC<InviteStatusIndicatorProps> = ({
           text: 'Pending',
           tooltip: 'Invite sent, waiting for patient response'
         };
-      case 'completed':
+      case 'completed' as any:
         return {
           color: 'green',
           icon: <CheckCircleOutlined />,
@@ -42,7 +42,7 @@ const InviteStatusIndicator: React.FC<InviteStatusIndicatorProps> = ({
           text: 'Expired',
           tooltip: 'Invite has expired and needs to be resent'
         };
-      case 'cancelled':
+      case 'cancelled' as any:
         return {
           color: 'default',
           icon: <StopOutlined />,

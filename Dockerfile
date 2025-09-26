@@ -12,12 +12,29 @@ RUN npm ci
 FROM base AS prod-deps
 RUN npm ci --omit=dev
 
+# Build stage
+FROM dev-deps AS builder
+COPY . .
+RUN npm run build
+
+# Production image
+FROM nginx:alpine AS production
+
+# Copy built assets from builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
+
 # Development image
 FROM dev-deps AS development
 ENV NODE_ENV=development
 ENV DOCKER_ENV=true
-ENV PUBLIC_API_URL=http://backend:8000
-# Copy application code
+ENV VITE_API_URL=http://backend:8000
 COPY . .
 
 # Create both potential patch directories

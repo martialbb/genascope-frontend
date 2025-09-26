@@ -445,4 +445,5 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
   );
 };
 
+export { AppointmentsList };
 export default AppointmentsList;

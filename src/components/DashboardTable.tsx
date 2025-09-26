@@ -1,7 +1,8 @@
 // src/components/DashboardTable.tsx
 import React, { useState, useEffect } from 'react';
 import apiService from '../services/api';
-import type { Patient as BackendPatient, PatientStatus } from '../types/patients';
+import type { Patient as BackendPatient } from '../types/patients';
+import { PatientStatus } from '../types/patients';
 
 // Define the structure for dashboard patient display
 interface DashboardPatient {
@@ -201,4 +202,5 @@ const DashboardTable: React.FC = () => {
   );
 };
 
+export { DashboardTable };
 export default DashboardTable;

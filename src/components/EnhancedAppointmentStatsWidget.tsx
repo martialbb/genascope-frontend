@@ -62,16 +62,16 @@ const EnhancedAppointmentStatsWidget: React.FC<EnhancedAppointmentStatsWidgetPro
       endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
       
       const newStats = {
-        scheduled: appointments.filter(apt => apt.status === 'scheduled').length,
-        completed: appointments.filter(apt => apt.status === 'completed').length,
-        cancelled: appointments.filter(apt => apt.status === 'cancelled').length,
-        rescheduled: appointments.filter(apt => apt.status === 'rescheduled').length,
+        scheduled: appointments.filter((apt: any) => apt.status === 'scheduled').length,
+        completed: appointments.filter((apt: any) => apt.status === 'completed').length,
+        cancelled: appointments.filter((apt: any) => apt.status === 'cancelled').length,
+        rescheduled: appointments.filter((apt: any) => apt.status === 'rescheduled').length,
         total: appointments.length,
-        today: appointments.filter(apt => {
+        today: appointments.filter((apt: any) => {
           const aptDate = new Date(apt.date_time);
           return aptDate.toDateString() === today.toDateString();
         }).length,
-        thisWeek: appointments.filter(apt => {
+        thisWeek: appointments.filter((apt: any) => {
           const aptDate = new Date(apt.date_time);
           return aptDate >= startOfWeek && aptDate <= endOfWeek;
         }).length
@@ -169,4 +169,5 @@ const EnhancedAppointmentStatsWidget: React.FC<EnhancedAppointmentStatsWidgetPro
   );
 };
 
+export { EnhancedAppointmentStatsWidget };
 export default EnhancedAppointmentStatsWidget;

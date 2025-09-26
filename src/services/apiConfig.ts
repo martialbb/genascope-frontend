@@ -1,8 +1,7 @@
 /**
- * API Configuration for Server-Side Proxied Requests
+ * API Configuration for Vite React SPA
  * 
- * Uses local Astro server endpoints that proxy to the backend,
- * eliminating the need for client-side cross-origin requests.
+ * Uses Vite dev server proxy in development and direct API calls in production.
  */
 
 interface ApiEnvironmentConfig {
@@ -13,15 +12,26 @@ interface ApiEnvironmentConfig {
 }
 
 /**
+ * Determine the API base URL based on environment
+ */
+function getApiBaseUrl(): string {
+  // In Vite development, use the proxy
+  if (import.meta.env.MODE === 'development') {
+    return '/api'  // Proxy handles routing to backend
+  }
+  
+  // Production - use the same domain
+  return `${window.location.protocol}//${window.location.host}/api`
+}
+
+/**
  * Determine the current environment based on hostname or environment variables
  */
 function getCurrentEnvironment(): 'development' | 'staging' | 'production' {
-  // Server-side environment detection
-  if (typeof process !== 'undefined' && process.env.NODE_ENV) {
-    const nodeEnv = process.env.NODE_ENV;
-    if (['production', 'staging', 'development'].includes(nodeEnv)) {
-      return nodeEnv as 'development' | 'staging' | 'production';
-    }
+  // Vite environment detection
+  const viteMode = import.meta.env.MODE;
+  if (viteMode && ['production', 'staging', 'development'].includes(viteMode)) {
+    return viteMode as 'development' | 'staging' | 'production';
   }
   
   // Client-side environment detection
@@ -47,23 +57,7 @@ function getCurrentEnvironment(): 'development' | 'staging' | 'production' {
   return 'development';
 }
 
-/**
- * Get the API base URL - uses direct backend endpoints that work correctly
- * The ingress correctly routes /api requests to the backend service
- */
-function getApiBaseUrl(): string {
-  // Use direct backend API endpoints via the ingress
-  // The ingress routes /api paths directly to genascope-backend service
-  
-  if (typeof window !== 'undefined') {
-    // Client-side: use the current origin + /api (direct to backend)
-    const origin = window.location.origin;
-    return `${origin}/api`;
-  } else {
-    // Server-side: use relative URL
-    return '/api';
-  }
-}
+
 
 /**
  * Create the API configuration object
@@ -96,12 +90,12 @@ export function getApiUrl(path: string): string {
 
 // Development logging
 if (typeof window !== 'undefined' && API_CONFIG.environment === 'development') {
-  console.log('🔧 API Configuration (Server-Side Proxy):', {
+  console.log('🔧 API Configuration (Vite SPA):', {
     environment: API_CONFIG.environment,
     baseUrl: API_CONFIG.baseUrl,
     hostname: window.location.hostname,
     timeout: API_CONFIG.timeout,
     retries: API_CONFIG.retries,
-    note: 'All API calls will be proxied through the frontend server to the backend'
+    note: 'All API calls will be proxied through Vite dev server to the backend'
   });
 }

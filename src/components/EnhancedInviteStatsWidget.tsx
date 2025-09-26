@@ -127,4 +127,5 @@ const EnhancedInviteStatsWidget: React.FC<EnhancedInviteStatsWidgetProps> = ({ o
   );
 };
 
+export { EnhancedInviteStatsWidget };
 export default EnhancedInviteStatsWidget;
