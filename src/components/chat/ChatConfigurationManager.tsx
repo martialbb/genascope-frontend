@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ChatDashboard } from './ChatDashboard';
 import { ChatWizard } from './ChatWizard';
 import { useChatStrategy } from '../../hooks/useChatStrategy';
-import type { StrategyFormData, ChatStrategy } from '../../types/chatConfiguration';
+import type { StrategyFormData, ChatStrategy, KnowledgeSource } from '../../types/chatConfiguration';
 import { buttonStyles } from '../../constants/buttonStyles';
 import { chatConfigurationAPI } from '../../services/chatConfigurationApi';
 
@@ -146,7 +146,7 @@ export const ChatConfigurationManager: React.FC = () => {
         });
         
         // Create knowledge source from upload response
-        const newKnowledgeSource = {
+        const newKnowledgeSource: KnowledgeSource = {
           id: uploadResponse.id,
           name: uploadResponse.name,
           description: `Uploaded file: ${uploadResponse.name}`,
@@ -154,7 +154,7 @@ export const ChatConfigurationManager: React.FC = () => {
           file_size: file.size,
           created_at: new Date().toISOString(),
           file_path: uploadResponse.file_path,
-          processing_status: uploadResponse.processing_status
+          processing_status: (uploadResponse.processing_status as 'pending' | 'processing' | 'completed' | 'failed') || 'pending'
         };
         
         // Add to knowledge sources list using the state setter

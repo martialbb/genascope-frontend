@@ -406,7 +406,7 @@ const PatientManager = () => {
   // Render component
   return (
     <div className="patient-manager">
-      <style jsx>{`
+      <style>{`
         .clickable-row:hover {
           background-color: #f0f8ff !important;
           transform: translateY(-1px);

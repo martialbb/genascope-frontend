@@ -38,13 +38,6 @@
     "test-results",
     "playwright-report",
     "src/examples/**",
-    "migration_backups/**",
-    "src/components/AppointmentDashboard.tsx",
-    "src/components/chat.disabled/**/*",
-    "src/components/ChatComponent.tsx",
-    "src/components/ClinicianAvailabilityManager.tsx",
-    "src/components/OrderLabTestForm.tsx",
-    "src/components/PatientManager.tsx",
-    "src/components/ChatConfigurationPage.tsx"
+    "migration_backups/**"
   ]
 }

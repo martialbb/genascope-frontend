@@ -111,7 +111,7 @@ const ClinicianAvailabilityManager: React.FC<AvailabilityProps> = ({ clinicianId
         recurring_until: isRecurring ? recurringUntil : undefined
       };
 
-      await apiService.setClinicianAvailability(availabilityData);
+      await apiService.setClinicianAvailability(clinicianId, availabilityData);
       
       setSuccess(true);
       setSelectedTimeSlots([]);

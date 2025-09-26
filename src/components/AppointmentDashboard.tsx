@@ -24,7 +24,6 @@ import {
 import AppointmentsList from './AppointmentsList';
 import SchedulingComponent from './SchedulingComponent';
 import ClinicianAvailabilityManager from './ClinicianAvailabilityManager';
-import EnhancedAppointmentManager from './EnhancedAppointmentManager';
 import apiService from '../services/api';
 import type { AppointmentResponse } from '../services/api';
 
@@ -314,17 +313,14 @@ const AppointmentDashboard: React.FC<AppointmentDashboardProps> = ({
               <Card>
                 <ClinicianAvailabilityManager 
                   clinicianId={clinicianId || ''}
-                  onAvailabilitySet={() => {
-                    fetchAppointmentData();
-                  }}
                 />
               </Card>
             </TabPane>
 
             <TabPane tab="Manage Appointments" key="manage">
-              <EnhancedAppointmentManager 
+              <AppointmentsList 
                 clinicianId={clinicianId}
-                userRole="clinician"
+                isClinicianView={true}
               />
             </TabPane>
           </>

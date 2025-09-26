@@ -5,7 +5,7 @@ import { UserOutlined, LogoutOutlined, DashboardOutlined, TeamOutlined, UserAddO
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 const { Header, Sider, Content } = AntLayout
-const { Text } = Typography
+const { Text, Title } = Typography
 
 interface LayoutProps {
   children: ReactNode
@@ -89,37 +89,39 @@ export function Layout({ children }: LayoutProps) {
   )
 
   return (
-    <AntLayout className="min-h-screen">
-      <Sider width={250} className="shadow-md">
-        <div className="h-16 flex items-center justify-center bg-blue-600 text-white">
-          <Text className="text-lg font-bold text-white">Genascope</Text>
-        </div>
-        <Menu
-          theme="light"
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          items={menuItems}
-          className="border-r-0"
-        />
-      </Sider>
-      
-      <AntLayout>
-        <Header className="bg-white shadow-sm px-6 flex justify-between items-center">
-          <div></div>
-          <Dropdown overlay={userMenu} trigger={['click']} placement="bottomRight">
-            <Space className="cursor-pointer">
-              <Avatar icon={<UserOutlined />} />
-              <Text>{user?.name || user?.email}</Text>
-            </Space>
-          </Dropdown>
-        </Header>
-        
-        <Content className="m-6">
-          <div className="bg-white rounded-lg shadow-sm p-6 min-h-full">
-            {children}
+    <div className="app-background">
+      <AntLayout className="min-h-screen bg-transparent">
+        <Sider width={250} className="glass-card shadow-lg border-r-0" style={{ background: 'rgba(255, 255, 255, 0.9)' }}>
+          <div className="p-6">
+            <Title level={4} className="mb-0 text-center text-primary-700">Genascope</Title>
           </div>
-        </Content>
+          
+          <Menu
+            mode="inline"
+            selectedKeys={[location.pathname]}
+            items={menuItems}
+            className="border-r-0 bg-transparent"
+          />
+        </Sider>
+        
+        <AntLayout className="bg-transparent">
+          <Header className="glass-card shadow-sm px-6 flex justify-between items-center mx-6 mt-6 rounded-lg" style={{ background: 'rgba(255, 255, 255, 0.9)' }}>
+            <div></div>
+            <Dropdown overlay={userMenu} trigger={['click']} placement="bottomRight">
+              <Space className="cursor-pointer">
+                <Avatar icon={<UserOutlined />} />
+                <Text>{user?.name || user?.email}</Text>
+              </Space>
+            </Dropdown>
+          </Header>
+          
+          <Content className="m-6">
+            <div className="gradient-card p-6 min-h-full">
+              {children}
+            </div>
+          </Content>
+        </AntLayout>
       </AntLayout>
-    </AntLayout>
+    </div>
   )
 }

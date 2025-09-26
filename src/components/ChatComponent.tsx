@@ -69,6 +69,8 @@ const ChatComponent: React.FC<ChatProps> = ({ sessionId: providedSessionId, isNe
     const fetchEligibility = async () => {
       if (!chatCompleted) return;
       
+      if (!sessionId) return;
+      
       try {
         const result = await apiService.analyzeEligibility(sessionId);
         setEligibilityResult(result);
@@ -94,6 +96,12 @@ const ChatComponent: React.FC<ChatProps> = ({ sessionId: providedSessionId, isNe
     setIsLoading(true); // Indicate loading for API call
     setError(null);
     setCurrentQuestion(null); // Temporarily hide input while waiting for response
+
+    if (!sessionId) {
+      setError('Session not initialized');
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const response = await apiService.submitAnswer({

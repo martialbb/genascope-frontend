@@ -276,6 +276,23 @@ class ApiService {
     return response.data;
   }
 
+  // Lab test ordering
+  async orderTest(orderData: {
+    provider_id: string;
+    patient_id: string;
+    test_type: string;
+    shipping_address: {
+      line1: string;
+      line2?: string;
+      city: string;
+      state: string;
+      zip_code: string;
+    };
+  }) {
+    const response = await this.client.post('/lab-tests/order', orderData);
+    return response.data;
+  }
+
   // Account management methods
   async getAccounts() {
     const response = await this.client.get('/accounts/');

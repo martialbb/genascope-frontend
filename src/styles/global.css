@@ -6,30 +6,139 @@
 
 @layer base {
   html {
-    @apply h-full bg-gray-100; /* Changed from bg-gray-50 */
+    @apply h-full;
   }
   body {
-    @apply h-full font-sans text-gray-800; /* Default font and text color */
+    @apply h-full font-sans text-gray-800;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   }
+  
+  /* Root container styling */
+  #root {
+    @apply h-full;
+  }
+}
+
+@layer components {
+  /* Background patterns */
+  .bg-genascope-pattern {
+    background-image: 
+      linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 197, 253, 0.05) 100%),
+      url('/assets/images/genascope-background.jpg');
+    background-size: cover, cover;
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
+    background-attachment: fixed, fixed;
+  }
+  
+  .bg-genix-pattern {
+    background-image: 
+      linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(110, 231, 183, 0.05) 100%),
+      url('/assets/images/genix-background.jpg');
+    background-size: cover, cover;
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
+    background-attachment: fixed, fixed;
+  }
+  
+  /* Login page background */
+  .login-background {
+    @apply min-h-screen bg-genascope-pattern relative;
+  }
+  
+  .login-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 197, 253, 0.02) 50%, rgba(255, 255, 255, 0.1) 100%);
+    pointer-events: none;
+  }
+  
+  /* Dashboard and main app background */
+  .app-background {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+    min-height: 100vh;
+  }
+  
+  /* Form input styling */
   input, select, button {
-    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500; /* Consistent focus rings */
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500;
   }
+  
   input[type="text"], input[type="email"], input[type="password"], select {
-     @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 sm:text-sm; /* Standard input styling */
+    @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 text-sm transition-colors;
   }
+  
+  input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, select:focus {
+    @apply border-primary-500 ring-primary-500;
+  }
+  
+  /* Button styles */
   button {
-    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2;
   }
-  /* Primary button style */
+  
   .btn-primary {
-     @apply bg-blue-600 hover:bg-blue-700 focus:ring-blue-500;
+    @apply bg-primary-600 hover:bg-primary-700 focus:ring-primary-500 shadow-lg hover:shadow-xl;
   }
-  /* Secondary/Danger button style */
+  
+  .btn-secondary {
+    @apply bg-gray-600 hover:bg-gray-700 focus:ring-gray-500 text-white;
+  }
+  
   .btn-danger {
-     @apply bg-red-600 hover:bg-red-700 focus:ring-red-500;
+    @apply bg-red-600 hover:bg-red-700 focus:ring-red-500 shadow-lg hover:shadow-xl;
   }
-  /* Link-style button */
+  
   .btn-link {
-     @apply text-blue-600 hover:text-blue-800 bg-transparent shadow-none border-none p-0 font-medium;
+    @apply text-primary-600 hover:text-primary-800 bg-transparent shadow-none border-none p-0 font-medium;
+  }
+  
+  /* Card and component enhancements */
+  .glass-card {
+    @apply bg-white bg-opacity-80 backdrop-blur-sm border border-gray-200 shadow-xl rounded-lg;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+  
+  .gradient-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.8) 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    @apply shadow-xl rounded-lg;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Enhanced animations and transitions */
+  .hover-lift {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+  
+  /* Modern button styling */
+  .modern-button {
+    @apply relative overflow-hidden transition-all duration-300 transform hover:scale-105;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .modern-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  .modern-button:hover::before {
+    left: 100%;
   }
 }

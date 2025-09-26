@@ -95,14 +95,14 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="login-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 relative z-10">
         <div className="text-center">
-          <Title level={2}>Sign in to Genascope</Title>
-          <Text type="secondary">Enter your credentials to access the dashboard</Text>
+          <Title level={2} className="text-gray-900">Sign in to Genascope</Title>
+          <Text type="secondary" className="text-gray-600">Enter your credentials to access the dashboard</Text>
         </div>
         
-        <Card className="shadow-lg">
+        <Card className="glass-card shadow-2xl">
           <Form
             name="login"
             onFinish={handleLogin}

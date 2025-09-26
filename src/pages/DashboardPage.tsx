@@ -18,31 +18,37 @@ export function DashboardPage() {
         {/* Today's Appointments Section */}
         <div>
           <div className="flex justify-between items-center mb-6">
-            <Title level={2}>Today's Appointments</Title>
+            <Title level={2} className="text-gray-800">Today's Appointments</Title>
             <Link to="/appointments">
-              <Button type="primary">View All Appointments</Button>
+              <Button type="primary" className="modern-button">View All Appointments</Button>
             </Link>
           </div>
-          <div className="bg-white shadow rounded-lg overflow-hidden">
+          <div className="gradient-card overflow-hidden hover-lift">
             <AppointmentsList isOrganizationView={true} />
           </div>
         </div>
 
         {/* Patient Management Section */}
         <div>
-          <Title level={2} className="mb-6">Patient Management</Title>
-          <DashboardTable />
+          <Title level={2} className="mb-6 text-gray-800">Patient Management</Title>
+          <div className="gradient-card p-6 hover-lift">
+            <DashboardTable />
+          </div>
         </div>
 
         {/* Analytics Overview */}
         <div>
-          <Title level={2} className="mb-6">Analytics Overview</Title>
+          <Title level={2} className="mb-6 text-gray-800">Analytics Overview</Title>
           <Row gutter={[24, 24]}>
             <Col xs={24} md={12} xl={8}>
-              <EnhancedAppointmentStatsWidget />
+              <div className="gradient-card p-4 hover-lift">
+                <EnhancedAppointmentStatsWidget />
+              </div>
             </Col>
             <Col xs={24} md={12} xl={8}>
-              <EnhancedInviteStatsWidget />
+              <div className="gradient-card p-4 hover-lift">
+                <EnhancedInviteStatsWidget />
+              </div>
             </Col>
           </Row>
         </div>
