@@ -111,33 +111,13 @@ ENV DOCKER_ENV=true
 # Copy built static files to nginx
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Create nginx configuration for SPA routing
-RUN echo 'server { \
-    listen 4321; \
-    server_name localhost; \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    \
-    # Handle SPA routing - serve index.html for all routes \
-    location / { \
-        try_files $uri $uri/ /index.html; \
-    } \
-    \
-    # API proxy to backend \
-    location /api/ { \
-        proxy_pass http://genascope-backend/api/; \
-        proxy_set_header Host $host; \
-        proxy_set_header X-Real-IP $remote_addr; \
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; \
-        proxy_set_header X-Forwarded-Proto $scheme; \
-    } \
-    \
-    # Cache static assets \
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ { \
-        expires 1y; \
-        add_header Cache-Control "public, immutable"; \
-    } \
-}' > /etc/nginx/conf.d/default.conf
+# Copy the corrected nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
 
-EXPOSE 4321
+# Create directory for nginx cache and set permissions
+RUN mkdir -p /var/cache/nginx/client_temp && \
+    chmod 755 /var/cache/nginx/client_temp && \
+    chown -R nginx:nginx /var/cache/nginx
+
+EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
