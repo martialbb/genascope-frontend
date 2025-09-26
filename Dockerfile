@@ -119,11 +119,13 @@ RUN mkdir -p /var/cache/nginx/client_temp \
              /var/cache/nginx/proxy_temp \
              /var/cache/nginx/fastcgi_temp \
              /var/cache/nginx/uwsgi_temp \
-             /var/cache/nginx/scgi_temp && \
-    chmod -R 755 /var/cache/nginx && \
-    chown -R nginx:nginx /var/cache/nginx && \
-    touch /var/run/nginx.pid && \
-    chown nginx:nginx /var/run/nginx.pid
+             /var/cache/nginx/scgi_temp \
+             /tmp/nginx && \
+    chmod -R 777 /var/cache/nginx /tmp/nginx && \
+    chown -R nginx:nginx /var/cache/nginx /tmp/nginx
+
+# Switch to nginx user
+USER nginx
 
 EXPOSE 8080
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["nginx", "-g", "daemon off; error_log /tmp/nginx/error.log; pid /tmp/nginx/nginx.pid;"]
