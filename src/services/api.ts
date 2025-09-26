@@ -278,7 +278,7 @@ class ApiService {
 
   // Account management methods
   async getAccounts() {
-    const response = await this.client.get('/accounts');
+    const response = await this.client.get('/accounts/');
     return response.data;
   }
 
