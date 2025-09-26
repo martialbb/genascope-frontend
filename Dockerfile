@@ -114,10 +114,16 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Copy the corrected nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Create directory for nginx cache and set permissions
-RUN mkdir -p /var/cache/nginx/client_temp && \
-    chmod 755 /var/cache/nginx/client_temp && \
-    chown -R nginx:nginx /var/cache/nginx
+# Create nginx cache directories and set proper permissions
+RUN mkdir -p /var/cache/nginx/client_temp \
+             /var/cache/nginx/proxy_temp \
+             /var/cache/nginx/fastcgi_temp \
+             /var/cache/nginx/uwsgi_temp \
+             /var/cache/nginx/scgi_temp && \
+    chmod -R 755 /var/cache/nginx && \
+    chown -R nginx:nginx /var/cache/nginx && \
+    touch /var/run/nginx.pid && \
+    chown nginx:nginx /var/run/nginx.pid
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
