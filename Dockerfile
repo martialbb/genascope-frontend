@@ -95,7 +95,7 @@ ENV VITE_SKIP_NATIVE_EXTENSIONS=true
 # Expose the port the app runs on
 EXPOSE 4321
 
-# Start the development server using custom script
+# Start the development server using docker script
 CMD ["npm", "run", "docker:dev"]
 
 # Builder stage (for production)
@@ -103,11 +103,41 @@ FROM dev-deps AS builder
 COPY . .
 RUN npm run build
 
-# Production image
-FROM prod-deps AS production
+# Production image - Use nginx to serve static files
+FROM nginx:alpine AS production
 ENV NODE_ENV=production
 ENV DOCKER_ENV=true
-ENV PUBLIC_API_URL=http://backend:8000
-COPY --from=builder /app/dist ./dist
+
+# Copy built static files to nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Create nginx configuration for SPA routing
+RUN echo 'server { \
+    listen 4321; \
+    server_name localhost; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    \
+    # Handle SPA routing - serve index.html for all routes \
+    location / { \
+        try_files $uri $uri/ /index.html; \
+    } \
+    \
+    # API proxy to backend \
+    location /api/ { \
+        proxy_pass http://backend:8000/api/; \
+        proxy_set_header Host $host; \
+        proxy_set_header X-Real-IP $remote_addr; \
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; \
+        proxy_set_header X-Forwarded-Proto $scheme; \
+    } \
+    \
+    # Cache static assets \
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ { \
+        expires 1y; \
+        add_header Cache-Control "public, immutable"; \
+    } \
+}' > /etc/nginx/conf.d/default.conf
+
 EXPOSE 4321
-CMD ["node", "./dist/server/entry.mjs"]
+CMD ["nginx", "-g", "daemon off;"]
