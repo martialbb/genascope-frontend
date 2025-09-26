@@ -238,7 +238,7 @@ class ChatConfigurationAPI {
     if (params?.specialty) queryParams.append('specialty', params.specialty);
     if (params?.search) queryParams.append('search', params.search);
     
-    const url = `/api/v1/chat-configuration/strategies${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    const url = `/v1/chat-configuration/strategies${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
     const response = await this.client.get(url);
     
     // Handle both array response (current backend) and paginated response (future)
@@ -272,47 +272,47 @@ class ChatConfigurationAPI {
   }
 
   async getStrategy(id: string): Promise<ChatStrategy> {
-    const response = await this.client.get(`/api/v1/chat-configuration/strategies/${id}`);
+    const response = await this.client.get(`/v1/chat-configuration/strategies/${id}`);
     return response.data;
   }
 
   async createStrategy(strategy: ChatStrategyCreate): Promise<ChatStrategy> {
-    const response = await this.client.post('/api/v1/chat-configuration/strategies', strategy);
+    const response = await this.client.post('/v1/chat-configuration/strategies', strategy);
     return response.data;
   }
 
   async updateStrategy(id: string, strategy: ChatStrategyUpdate): Promise<ChatStrategy> {
-    const response = await this.client.put(`/api/v1/chat-configuration/strategies/${id}`, strategy);
+    const response = await this.client.put(`/v1/chat-configuration/strategies/${id}`, strategy);
     return response.data;
   }
 
   async deleteStrategy(id: string): Promise<void> {
-    await this.client.delete(`/api/v1/chat-configuration/strategies/${id}`);
+    await this.client.delete(`/v1/chat-configuration/strategies/${id}`);
   }
 
   // Knowledge Source methods
   async getKnowledgeSources(): Promise<KnowledgeSource[]> {
-    const response = await this.client.get('/api/v1/chat-configuration/knowledge-sources');
+    const response = await this.client.get('/v1/chat-configuration/knowledge-sources');
     return response.data;
   }
 
   async getKnowledgeSource(id: string): Promise<KnowledgeSource> {
-    const response = await this.client.get(`/api/v1/chat-configuration/knowledge-sources/${id}`);
+    const response = await this.client.get(`/v1/chat-configuration/knowledge-sources/${id}`);
     return response.data;
   }
 
   async createKnowledgeSource(source: KnowledgeSourceCreate): Promise<KnowledgeSource> {
-    const response = await this.client.post('/api/v1/chat-configuration/knowledge-sources', source);
+    const response = await this.client.post('/v1/chat-configuration/knowledge-sources', source);
     return response.data;
   }
 
   async updateKnowledgeSource(id: string, source: KnowledgeSourceUpdate): Promise<KnowledgeSource> {
-    const response = await this.client.put(`/api/v1/chat-configuration/knowledge-sources/${id}`, source);
+    const response = await this.client.put(`/v1/chat-configuration/knowledge-sources/${id}`, source);
     return response.data;
   }
 
   async deleteKnowledgeSource(id: string): Promise<void> {
-    await this.client.delete(`/api/v1/chat-configuration/knowledge-sources/${id}`);
+    await this.client.delete(`/v1/chat-configuration/knowledge-sources/${id}`);
   }
 
   // File upload methods
@@ -330,7 +330,7 @@ class ChatConfigurationAPI {
       formData.append('access_level', uploadRequest.access_level);
     }
 
-    const response = await this.client.post('/api/v1/chat-configuration/knowledge-sources/upload', formData, {
+    const response = await this.client.post('/v1/chat-configuration/knowledge-sources/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -340,60 +340,60 @@ class ChatConfigurationAPI {
 
   // Search methods
   async searchKnowledgeSources(searchParams: KnowledgeSourceSearchRequest): Promise<KnowledgeSourceSearchResponse> {
-    const response = await this.client.post('/api/v1/chat-configuration/knowledge-sources/search', searchParams);
+    const response = await this.client.post('/v1/chat-configuration/knowledge-sources/search', searchParams);
     return response.data;
   }
 
   // Targeting Rules methods
   async getTargetingRules(strategyId: string): Promise<TargetingRule[]> {
-    const response = await this.client.get(`/api/v1/chat-configuration/strategies/${strategyId}/targeting-rules`);
+    const response = await this.client.get(`/v1/chat-configuration/strategies/${strategyId}/targeting-rules`);
     return response.data;
   }
 
   async createTargetingRule(strategyId: string, rule: Omit<TargetingRule, 'id' | 'strategy_id' | 'created_at'>): Promise<TargetingRule> {
-    const response = await this.client.post(`/api/v1/chat-configuration/strategies/${strategyId}/targeting-rules`, rule);
+    const response = await this.client.post(`/v1/chat-configuration/strategies/${strategyId}/targeting-rules`, rule);
     return response.data;
   }
 
   async updateTargetingRule(strategyId: string, ruleId: string, rule: Partial<TargetingRule>): Promise<TargetingRule> {
-    const response = await this.client.put(`/api/v1/chat-configuration/strategies/${strategyId}/targeting-rules/${ruleId}`, rule);
+    const response = await this.client.put(`/v1/chat-configuration/strategies/${strategyId}/targeting-rules/${ruleId}`, rule);
     return response.data;
   }
 
   async deleteTargetingRule(strategyId: string, ruleId: string): Promise<void> {
-    await this.client.delete(`/api/v1/chat-configuration/strategies/${strategyId}/targeting-rules/${ruleId}`);
+    await this.client.delete(`/v1/chat-configuration/strategies/${strategyId}/targeting-rules/${ruleId}`);
   }
 
   // Outcome Actions methods
   async getOutcomeActions(strategyId: string): Promise<OutcomeAction[]> {
-    const response = await this.client.get(`/api/v1/chat-configuration/strategies/${strategyId}/outcome-actions`);
+    const response = await this.client.get(`/v1/chat-configuration/strategies/${strategyId}/outcome-actions`);
     return response.data;
   }
 
   async createOutcomeAction(strategyId: string, action: Omit<OutcomeAction, 'id' | 'strategy_id' | 'created_at'>): Promise<OutcomeAction> {
-    const response = await this.client.post(`/api/v1/chat-configuration/strategies/${strategyId}/outcome-actions`, action);
+    const response = await this.client.post(`/v1/chat-configuration/strategies/${strategyId}/outcome-actions`, action);
     return response.data;
   }
 
   async updateOutcomeAction(strategyId: string, actionId: string, action: Partial<OutcomeAction>): Promise<OutcomeAction> {
-    const response = await this.client.put(`/api/v1/chat-configuration/strategies/${strategyId}/outcome-actions/${actionId}`, action);
+    const response = await this.client.put(`/v1/chat-configuration/strategies/${strategyId}/outcome-actions/${actionId}`, action);
     return response.data;
   }
 
   async deleteOutcomeAction(strategyId: string, actionId: string): Promise<void> {
-    await this.client.delete(`/api/v1/chat-configuration/strategies/${strategyId}/outcome-actions/${actionId}`);
+    await this.client.delete(`/v1/chat-configuration/strategies/${strategyId}/outcome-actions/${actionId}`);
   }
 
   // Analytics methods
   async getStrategyAnalytics(strategyId: string, timeRange?: string): Promise<AnalyticsData[]> {
     const params = timeRange ? { time_range: timeRange } : {};
-    const response = await this.client.get(`/api/v1/chat-configuration/analytics/strategy/${strategyId}`, { params });
+    const response = await this.client.get(`/v1/chat-configuration/analytics/strategy/${strategyId}`, { params });
     return response.data;
   }
 
   async getSystemAnalytics(timeRange?: string): Promise<Record<string, any>> {
     const params = timeRange ? { time_range: timeRange } : {};
-    const response = await this.client.get('/api/v1/chat-configuration/analytics/system', { params });
+    const response = await this.client.get('/v1/chat-configuration/analytics/system', { params });
     return response.data;
   }
 }
