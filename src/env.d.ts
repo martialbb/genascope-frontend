@@ -1,4 +1,4 @@
-/// <reference types="vite/client" />
+/// <reference types="astro/client" />
 interface ImportMetaEnv {
   readonly PUBLIC_API_URL: string | undefined;
   readonly DOCKER_ENV: string | undefined;

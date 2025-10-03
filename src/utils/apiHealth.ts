@@ -94,6 +94,6 @@ export function logApiStatus(status: ApiHealthStatus): void {
 }
 
 // Auto-check on module load in development - only on client side
-if (import.meta.env.DEV && typeof window !== 'undefined') {
+if ((import.meta.env as any).DEV && typeof window !== 'undefined') {
   checkApiHealth().then(logApiStatus);
 }

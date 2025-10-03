@@ -6,7 +6,7 @@ import {
   ExclamationCircleOutlined,
   StopOutlined 
 } from '@ant-design/icons';
-import type { InviteStatus } from '../types/patients';
+import { InviteStatus } from '../types/patients';
 
 interface InviteStatusIndicatorProps {
   status: InviteStatus;
@@ -28,21 +28,21 @@ const InviteStatusIndicator: React.FC<InviteStatusIndicatorProps> = ({
           text: 'Pending',
           tooltip: 'Invite sent, waiting for patient response'
         };
-      case 'completed' as any:
+      case InviteStatus.ACCEPTED:
         return {
           color: 'green',
           icon: <CheckCircleOutlined />,
           text: 'Completed',
           tooltip: 'Patient has successfully registered'
         };
-      case 'expired':
+      case InviteStatus.EXPIRED:
         return {
           color: 'red',
           icon: <ExclamationCircleOutlined />,
           text: 'Expired',
           tooltip: 'Invite has expired and needs to be resent'
         };
-      case 'cancelled' as any:
+      case InviteStatus.REVOKED:
         return {
           color: 'default',
           icon: <StopOutlined />,

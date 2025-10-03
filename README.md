@@ -5,7 +5,7 @@ Genascope is a comprehensive web application designed to help identify individua
 ## 🔄 Project Architecture
 
 This project uses a unified full-stack architecture with enhanced security:
-- **Frontend**: User interface built with React SPA (TypeScript), Vite, and Tailwind CSS
+- **Frontend**: User interface built with Astro, React (TypeScript), and Tailwind CSS
 - **Backend**: FastAPI backend service with SQLAlchemy ORM and PostgreSQL database
 - **Cloud Storage**: AWS S3 integration with IAM role-based access and TLS enforcement
 - **Security**: Least-privilege access with temporary credentials (no long-term AWS keys)
@@ -69,11 +69,11 @@ All commands are run from the root of the project, from a terminal:
 
 | Command           | Action                                           |
 | :---------------- | :----------------------------------------------- |
-| `npm run dev`     | Starts local Vite dev server at `localhost:4321` |
+| `npm run dev`     | Starts local dev server at `localhost:4321`      |
 | `npm run build`   | Build your production site to `./dist/`          |
 | `npm run preview` | Preview your build locally, before deploying     |
-| `npm run lint`    | Run ESLint to check for code issues             |
-| `npm run type-check` | Run TypeScript type checking                  |
+| `npm run astro ...` | Run CLI commands like `astro add`, `astro check` |
+| `npm run astro -- --help` | Get help using the Astro CLI |
 
 ## 🔌 Backend Connection
 

@@ -4,13 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { ChatDashboard } from './ChatDashboard';
 import { ChatWizard } from './ChatWizard';
 import { useChatStrategy } from '../../hooks/useChatStrategy';
-import type { StrategyFormData, ChatStrategy, KnowledgeSource } from '../../types/chatConfiguration';
+import type { StrategyFormData, ChatStrategy } from '../../types/chatConfiguration';
 import { buttonStyles } from '../../constants/buttonStyles';
 import { chatConfigurationAPI } from '../../services/chatConfigurationApi';
 
 type ActiveView = 'dashboard' | 'wizard' | 'analytics';
 
-export const ChatConfigurationManager: React.FC = () => {
+const ChatConfigurationManager: React.FC = () => {
   const [activeView, setActiveView] = useState<ActiveView>('dashboard');
   const [editingStrategy, setEditingStrategy] = useState<ChatStrategy | null>(null);
   const [strategyForm, setStrategyForm] = useState<StrategyFormData>({
@@ -145,8 +145,8 @@ export const ChatConfigurationManager: React.FC = () => {
           access_level: 'private'
         });
         
-        // Create knowledge source from upload response
-        const newKnowledgeSource: KnowledgeSource = {
+                // Create knowledge source from upload response
+        const newKnowledgeSource = {
           id: uploadResponse.id,
           name: uploadResponse.name,
           description: `Uploaded file: ${uploadResponse.name}`,
@@ -154,7 +154,7 @@ export const ChatConfigurationManager: React.FC = () => {
           file_size: file.size,
           created_at: new Date().toISOString(),
           file_path: uploadResponse.file_path,
-          processing_status: (uploadResponse.processing_status as 'pending' | 'processing' | 'completed' | 'failed') || 'pending'
+          processing_status: uploadResponse.processing_status as 'pending' | 'processing' | 'completed' | 'failed'
         };
         
         // Add to knowledge sources list using the state setter
@@ -359,3 +359,6 @@ export const ChatConfigurationManager: React.FC = () => {
     </div>
   );
 };
+
+export { ChatConfigurationManager };
+export default ChatConfigurationManager;

@@ -26,7 +26,7 @@ function getApiBaseUrl(): string {
  */
 function getCurrentEnvironment(): 'development' | 'staging' | 'production' {
   // Vite environment detection
-  const viteMode = import.meta.env.MODE;
+  const viteMode = (import.meta.env as any).MODE;
   if (viteMode && ['production', 'staging', 'development'].includes(viteMode)) {
     return viteMode as 'development' | 'staging' | 'production';
   }

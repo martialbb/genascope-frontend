@@ -79,7 +79,7 @@ class InviteErrorBoundary extends Component<Props, State> {
                   </Button>
                 </Space>
                 
-                {import.meta.env.DEV && this.state.error && (
+                {(import.meta.env as any).DEV && this.state.error && (
                   <div className="mt-6 p-4 bg-gray-50 rounded border text-left">
                     <Text strong className="block mb-2">Debug Information:</Text>
                     <Paragraph className="mb-2">

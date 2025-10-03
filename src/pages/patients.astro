@@ -1,0 +1,54 @@
+---
+import SidebarLayout from '../layouts/SidebarLayout.astro';
+import PatientManager from '../components/PatientManager.tsx';
+---
+
+<SidebarLayout title="Patient Management - Genascope">
+  <main class="container mx-auto py-8 px-4">
+    <h1 class="text-3xl font-bold mb-6 text-blue-700">Patient Management</h1>
+    
+    <div class="mb-6">
+      <p class="text-gray-600">
+        Create and manage patient records. Patients created here can be invited to complete their assessment.
+      </p>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <PatientManager client:load />
+    </div>
+  </main>
+</SimpleLayout>
+
+<script>
+  // Simple client-side authentication check
+  const token = localStorage.getItem('authToken');
+  const userStr = localStorage.getItem('authUser');
+  
+  if (!token || !userStr) {
+    console.log('Patients page: Not authenticated, redirecting to login');
+    window.location.href = '/login?redirect=/patients';
+  } else {
+    try {
+      const user = JSON.parse(userStr);
+      const hasPermission = ['admin', 'clinician', 'super_admin', 'physician'].includes(user.role);
+      
+      if (!hasPermission) {
+        console.warn('Patients page: Insufficient permissions, redirecting to dashboard');
+        window.location.href = '/dashboard?error=permission';
+      }
+    } catch (e) {
+      console.error('Patients page: Error parsing user data', e);
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('authUser');
+      window.location.href = '/login?redirect=/patients';
+    }
+  }
+</script>
+
+<style>
+  main {
+    min-height: calc(100vh - 140px);
+  }
+</style>
+
+</SidebarLayout>
