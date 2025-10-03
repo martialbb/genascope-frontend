@@ -15,13 +15,10 @@ interface ApiEnvironmentConfig {
  * Determine the API base URL based on environment
  */
 function getApiBaseUrl(): string {
-  // In Vite development, use the proxy
-  if (import.meta.env.MODE === 'development') {
-    return '/api'  // Proxy handles routing to backend
-  }
-  
-  // Production - use the same domain
-  return `${window.location.protocol}//${window.location.host}/api`
+  // Always use /api for both development and production
+  // In development: Vite dev server proxy handles routing
+  // In production: nginx proxy handles routing to backend
+  return '/api'
 }
 
 /**
