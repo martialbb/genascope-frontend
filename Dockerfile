@@ -86,11 +86,29 @@ FROM dev-deps AS builder
 COPY . .
 RUN npm run build
 
-# Production image
-FROM prod-deps AS production
+# Production image - Use nginx to serve static files
+FROM nginx:alpine AS production
 ENV NODE_ENV=production
 ENV DOCKER_ENV=true
-ENV PUBLIC_API_URL=http://backend:8000
-COPY --from=builder /app/dist ./dist
+
+# Copy built static files to nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy the corrected nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Create nginx cache directories and set proper permissions
+RUN mkdir -p /var/cache/nginx/client_temp \
+             /var/cache/nginx/proxy_temp \
+             /var/cache/nginx/fastcgi_temp \
+             /var/cache/nginx/uwsgi_temp \
+             /var/cache/nginx/scgi_temp \
+             /tmp/nginx && \
+    chmod -R 777 /var/cache/nginx /tmp/nginx && \
+    chown -R nginx:nginx /var/cache/nginx /tmp/nginx
+
+# Switch to nginx user
+USER nginx
+
 EXPOSE 4321
-CMD ["node", "./dist/server/entry.mjs"]
+CMD ["nginx", "-g", "daemon off; error_log /tmp/nginx/error.log; pid /tmp/nginx/nginx.pid;"]
