@@ -111,4 +111,4 @@ RUN mkdir -p /var/cache/nginx/client_temp \
 USER nginx
 
 EXPOSE 4321
-CMD ["nginx", "-g", "daemon off; error_log /tmp/nginx/error.log; pid /tmp/nginx/nginx.pid;"]
+CMD ["nginx", "-g", "daemon off;"]
