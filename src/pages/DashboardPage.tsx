@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import SidebarLayout from '../components/SidebarLayout';
 import DashboardTable from '../components/DashboardTable';
 import AppointmentsList from '../components/AppointmentsList';
@@ -14,6 +15,7 @@ interface UserData {
 
 export const DashboardPage: React.FC = () => {
   const [user, setUser] = useState<UserData | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Protect dashboard - redirect to login if not authenticated
@@ -22,7 +24,7 @@ export const DashboardPage: React.FC = () => {
     
     if (!token || !userData) {
       console.log('Dashboard: User not authenticated, redirecting to login');
-      window.location.href = '/login';
+      navigate('/login');
     } else {
       try {
         const parsedUser = JSON.parse(userData);
@@ -32,10 +34,10 @@ export const DashboardPage: React.FC = () => {
         console.error('Dashboard: Error parsing user data, redirecting to login');
         localStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
-        window.location.href = '/login';
+        navigate('/login');
       }
     }
-  }, []);
+  }, [navigate]);
 
   // Show invite stats widget for admins and clinicians
   const showInviteStats = user && (user.role === 'admin' || user.role === 'clinician' || user.role === 'physician');
@@ -52,12 +54,12 @@ export const DashboardPage: React.FC = () => {
         <div className="mb-10">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-800">Today's Appointments</h2>
-            <a 
-              href="/appointments-dashboard" 
+            <Link 
+              to="/appointments-dashboard" 
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               View All Appointments
-            </a>
+            </Link>
           </div>
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
             <AppointmentsList 
@@ -76,23 +78,23 @@ export const DashboardPage: React.FC = () => {
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Manage Your Availability</h3>
             <p className="text-gray-600 mb-4">Set your availability to allow patients to book appointments with you.</p>
-            <a 
-              href="/manage-availability" 
+            <Link 
+              to="/manage-availability" 
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Set Availability
-            </a>
+            </Link>
           </div>
           
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Invite a New Patient</h3>
             <p className="text-gray-600 mb-4">Send an invitation to a new patient to join the platform.</p>
-            <a 
-              href="/invite" 
+            <Link 
+              to="/invite" 
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Invite Patient
-            </a>
+            </Link>
           </div>
 
           {/* Invite Statistics Widget - Only show for admins and clinicians */}

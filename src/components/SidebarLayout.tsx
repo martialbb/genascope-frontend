@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import apiService from '../services/api';
 
 interface UserData {
@@ -12,16 +13,31 @@ interface UserData {
 interface AccountData {
   id: string;
   name: string;
-  status: string;
-}
-
-const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  s        {/* Navigation - responsive spacing */}
+        <nav className="px-4 pb-4 pt-6 lg:pt-24">
+          <div className="space-y-2">
+            {navLinks.map((link, index) => (
+              <Link
+                key={index}
+                to={link.href}
+                className="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <svg className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={link.icon} />
+                </svg>
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </nav>const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [user, setUser] = useState<UserData | null>(null);
   const [account, setAccount] = useState<AccountData | null>(null);
   const [loading, setLoading] = useState(true);
   const [accountLoading, setAccountLoading] = useState(false);
+  const navigate = useNavigate();
 
   // Check authentication status on component mount
   useEffect(() => {
@@ -165,8 +181,8 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     
     console.log('SidebarLayout: Auth data cleared, redirecting to login');
     
-    // Redirect to login with logout parameter
-    window.location.href = '/login?logout=true';
+    // Use navigate instead of window.location
+    navigate('/login?logout=true');
   };
 
   const navLinks = getNavLinks();
@@ -187,7 +203,7 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               </svg>
             </button>
             <div className="text-lg font-bold text-blue-700">
-              <a href="/" className="text-blue-700 hover:text-blue-800">Genascope</a>
+              <Link to="/" className="text-blue-700 hover:text-blue-800">Genascope</Link>
             </div>
           </div>
 
@@ -218,8 +234,8 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                     <div className="py-2">
                       {/* Profile link */}
-                      <a
-                        href={`/admin/edit-user/${user.id}`}
+                      <Link
+                        to={`/admin/edit-user/${user.id}`}
                         className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         onClick={() => setIsUserDropdownOpen(false)}
                       >
@@ -227,15 +243,15 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                         Edit Profile
-                      </a>
+                      </Link>
 
                       {/* Account info */}
                       {account && (
                         <div className="px-4 py-2 border-t border-gray-100">
                           <div className="text-xs text-gray-500 mb-1">Account</div>
                           {canEditAccount(user, account) ? (
-                            <a
-                              href={`/admin/edit-account/${account.id}`}
+                            <Link
+                              to={`/admin/edit-account/${account.id}`}
                               className="flex items-center text-sm text-blue-600 hover:text-blue-800"
                               onClick={() => setIsUserDropdownOpen(false)}
                             >
@@ -243,7 +259,7 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                               </svg>
                               {account.name}
-                            </a>
+                            </Link>
                           ) : (
                             <div className="flex items-center text-sm text-gray-700">
                               <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -273,12 +289,12 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 )}
               </div>
             ) : !loading ? (
-              <a
-                href="/login"
+              <Link
+                to="/login"
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
               >
                 Login
-              </a>
+              </Link>
             ) : null}
           </div>
         </div>
@@ -301,7 +317,7 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         {/* Mobile header in sidebar */}
         <div className="lg:hidden flex items-center justify-between h-20 px-4 bg-blue-600 text-white">
           <div className="text-lg font-bold">
-            <a href="/" className="text-white hover:text-blue-100">Genascope</a>
+            <Link to="/" className="text-white hover:text-blue-100">Genascope</Link>
           </div>
           <button 
             onClick={() => setIsMenuOpen(false)}
