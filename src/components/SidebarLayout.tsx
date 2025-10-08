@@ -13,24 +13,10 @@ interface UserData {
 interface AccountData {
   id: string;
   name: string;
-  s        {/* Navigation - responsive spacing */}
-        <nav className="px-4 pb-4 pt-6 lg:pt-24">
-          <div className="space-y-2">
-            {navLinks.map((link, index) => (
-              <Link
-                key={index}
-                to={link.href}
-                className="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <svg className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={link.icon} />
-                </svg>
-                {link.label}
-              </Link>
-            ))}
-          </div>
-        </nav>const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  status: string;
+}
+
+const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [user, setUser] = useState<UserData | null>(null);
@@ -333,9 +319,9 @@ interface AccountData {
         <nav className="px-4 pb-4 pt-6 lg:pt-24">
           <div className="space-y-2">
             {navLinks.map((link, index) => (
-              <a
+              <Link
                 key={index}
-                href={link.href}
+                to={link.href}
                 className="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -343,7 +329,7 @@ interface AccountData {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={link.icon} />
                 </svg>
                 {link.label}
-              </a>
+              </Link>
             ))}
           </div>
         </nav>
