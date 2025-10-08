@@ -7,6 +7,12 @@ import './styles/global.css';
 import SidebarLayout from './components/SidebarLayout';
 import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
+import { PatientsPage } from './pages/PatientsPage';
+import { InvitesPage } from './pages/InvitesPage';
+import { ChatConfigurationPage } from './pages/ChatConfigurationPage';
+import { AppointmentsPage } from './pages/AppointmentsPage';
+import { UsersPage } from './pages/UsersPage';
+import { AccountsPage } from './pages/AccountsPage';
 
 // Theme configuration
 const theme = {
@@ -39,12 +45,12 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           
           {/* Patient Management */}
-          <Route path="/patients" element={<PlaceholderPage title="Patients" />} />
-          <Route path="/invite" element={<PlaceholderPage title="Invite Patient" />} />
-          <Route path="/manage-invites" element={<PlaceholderPage title="Manage Invites" />} />
+          <Route path="/patients" element={<PatientsPage />} />
+          <Route path="/invite" element={<PatientsPage />} /> {/* Invite from patients page */}
+          <Route path="/manage-invites" element={<InvitesPage />} />
           
           {/* Appointments */}
-          <Route path="/appointments-dashboard" element={<PlaceholderPage title="Appointments Dashboard" />} />
+          <Route path="/appointments-dashboard" element={<AppointmentsPage />} />
           <Route path="/schedule-appointment" element={<PlaceholderPage title="Schedule Appointment" />} />
           <Route path="/manage-availability" element={<PlaceholderPage title="Manage Availability" />} />
           
@@ -52,11 +58,11 @@ function App() {
           <Route path="/lab-order" element={<PlaceholderPage title="Order Test" />} />
           
           {/* Configuration */}
-          <Route path="/chat-configuration" element={<PlaceholderPage title="Chat Configuration" />} />
+          <Route path="/chat-configuration" element={<ChatConfigurationPage />} />
           
           {/* Admin Routes */}
-          <Route path="/admin/users" element={<PlaceholderPage title="Manage Users" />} />
-          <Route path="/admin/accounts" element={<PlaceholderPage title="Manage Accounts" />} />
+          <Route path="/admin/users" element={<UsersPage />} />
+          <Route path="/admin/accounts" element={<AccountsPage />} />
           <Route path="/admin/create-account" element={<PlaceholderPage title="Create Account" />} />
           <Route path="/admin/edit-user/:id" element={<PlaceholderPage title="Edit User" />} />
           <Route path="/admin/edit-account/:id" element={<PlaceholderPage title="Edit Account" />} />
