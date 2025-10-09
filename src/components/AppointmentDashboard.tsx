@@ -100,6 +100,9 @@ const AppointmentDashboard: React.FC<AppointmentDashboardProps> = ({
         response = await apiService.getClinicianAppointments(clinicianId, startDate, endDate);
       } else if (userRole === 'patient' && patientId) {
         response = await apiService.getPatientAppointments(patientId);
+      } else if (userRole === 'admin') {
+        // For admin users, fetch all organization appointments
+        response = await apiService.getOrganizationAppointments();
       }
       
       if (response?.appointments) {
@@ -131,11 +134,15 @@ const AppointmentDashboard: React.FC<AppointmentDashboardProps> = ({
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6">
         <Title level={2}>
-          {userRole === 'clinician' ? 'Clinician Dashboard' : 'Patient Dashboard'}
+          {userRole === 'clinician' ? 'Clinician Dashboard' : 
+           userRole === 'admin' ? 'Admin Dashboard - All Appointments' : 
+           'Patient Dashboard'}
         </Title>
         <p className="text-gray-600">
           {userRole === 'clinician' 
             ? 'Manage your appointments, availability, and patient scheduling'
+            : userRole === 'admin'
+            ? 'View and manage all appointments across the organization'
             : 'View and book your appointments with healthcare providers'}
         </p>
       </div>

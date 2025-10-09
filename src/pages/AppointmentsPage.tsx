@@ -42,10 +42,10 @@ export const AppointmentsPage: React.FC = () => {
         <AppointmentDashboard 
           userRole={user.role}
           userId={user.id}
+          clinicianId={user.role === 'clinician' ? user.id : undefined}
+          patientId={user.role === 'patient' ? user.id : undefined}
         />
       </div>
     </SidebarLayout>
   );
-};
-
-export default AppointmentsPage;
+};export default AppointmentsPage;
