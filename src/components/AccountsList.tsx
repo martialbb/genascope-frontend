@@ -1,5 +1,6 @@
 // src/components/AccountsList.tsx
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import apiService from '../services/api';
 
 interface Account {
@@ -75,12 +76,12 @@ const AccountsList: React.FC = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <a
-            href="/admin/create-account"
+          <Link
+            to="/admin/create-account"
             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
           >
             Add Account
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -136,12 +137,12 @@ const AccountsList: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end space-x-2">
-                      <a
-                        href={`/admin/edit-account/${account.id}`}
+                      <Link
+                        to={`/admin/edit-account/${account.id}`}
                         className="text-indigo-600 hover:text-indigo-900"
                       >
                         Edit
-                      </a>
+                      </Link>
                       <button
                         onClick={() => handleDeleteAccount(account.id)}
                         className={`${

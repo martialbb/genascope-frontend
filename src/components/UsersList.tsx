@@ -1,5 +1,6 @@
 // src/components/UsersList.tsx
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import apiService from '../services/api';
 
 interface User {
@@ -104,12 +105,12 @@ const UsersList: React.FC<UsersListProps> = ({ accountId }) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <a
-            href={accountId ? `/admin/create-user?accountId=${accountId}` : '/admin/create-user'}
+          <Link
+            to={accountId ? `/admin/create-user?accountId=${accountId}` : '/admin/create-user'}
             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
           >
             Add User
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -173,12 +174,12 @@ const UsersList: React.FC<UsersListProps> = ({ accountId }) => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end space-x-2">
-                      <a
-                        href={`/admin/edit-user/${user.id}`}
+                      <Link
+                        to={`/admin/edit-user/${user.id}`}
                         className="text-indigo-600 hover:text-indigo-900"
                       >
                         Edit
-                      </a>
+                      </Link>
                       <button
                         onClick={() => handleDeleteUser(user.id)}
                         className={`${

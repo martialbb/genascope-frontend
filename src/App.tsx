@@ -15,6 +15,8 @@ import { UsersPage } from './pages/UsersPage';
 import { AccountsPage } from './pages/AccountsPage';
 import EditUserPage from './pages/EditUserPage';
 import EditAccountPage from './pages/EditAccountPage';
+import CreateUserPage from './pages/CreateUserPage';
+import CreateAccountPage from './pages/CreateAccountPage';
 
 // Theme configuration
 const theme = {
@@ -65,7 +67,8 @@ function App() {
           {/* Admin Routes */}
           <Route path="/admin/users" element={<UsersPage />} />
           <Route path="/admin/accounts" element={<AccountsPage />} />
-          <Route path="/admin/create-account" element={<PlaceholderPage title="Create Account" />} />
+          <Route path="/admin/create-user" element={<CreateUserPage />} />
+          <Route path="/admin/create-account" element={<CreateAccountPage />} />
           <Route path="/admin/edit-user/:id" element={<EditUserPage />} />
           <Route path="/admin/edit-account/:id" element={<EditAccountPage />} />
           
