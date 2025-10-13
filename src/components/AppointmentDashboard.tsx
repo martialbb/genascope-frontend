@@ -294,6 +294,7 @@ const AppointmentDashboard: React.FC<AppointmentDashboardProps> = ({
 
         <TabPane tab="All Appointments" key="all-appointments">
           <AppointmentsList 
+            appointments={appointments}
             clinicianId={userRole === 'clinician' ? clinicianId : undefined}
             patientId={userRole === 'patient' ? patientId : undefined}
             showFilters={true}
@@ -326,6 +327,7 @@ const AppointmentDashboard: React.FC<AppointmentDashboardProps> = ({
 
             <TabPane tab="Manage Appointments" key="manage">
               <AppointmentsList 
+                appointments={appointments}
                 clinicianId={clinicianId}
                 isClinicianView={true}
               />

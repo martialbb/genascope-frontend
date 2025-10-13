@@ -10,6 +10,7 @@ interface AppointmentProps {
   isOrganizationView?: boolean;
   showFilters?: boolean;
   pageSize?: number;
+  appointments?: Appointment[];
 }
 
 interface Appointment {
@@ -29,9 +30,10 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
   isClinicianView = false,
   isOrganizationView = false,
   showFilters = true,
-  pageSize = 10
+  pageSize = 10,
+  appointments: externalAppointments
 }) => {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>(externalAppointments || []);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -65,6 +67,13 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
   
   // Load appointments
   useEffect(() => {
+    // If appointments are provided externally, use them and skip fetching
+    if (externalAppointments) {
+      setAppointments(externalAppointments);
+      setIsLoading(false);
+      return;
+    }
+
   const fetchAppointments = async () => {
     setIsLoading(true);
     setError(null);
@@ -131,7 +140,7 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
   };
   
   fetchAppointments();
-  }, [clinicianId, patientId, isClinicianView, isOrganizationView]);
+  }, [clinicianId, patientId, isClinicianView, isOrganizationView, externalAppointments]);
   
   // Update appointment status
   const updateAppointmentStatus = async (appointmentId: string, status: string) => {
