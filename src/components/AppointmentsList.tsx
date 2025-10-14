@@ -167,11 +167,22 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
     if (statusFilter !== 'all' && appointment.status !== statusFilter) {
       return false;
     }
-    
+
     // Apply date filter
     if (dateFilter !== 'all') {
-      const appointmentDate = new Date(appointment.date_time);
-      
+      let appointmentDate = new Date(appointment.date_time);
+
+      // Handle invalid date format
+      if (isNaN(appointmentDate.getTime())) {
+        appointmentDate = new Date(appointment.date_time.replace(' ', 'T'));
+      }
+
+      // Skip appointments with invalid dates in filtering
+      if (isNaN(appointmentDate.getTime())) {
+        console.warn('Skipping appointment with invalid date:', appointment.date_time);
+        return false;
+      }
+
       switch(dateFilter) {
         case 'today':
           return appointmentDate >= startOfToday && appointmentDate <= endOfToday;
@@ -185,7 +196,7 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
           return true;
       }
     }
-    
+
     return true;
   });
 
@@ -202,7 +213,31 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
   
   // Format date and time for display
   const formatDateTime = (isoString: string) => {
-    const date = new Date(isoString);
+    if (!isoString) {
+      return {
+        date: 'Invalid date',
+        time: 'Invalid time'
+      };
+    }
+
+    // Try to parse the date string
+    let date = new Date(isoString);
+
+    // If the date is invalid, try to parse it as a different format
+    if (isNaN(date.getTime())) {
+      // Try parsing as ISO format with timezone
+      date = new Date(isoString.replace(' ', 'T'));
+    }
+
+    // Check if date is still invalid
+    if (isNaN(date.getTime())) {
+      console.error('Invalid date format received from API:', isoString);
+      return {
+        date: 'Invalid date',
+        time: 'Invalid time'
+      };
+    }
+
     return {
       date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
       time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
