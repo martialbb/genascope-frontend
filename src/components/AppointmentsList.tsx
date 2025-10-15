@@ -14,14 +14,21 @@ interface AppointmentProps {
 }
 
 interface Appointment {
-  appointment_id: string;
+  id: string;
+  appointment_id?: string; // For backwards compatibility
   patient_id?: string;
   patient_name?: string;
   clinician_id?: string;
   clinician_name?: string;
-  date_time: string;
+  date: string;
+  time: string;
+  date_time?: string; // For backwards compatibility
   appointment_type: string;
   status: string;
+  notes?: string;
+  confirmation_code?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 const AppointmentsList: React.FC<AppointmentProps> = ({ 
@@ -148,12 +155,13 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
       await apiService.updateAppointmentStatus(appointmentId, status);
       
       // Update local state to reflect the change
-      setAppointments(prevAppointments => 
-        prevAppointments.map(appointment => 
-          appointment.appointment_id === appointmentId
+      setAppointments(prevAppointments =>
+        prevAppointments.map(appointment => {
+          const apptId = appointment.id || appointment.appointment_id;
+          return apptId === appointmentId
             ? { ...appointment, status }
-            : appointment
-        )
+            : appointment;
+        })
       );
     } catch (err) {
       setError('Failed to update appointment status');
@@ -170,22 +178,31 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
 
     // Apply date filter
     if (dateFilter !== 'all') {
-      // Check if date_time exists
-      if (!appointment.date_time) {
-        console.warn('Skipping appointment with missing date_time:', appointment);
-        return false;
+      let appointmentDate: Date;
+
+      // Try new API format first (separate date and time fields)
+      if (appointment.date && appointment.time) {
+        const dateTimeStr = `${appointment.date}T${appointment.time}`;
+        appointmentDate = new Date(dateTimeStr);
       }
+      // Fallback to old format (combined date_time field)
+      else if (appointment.date_time) {
+        appointmentDate = new Date(appointment.date_time);
 
-      let appointmentDate = new Date(appointment.date_time);
-
-      // Handle invalid date format
-      if (isNaN(appointmentDate.getTime())) {
-        appointmentDate = new Date(appointment.date_time.replace(' ', 'T'));
+        // Handle invalid date format
+        if (isNaN(appointmentDate.getTime())) {
+          appointmentDate = new Date(appointment.date_time.replace(' ', 'T'));
+        }
+      }
+      // No valid date found
+      else {
+        console.warn('Skipping appointment with missing date:', appointment);
+        return false;
       }
 
       // Skip appointments with invalid dates in filtering
       if (isNaN(appointmentDate.getTime())) {
-        console.warn('Skipping appointment with invalid date:', appointment.date_time);
+        console.warn('Skipping appointment with invalid date:', appointment);
         return false;
       }
 
@@ -218,35 +235,52 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
   }, [statusFilter, dateFilter]);
   
   // Format date and time for display
-  const formatDateTime = (isoString: string) => {
-    if (!isoString) {
-      return {
-        date: 'Invalid date',
-        time: 'Invalid time'
-      };
+  const formatDateTime = (appointment: Appointment) => {
+    // Handle new API format with separate date and time fields
+    if (appointment.date && appointment.time) {
+      try {
+        // Combine date and time
+        const dateTimeStr = `${appointment.date}T${appointment.time}`;
+        const dateObj = new Date(dateTimeStr);
+
+        if (!isNaN(dateObj.getTime())) {
+          return {
+            date: dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
+            time: dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+          };
+        }
+      } catch (error) {
+        console.error('Error parsing date/time:', error);
+      }
     }
 
-    // Try to parse the date string
-    let date = new Date(isoString);
+    // Fallback to old format with combined date_time field
+    if (appointment.date_time) {
+      const isoString = appointment.date_time;
 
-    // If the date is invalid, try to parse it as a different format
-    if (isNaN(date.getTime())) {
-      // Try parsing as ISO format with timezone
-      date = new Date(isoString.replace(' ', 'T'));
+      // Try to parse the date string
+      let date = new Date(isoString);
+
+      // If the date is invalid, try to parse it as a different format
+      if (isNaN(date.getTime())) {
+        // Try parsing as ISO format with timezone
+        date = new Date(isoString.replace(' ', 'T'));
+      }
+
+      // Check if date is still invalid
+      if (!isNaN(date.getTime())) {
+        return {
+          date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
+          time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+        };
+      }
     }
 
-    // Check if date is still invalid
-    if (isNaN(date.getTime())) {
-      console.error('Invalid date format received from API:', isoString);
-      return {
-        date: 'Invalid date',
-        time: 'Invalid time'
-      };
-    }
-
+    // If all parsing fails
+    console.error('Unable to parse appointment date/time:', appointment);
     return {
-      date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
-      time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+      date: 'Invalid date',
+      time: 'Invalid time'
     };
   };
   
@@ -346,9 +380,10 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
           <div className="overflow-hidden bg-white shadow sm:rounded-md">
             <ul role="list" className="divide-y divide-gray-200">
               {paginatedAppointments.map((appointment) => {
-              const { date, time } = formatDateTime(appointment.date_time);
+              const { date, time } = formatDateTime(appointment);
+              const appointmentId = appointment.id || appointment.appointment_id || '';
               return (
-                <li key={appointment.appointment_id}>
+                <li key={appointmentId}>
                   <div className="block hover:bg-gray-50">
                     <div className="px-4 py-4 sm:px-6">
                       <div className="flex items-center justify-between">
@@ -393,15 +428,15 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
                       {appointment.status === 'scheduled' && (
                         <div className="mt-4 flex space-x-3">
                           {isClinicianView && (
-                            <button 
-                              onClick={() => updateAppointmentStatus(appointment.appointment_id, 'completed')}
+                            <button
+                              onClick={() => updateAppointmentStatus(appointmentId, 'completed')}
                               className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                             >
                               Mark Completed
                             </button>
                           )}
-                          <button 
-                            onClick={() => updateAppointmentStatus(appointment.appointment_id, 'canceled')}
+                          <button
+                            onClick={() => updateAppointmentStatus(appointmentId, 'canceled')}
                             className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                           >
                             Cancel

@@ -114,13 +114,14 @@ const SchedulingComponent: React.FC<SchedulingProps> = ({
       };
 
       const response = await apiService.bookAppointment(appointmentData);
-      
-      setAppointmentId(response.appointment_id);
+
+      const apptId = response.id || response.appointment_id || '';
+      setAppointmentId(apptId);
       setConfirmationCode(response.confirmation_code);
       setSuccess(true);
-      
-      if (afterBooking) {
-        afterBooking(response.appointment_id);
+
+      if (afterBooking && apptId) {
+        afterBooking(apptId);
       }
     } catch (err) {
       setError('Failed to book appointment. Please try again.');

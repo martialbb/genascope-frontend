@@ -73,17 +73,29 @@ const AppointmentDashboard: React.FC<AppointmentDashboardProps> = ({
     const endOfWeek = new Date(today);
     endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
 
+    const getAppointmentDate = (apt: AppointmentResponse): Date => {
+      // Handle new API format with separate date and time fields
+      if (apt.date && apt.time) {
+        return new Date(`${apt.date}T${apt.time}`);
+      }
+      // Fallback to old format with combined date_time field
+      if (apt.date_time) {
+        return new Date(apt.date_time);
+      }
+      return new Date(0); // Invalid date fallback
+    };
+
     return {
       total: appointmentList.length,
       scheduled: appointmentList.filter(apt => apt.status === 'scheduled').length,
       completed: appointmentList.filter(apt => apt.status === 'completed').length,
       cancelled: appointmentList.filter(apt => apt.status === 'cancelled').length,
       today: appointmentList.filter(apt => {
-        const aptDate = new Date(apt.date_time);
+        const aptDate = getAppointmentDate(apt);
         return aptDate.toDateString() === today.toDateString();
       }).length,
       thisWeek: appointmentList.filter(apt => {
-        const aptDate = new Date(apt.date_time);
+        const aptDate = getAppointmentDate(apt);
         return aptDate >= startOfWeek && aptDate <= endOfWeek;
       }).length
     };
@@ -263,27 +275,34 @@ const AppointmentDashboard: React.FC<AppointmentDashboardProps> = ({
               <Card title="Today's Schedule" className="mt-4">
                 {appointments
                   .filter(apt => {
-                    const aptDate = new Date(apt.date_time);
+                    const aptDate = apt.date && apt.time
+                      ? new Date(`${apt.date}T${apt.time}`)
+                      : apt.date_time
+                        ? new Date(apt.date_time)
+                        : new Date(0);
                     const today = new Date();
                     return aptDate.toDateString() === today.toDateString();
                   })
                   .slice(0, 3)
-                  .map((apt, index) => (
-                    <div key={index} className="flex justify-between items-center py-2 border-b last:border-b-0">
-                      <div>
-                        <p className="font-medium">
-                          {userRole === 'clinician' ? apt.patient_name : apt.clinician_name}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {new Date(apt.date_time).toLocaleTimeString([], { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </p>
+                  .map((apt, index) => {
+                    const aptTime = apt.time
+                      ? new Date(`${apt.date}T${apt.time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      : apt.date_time
+                        ? new Date(apt.date_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        : 'Invalid time';
+
+                    return (
+                      <div key={index} className="flex justify-between items-center py-2 border-b last:border-b-0">
+                        <div>
+                          <p className="font-medium">
+                            {userRole === 'clinician' ? apt.patient_name : apt.clinician_name}
+                          </p>
+                          <p className="text-sm text-gray-500">{aptTime}</p>
+                        </div>
+                        <Badge status={getStatusColor(apt.status)} text={apt.status} />
                       </div>
-                      <Badge status={getStatusColor(apt.status)} text={apt.status} />
-                    </div>
-                  ))}
+                    );
+                  })}
                 {stats.today === 0 && (
                   <p className="text-gray-500 text-center py-4">No appointments scheduled for today</p>
                 )}

@@ -60,15 +60,21 @@ export interface AppointmentRequest {
 }
 
 export interface AppointmentResponse {
-  appointment_id: string;
+  id: string;
+  appointment_id?: string; // For backwards compatibility
   clinician_id: string;
   clinician_name: string;
   patient_id: string;
   patient_name: string;
-  date_time: string;
+  date: string;
+  time: string;
+  date_time?: string; // For backwards compatibility
   appointment_type: string;
   status: string;
+  notes?: string;
   confirmation_code: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // Availability management types
@@ -148,7 +154,18 @@ class ApiService {
     return response.data;
   }
 
-  async getOrganizationAppointments(params?: Record<string, any>) {
+  async getOrganizationAppointments(params?: {
+    page?: number;
+    page_size?: number;
+    status?: string;
+    date_from?: string;
+    date_to?: string;
+    clinician_id?: string;
+    patient_id?: string;
+    start_date?: string;
+    end_date?: string;
+    limit?: number;
+  }) {
     const response = await this.client.get('/organization/appointments', { params });
     return response.data;
   }
@@ -173,7 +190,25 @@ class ApiService {
 
   // Update appointment status
   async updateAppointmentStatus(appointmentId: string, status: string) {
-    const response = await this.client.put(`/appointments/${appointmentId}?status=${status}`);
+    const response = await this.client.put(`/appointments/${appointmentId}`, { status });
+    return response.data;
+  }
+
+  // Update full appointment details
+  async updateAppointment(appointmentId: string, data: {
+    date?: string;
+    time?: string;
+    appointment_type?: string;
+    status?: string;
+    notes?: string;
+  }) {
+    const response = await this.client.put(`/appointments/${appointmentId}`, data);
+    return response.data;
+  }
+
+  // Get single appointment details
+  async getAppointmentById(appointmentId: string) {
+    const response = await this.client.get(`/appointments/${appointmentId}`);
     return response.data;
   }
 
