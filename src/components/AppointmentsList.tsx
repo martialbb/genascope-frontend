@@ -1,7 +1,10 @@
 // src/components/AppointmentsList.tsx
 import React, { useState, useEffect } from 'react';
-import { message } from 'antd';
+import { message, Input, DatePicker } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
 import apiService from '../services/api';
+import AppointmentDetailModal from './AppointmentDetailModal';
 
 interface AppointmentProps {
   clinicianId?: string;
@@ -46,6 +49,13 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<string>('upcoming');
   const [currentPage, setCurrentPage] = useState(1);
+
+  // New search and filter states
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [dateRangeStart, setDateRangeStart] = useState<string>('');
+  const [dateRangeEnd, setDateRangeEnd] = useState<string>('');
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
   
   // Calculate date ranges for filtering
   const today = new Date();
@@ -169,11 +179,52 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
     }
   };
   
-    // Filter appointments based on status and date filters
+    // Filter appointments based on status, date filters, and search
   const filteredAppointments = (appointments || []).filter(appointment => {
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const patientMatch = appointment.patient_name?.toLowerCase().includes(query);
+      const clinicianMatch = appointment.clinician_name?.toLowerCase().includes(query);
+      const confirmationMatch = appointment.confirmation_code?.toLowerCase().includes(query);
+
+      if (!patientMatch && !clinicianMatch && !confirmationMatch) {
+        return false;
+      }
+    }
+
     // Apply status filter
     if (statusFilter !== 'all' && appointment.status !== statusFilter) {
       return false;
+    }
+
+    // Apply date range filter
+    if (dateRangeStart || dateRangeEnd) {
+      let appointmentDate: Date;
+
+      if (appointment.date && appointment.time) {
+        appointmentDate = new Date(`${appointment.date}T${appointment.time}`);
+      } else if (appointment.date_time) {
+        appointmentDate = new Date(appointment.date_time);
+      } else {
+        return false;
+      }
+
+      if (dateRangeStart) {
+        const startDate = new Date(dateRangeStart);
+        startDate.setHours(0, 0, 0, 0);
+        if (appointmentDate < startDate) {
+          return false;
+        }
+      }
+
+      if (dateRangeEnd) {
+        const endDate = new Date(dateRangeEnd);
+        endDate.setHours(23, 59, 59, 999);
+        if (appointmentDate > endDate) {
+          return false;
+        }
+      }
     }
 
     // Apply date filter
@@ -333,40 +384,103 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
     );
   }
   
+  const handleAppointmentClick = (appointmentId: string) => {
+    setSelectedAppointmentId(appointmentId);
+    setModalVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setModalVisible(false);
+    setSelectedAppointmentId(null);
+  };
+
+  const handleModalUpdate = () => {
+    // Refresh appointments after update
+    if (externalAppointments) {
+      // If using external appointments, parent should handle refresh
+      return;
+    }
+
+    // Otherwise, trigger a re-fetch by updating dependencies
+    const fetchAppointments = async () => {
+      // Re-fetch logic here - this will be triggered by useEffect dependencies
+    };
+    fetchAppointments();
+  };
+
   return (
     <div>
       {showFilters && (
-        <div className="mb-6 flex flex-col sm:flex-row sm:justify-between gap-4">
+        <div className="mb-6 space-y-4">
+          {/* Search Bar */}
           <div>
-            <label htmlFor="statusFilter" className="block text-sm font-medium text-gray-700 mb-1">Status:</label>
-            <select
-              id="statusFilter"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            >
-              <option value="all">All Statuses</option>
-              <option value="scheduled">Scheduled</option>
-              <option value="completed">Completed</option>
-              <option value="canceled">Canceled</option>
-              <option value="rescheduled">Rescheduled</option>
-            </select>
+            <Input
+              placeholder="Search by patient name, clinician name, or confirmation code..."
+              prefix={<SearchOutlined />}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              allowClear
+              size="large"
+            />
           </div>
-          
-          <div>
-            <label htmlFor="dateFilter" className="block text-sm font-medium text-gray-700 mb-1">Date:</label>
-            <select
-              id="dateFilter"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            >
-              <option value="upcoming">Upcoming</option>
-              <option value="today">Today</option>
-              <option value="thisWeek">This Week</option>
-              <option value="past">Past</option>
-              <option value="all">All Dates</option>
-            </select>
+
+          {/* Filters Row */}
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
+            <div className="flex-1">
+              <label htmlFor="statusFilter" className="block text-sm font-medium text-gray-700 mb-1">Status:</label>
+              <select
+                id="statusFilter"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              >
+                <option value="all">All Statuses</option>
+                <option value="scheduled">Scheduled</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
+                <option value="canceled">Canceled</option>
+                <option value="rescheduled">Rescheduled</option>
+                <option value="no-show">No Show</option>
+              </select>
+            </div>
+
+            <div className="flex-1">
+              <label htmlFor="dateFilter" className="block text-sm font-medium text-gray-700 mb-1">Quick Filter:</label>
+              <select
+                id="dateFilter"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              >
+                <option value="upcoming">Upcoming</option>
+                <option value="today">Today</option>
+                <option value="thisWeek">This Week</option>
+                <option value="past">Past</option>
+                <option value="all">All Dates</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Date Range Picker */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">From Date:</label>
+              <DatePicker
+                className="w-full"
+                value={dateRangeStart ? dayjs(dateRangeStart) : null}
+                onChange={(date) => setDateRangeStart(date ? date.format('YYYY-MM-DD') : '')}
+                format="YYYY-MM-DD"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">To Date:</label>
+              <DatePicker
+                className="w-full"
+                value={dateRangeEnd ? dayjs(dateRangeEnd) : null}
+                onChange={(date) => setDateRangeEnd(date ? date.format('YYYY-MM-DD') : '')}
+                format="YYYY-MM-DD"
+              />
+            </div>
           </div>
         </div>
       )}
@@ -384,7 +498,10 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
               const appointmentId = appointment.id || appointment.appointment_id || '';
               return (
                 <li key={appointmentId}>
-                  <div className="block hover:bg-gray-50">
+                  <div
+                    className="block hover:bg-gray-50 cursor-pointer transition-colors"
+                    onClick={() => handleAppointmentClick(appointmentId)}
+                  >
                     <div className="px-4 py-4 sm:px-6">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
@@ -429,14 +546,20 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
                         <div className="mt-4 flex space-x-3">
                           {isClinicianView && (
                             <button
-                              onClick={() => updateAppointmentStatus(appointmentId, 'completed')}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                updateAppointmentStatus(appointmentId, 'completed');
+                              }}
                               className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                             >
                               Mark Completed
                             </button>
                           )}
                           <button
-                            onClick={() => updateAppointmentStatus(appointmentId, 'canceled')}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateAppointmentStatus(appointmentId, 'canceled');
+                            }}
                             className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                           >
                             Cancel
@@ -526,6 +649,15 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
         )}
         </>
       )}
+
+      {/* Appointment Detail Modal */}
+      <AppointmentDetailModal
+        visible={modalVisible}
+        appointmentId={selectedAppointmentId}
+        onClose={handleModalClose}
+        onUpdate={handleModalUpdate}
+        isClinicianView={isClinicianView}
+      />
     </div>
   );
 };
