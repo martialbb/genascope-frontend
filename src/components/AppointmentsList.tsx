@@ -33,7 +33,7 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
   pageSize = 10,
   appointments: externalAppointments
 }) => {
-  const [appointments, setAppointments] = useState<Appointment[]>(externalAppointments || []);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -162,7 +162,7 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
   };
   
     // Filter appointments based on status and date filters
-  const filteredAppointments = appointments.filter(appointment => {
+  const filteredAppointments = (appointments || []).filter(appointment => {
     // Apply status filter
     if (statusFilter !== 'all' && appointment.status !== statusFilter) {
       return false;
@@ -170,6 +170,12 @@ const AppointmentsList: React.FC<AppointmentProps> = ({
 
     // Apply date filter
     if (dateFilter !== 'all') {
+      // Check if date_time exists
+      if (!appointment.date_time) {
+        console.warn('Skipping appointment with missing date_time:', appointment);
+        return false;
+      }
+
       let appointmentDate = new Date(appointment.date_time);
 
       // Handle invalid date format
