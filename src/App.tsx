@@ -17,6 +17,7 @@ import EditUserPage from './pages/EditUserPage';
 import EditAccountPage from './pages/EditAccountPage';
 import CreateUserPage from './pages/CreateUserPage';
 import CreateAccountPage from './pages/CreateAccountPage';
+import PatientInvitePage from './pages/PatientInvitePage';
 
 // Theme configuration
 const theme = {
@@ -47,10 +48,11 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
-          
+
           {/* Patient Management */}
           <Route path="/patients" element={<PatientsPage />} />
           <Route path="/invite" element={<PatientsPage />} /> {/* Invite from patients page */}
+          <Route path="/invite/:inviteId" element={<PatientInvitePage />} /> {/* Patient invite landing page */}
           <Route path="/manage-invites" element={<InvitesPage />} />
           
           {/* Appointments */}
