@@ -18,6 +18,7 @@ import EditAccountPage from './pages/EditAccountPage';
 import CreateUserPage from './pages/CreateUserPage';
 import CreateAccountPage from './pages/CreateAccountPage';
 import PatientInvitePage from './pages/PatientInvitePage';
+import ChatSessionPage from './pages/ChatSessionPage';
 
 // Theme configuration
 const theme = {
@@ -54,6 +55,9 @@ function App() {
           <Route path="/invite" element={<PatientsPage />} /> {/* Invite from patients page */}
           <Route path="/invite/:inviteId" element={<PatientInvitePage />} /> {/* Patient invite landing page */}
           <Route path="/manage-invites" element={<InvitesPage />} />
+
+          {/* AI Chat Sessions */}
+          <Route path="/ai-chat/sessions" element={<ChatSessionPage />} />
           
           {/* Appointments */}
           <Route path="/appointments-dashboard" element={<AppointmentsPage />} />
