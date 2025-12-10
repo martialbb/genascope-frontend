@@ -775,7 +775,7 @@ const PatientManager = () => {
             </Form.Item>
 
             <Form.Item
-              name="chat_strategy"
+              name="chat_strategy_id"
               label="Chat Strategy"
               tooltip="Select the AI chat strategy for this patient"
               rules={[{ required: true, message: 'Please select a chat strategy' }]}
