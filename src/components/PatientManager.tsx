@@ -12,16 +12,17 @@ import {
   Popconfirm,
   Checkbox
 } from 'antd';
-import { 
-  PlusOutlined, 
-  UploadOutlined, 
+import {
+  PlusOutlined,
+  UploadOutlined,
   InboxOutlined,
   UserAddOutlined,
   MailOutlined,
   UsergroupAddOutlined,
   EditOutlined,
   DeleteOutlined,
-  HistoryOutlined
+  HistoryOutlined,
+  MessageOutlined
 } from '@ant-design/icons';
 import BulkInviteModal from './BulkInviteModal';
 import apiService from '../services/api';
@@ -45,6 +46,9 @@ const PatientManager = () => {
   const [showInviteHistoryModal, setShowInviteHistoryModal] = useState(false);
   const [patientInvites, setPatientInvites] = useState<PatientInviteResponse[]>([]);
   const [loadingInvites, setLoadingInvites] = useState(false);
+  const [showChatSessionsModal, setShowChatSessionsModal] = useState(false);
+  const [chatSessions, setChatSessions] = useState<any[]>([]);
+  const [loadingSessions, setLoadingSessions] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [form] = Form.useForm<PatientCreate>();
@@ -273,6 +277,27 @@ const PatientManager = () => {
     setSelectedPatient(patient);
     setShowInviteHistoryModal(true);
     await fetchPatientInvites(patient.id);
+  };
+
+  // Fetch patient chat sessions
+  const fetchPatientChatSessions = async (patientId: string) => {
+    setLoadingSessions(true);
+    try {
+      const sessions = await apiService.getAIChatSessions(patientId);
+      setChatSessions(sessions);
+    } catch (error) {
+      message.error('Failed to fetch chat sessions');
+      console.error('Error fetching chat sessions:', error);
+    } finally {
+      setLoadingSessions(false);
+    }
+  };
+
+  // Handle opening chat sessions modal
+  const handleViewChatSessions = async () => {
+    if (!selectedPatient) return;
+    setShowChatSessionsModal(true);
+    await fetchPatientChatSessions(selectedPatient.id);
   };
 
   // Define table columns
@@ -901,12 +926,122 @@ const PatientManager = () => {
               dataIndex: 'accepted_at',
               key: 'accepted_at',
               render: (text: string) => text ? new Date(text).toLocaleDateString() : '-'
+            },
+            {
+              title: 'Chat Sessions',
+              key: 'chat_sessions',
+              render: () => (
+                <Button
+                  type="link"
+                  icon={<MessageOutlined />}
+                  onClick={handleViewChatSessions}
+                  size="small"
+                >
+                  View Sessions
+                </Button>
+              )
             }
           ]}
         />
         {patientInvites.length === 0 && !loadingInvites && (
           <div style={{ textAlign: 'center', padding: '20px' }}>
             <p>No invites found for this patient.</p>
+          </div>
+        )}
+      </Modal>
+
+      {/* Chat Sessions Modal */}
+      <Modal
+        title={`Chat Sessions - ${selectedPatient?.first_name} ${selectedPatient?.last_name}`}
+        open={showChatSessionsModal}
+        onCancel={() => {
+          setShowChatSessionsModal(false);
+          setChatSessions([]);
+        }}
+        footer={[
+          <Button key="close" onClick={() => {
+            setShowChatSessionsModal(false);
+            setChatSessions([]);
+          }}>
+            Close
+          </Button>
+        ]}
+        width={900}
+      >
+        <Table
+          dataSource={chatSessions}
+          loading={loadingSessions}
+          pagination={false}
+          rowKey="id"
+          columns={[
+            {
+              title: 'Session ID',
+              dataIndex: 'id',
+              key: 'id',
+              render: (text: string) => text.substring(0, 8) + '...'
+            },
+            {
+              title: 'Strategy',
+              dataIndex: 'strategy_id',
+              key: 'strategy_id',
+              render: (text: string) => text || 'Not specified'
+            },
+            {
+              title: 'Type',
+              dataIndex: 'session_type',
+              key: 'session_type',
+              render: (text: string) => (
+                <span className={`status-tag ${text}`}>
+                  {text ? text.charAt(0).toUpperCase() + text.slice(1) : 'N/A'}
+                </span>
+              )
+            },
+            {
+              title: 'Status',
+              dataIndex: 'status',
+              key: 'status',
+              render: (status: string) => (
+                <span className={`status-tag ${status}`}>
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </span>
+              )
+            },
+            {
+              title: 'Started',
+              dataIndex: 'started_at',
+              key: 'started_at',
+              render: (text: string) => new Date(text).toLocaleString()
+            },
+            {
+              title: 'Last Activity',
+              dataIndex: 'last_activity',
+              key: 'last_activity',
+              render: (text: string) => text ? new Date(text).toLocaleString() : '-'
+            },
+            {
+              title: 'Messages',
+              dataIndex: 'message_count',
+              key: 'message_count',
+              render: (count: number) => count || 0
+            },
+            {
+              title: 'Actions',
+              key: 'actions',
+              render: (_: unknown, record: any) => (
+                <Button
+                  type="link"
+                  size="small"
+                  onClick={() => window.open(`/ai-chat/sessions/${record.id}`, '_blank')}
+                >
+                  View Details
+                </Button>
+              )
+            }
+          ]}
+        />
+        {chatSessions.length === 0 && !loadingSessions && (
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            <p>No chat sessions found for this patient.</p>
           </div>
         )}
       </Modal>
