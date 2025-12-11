@@ -108,10 +108,7 @@ const SimplifiedPatientAccess: React.FC<SimplifiedPatientAccessProps> = ({ invit
 
       setSuccess(true);
 
-      // Redirect to AI chat sessions using React Router (avoids page reload)
-      setTimeout(() => {
-        navigate('/ai-chat/sessions?new=true');
-      }, 2000);
+      // User will click the button to start chat instead of auto-redirect
     } catch (err: any) {
       console.error('Error with simplified access:', err);
       setError(err.response?.data?.detail || err.message || 'Authentication failed. Please check your information and try again.');
@@ -158,11 +155,14 @@ const SimplifiedPatientAccess: React.FC<SimplifiedPatientAccessProps> = ({ invit
           <h3 className="text-lg font-medium text-center mt-2">Access Granted!</h3>
         </div>
         <p className="text-gray-700 text-center mb-2">You have been successfully authenticated.</p>
-        <p className="text-gray-600 text-center text-sm mb-6">You will be redirected to the chat interface in a moment.</p>
+        <p className="text-gray-600 text-center text-sm mb-6">Click the button below to begin your health assessment.</p>
         <div className="text-center">
-          <a href="/chat" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded">
+          <button
+            onClick={() => navigate('/ai-chat/sessions?new=true')}
+            className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded shadow-lg transition-colors"
+          >
             Start Chat Assessment
-          </a>
+          </button>
         </div>
       </div>
     );
