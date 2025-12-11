@@ -97,20 +97,29 @@ export interface AvailabilitySetResponse {
 
 class ApiService {
   private client: AxiosInstance;
-  
+  private aiChatClient: AxiosInstance;
+
   constructor() {
     // Use centralized API configuration that handles client/server and Docker environments
     const baseURL = API_CONFIG.baseUrl;
-    
+
     this.client = axios.create({
       baseURL,
       headers: {
         'Content-Type': 'application/json',
       },
     });
+
+    // Create separate client for AI chat endpoints (they don't use /api prefix)
+    this.aiChatClient = axios.create({
+      baseURL: '/',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
     
-    // Add auth interceptor with debug logging and cache busting
-    this.client.interceptors.request.use((config) => {
+    // Create request interceptor function (shared between both clients)
+    const requestInterceptor = (config: any) => {
       const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
       console.log('API Debug: Request to', config.url);
       console.log('API Debug: Auth token present?', !!token);
@@ -127,26 +136,32 @@ class ApiService {
       config.params = config.params || {};
       config.params._cb = Date.now();
       config.params._v = '2.1'; // Force cache invalidation after pagination fix
-      
+
       // Add cache control headers to prevent caching
       config.headers = config.headers || {};
       config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
       config.headers['Pragma'] = 'no-cache';
-      
-      return config;
-    });
 
-    // Add response interceptor for debugging
-    this.client.interceptors.response.use(
-      (response) => {
-        console.log(`API Debug: Response from ${response.config.url} - Status: ${response.status}`);
-        return response;
-      },
-      (error) => {
-        console.error(`API Debug: Error in request to ${error.config?.url}:`, error.response?.status, error.response?.data);
-        return Promise.reject(error);
-      }
-    );
+      return config;
+    };
+
+    // Create response interceptors function (shared between both clients)
+    const responseInterceptor = (response: any) => {
+      console.log(`API Debug: Response from ${response.config.url} - Status: ${response.status}`);
+      return response;
+    };
+
+    const errorInterceptor = (error: any) => {
+      console.error(`API Debug: Error in request to ${error.config?.url}:`, error.response?.status, error.response?.data);
+      return Promise.reject(error);
+    };
+
+    // Add interceptors to both clients
+    this.client.interceptors.request.use(requestInterceptor);
+    this.client.interceptors.response.use(responseInterceptor, errorInterceptor);
+
+    this.aiChatClient.interceptors.request.use(requestInterceptor);
+    this.aiChatClient.interceptors.response.use(responseInterceptor, errorInterceptor);
   }
 
   async getClinicianAppointments(clinicianId: string, startDate: string, endDate: string) {
@@ -266,14 +281,14 @@ class ApiService {
     return response.data;
   }
 
-  // AI Chat session methods (new AI endpoints)
+  // AI Chat session methods (new AI endpoints) - use aiChatClient as these don't have /api prefix
   async startAIChatSession(sessionData: {
     strategy_id: string;
     patient_id: string;
     session_type?: 'screening' | 'assessment' | 'follow_up' | 'consultation';
     initial_context?: any;
   }) {
-    const response = await this.client.post('/ai-chat/sessions', sessionData);
+    const response = await this.aiChatClient.post('/ai-chat/sessions', sessionData);
     return response.data;
   }
 
@@ -281,23 +296,23 @@ class ApiService {
     message: string;
     message_metadata?: any;
   }) {
-    const response = await this.client.post(`/ai-chat/sessions/${sessionId}/messages`, messageData);
+    const response = await this.aiChatClient.post(`/ai-chat/sessions/${sessionId}/messages`, messageData);
     return response.data;
   }
 
   async getAISessionMessages(sessionId: string, limit?: number) {
     const params = limit ? `?limit=${limit}` : '';
-    const response = await this.client.get(`/ai-chat/sessions/${sessionId}/messages${params}`);
+    const response = await this.aiChatClient.get(`/ai-chat/sessions/${sessionId}/messages${params}`);
     return response.data;
   }
 
   async getAIChatSession(sessionId: string) {
-    const response = await this.client.get(`/ai-chat/sessions/${sessionId}`);
+    const response = await this.aiChatClient.get(`/ai-chat/sessions/${sessionId}`);
     return response.data;
   }
 
   async endAIChatSession(sessionId: string, reason: string = 'user_ended') {
-    const response = await this.client.post(`/ai-chat/sessions/${sessionId}/end?reason=${reason}`);
+    const response = await this.aiChatClient.post(`/ai-chat/sessions/${sessionId}/end?reason=${reason}`);
     return response.data;
   }
 
@@ -306,8 +321,8 @@ class ApiService {
     if (patientId) params.append('patient_id', patientId);
     if (sessionStatus) params.append('session_status', sessionStatus);
     params.append('limit', limit.toString());
-    
-    const response = await this.client.get(`/ai-chat/sessions?${params.toString()}`);
+
+    const response = await this.aiChatClient.get(`/ai-chat/sessions?${params.toString()}`);
     return response.data;
   }
 
