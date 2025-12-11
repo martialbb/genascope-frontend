@@ -1,5 +1,6 @@
 // src/components/SimplifiedPatientAccess.tsx
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import apiService from '../services/api';
 
 interface SimplifiedPatientAccessProps {
@@ -16,17 +17,18 @@ interface InviteVerificationResponse {
 }
 
 const SimplifiedPatientAccess: React.FC<SimplifiedPatientAccessProps> = ({ inviteToken }) => {
+  const navigate = useNavigate();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [agreeToPrivacy, setAgreeToPrivacy] = useState(false);
-  
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  
+
   const [inviteData, setInviteData] = useState<InviteVerificationResponse | null>(null);
   
   // Verify the invite token on component mount
@@ -103,12 +105,12 @@ const SimplifiedPatientAccess: React.FC<SimplifiedPatientAccessProps> = ({ invit
       
       // Store the JWT token
       localStorage.setItem('authToken', response.access_token);
-      
+
       setSuccess(true);
-      
-      // Redirect to AI chat sessions endpoint  
+
+      // Redirect to AI chat sessions using React Router (avoids page reload)
       setTimeout(() => {
-        window.location.href = '/ai-chat/sessions?new=true';
+        navigate('/ai-chat/sessions?new=true');
       }, 2000);
     } catch (err: any) {
       console.error('Error with simplified access:', err);
