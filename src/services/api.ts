@@ -320,7 +320,8 @@ class ApiService {
     const params = new URLSearchParams();
     if (patientId) params.append('patient_id', patientId);
     if (sessionStatus) params.append('session_status', sessionStatus);
-    params.append('limit', limit.toString());
+    // Don't send limit parameter as it might be causing backend issues
+    // params.append('limit', limit.toString());
 
     const response = await this.aiChatClient.get(`/ai-chat/sessions?${params.toString()}`);
     return response.data;

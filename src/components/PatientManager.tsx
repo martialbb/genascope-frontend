@@ -283,8 +283,11 @@ const PatientManager = () => {
   const fetchPatientChatSessions = async (patientId: string) => {
     setLoadingSessions(true);
     try {
-      const sessions = await apiService.getAIChatSessions(patientId);
-      setChatSessions(sessions);
+      // Try without limit parameter first to see if that's causing the issue
+      const sessions = await apiService.getAIChatSessions(patientId, undefined, 100);
+      // Handle both array and object responses
+      const sessionData = Array.isArray(sessions) ? sessions : (sessions?.sessions || []);
+      setChatSessions(sessionData);
     } catch (error) {
       message.error('Failed to fetch chat sessions');
       console.error('Error fetching chat sessions:', error);
@@ -966,13 +969,14 @@ const PatientManager = () => {
             Close
           </Button>
         ]}
-        width={900}
+        width={1200}
       >
         <Table
           dataSource={chatSessions}
           loading={loadingSessions}
           pagination={false}
           rowKey="id"
+          scroll={{ x: 'max-content' }}
           columns={[
             {
               title: 'Session ID',
