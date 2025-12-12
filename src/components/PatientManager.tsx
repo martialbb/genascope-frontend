@@ -283,14 +283,22 @@ const PatientManager = () => {
   const fetchPatientChatSessions = async (patientId: string) => {
     setLoadingSessions(true);
     try {
-      // Try without limit parameter first to see if that's causing the issue
       const sessions = await apiService.getAIChatSessions(patientId, undefined, 100);
       // Handle both array and object responses
       const sessionData = Array.isArray(sessions) ? sessions : (sessions?.sessions || []);
       setChatSessions(sessionData);
-    } catch (error) {
-      message.error('Failed to fetch chat sessions');
+    } catch (error: any) {
       console.error('Error fetching chat sessions:', error);
+
+      // Check if it's the known backend error
+      if (error.response?.data?.detail?.includes('user_id')) {
+        message.error({
+          content: 'Backend API issue: The chat sessions endpoint needs to be updated. Please contact support.',
+          duration: 5
+        });
+      } else {
+        message.error('Failed to fetch chat sessions');
+      }
     } finally {
       setLoadingSessions(false);
     }
@@ -976,34 +984,24 @@ const PatientManager = () => {
           loading={loadingSessions}
           pagination={false}
           rowKey="id"
-          scroll={{ x: 'max-content' }}
+          scroll={{ x: 1000 }}
           columns={[
             {
-              title: 'Session ID',
+              title: 'Session',
               dataIndex: 'id',
               key: 'id',
-              render: (text: string) => text.substring(0, 8) + '...'
-            },
-            {
-              title: 'Strategy',
-              dataIndex: 'strategy_id',
-              key: 'strategy_id',
-              render: (text: string) => text || 'Not specified'
-            },
-            {
-              title: 'Type',
-              dataIndex: 'session_type',
-              key: 'session_type',
+              width: 100,
               render: (text: string) => (
-                <span className={`status-tag ${text}`}>
-                  {text ? text.charAt(0).toUpperCase() + text.slice(1) : 'N/A'}
-                </span>
+                <Tooltip title={text}>
+                  {text.substring(0, 8)}...
+                </Tooltip>
               )
             },
             {
               title: 'Status',
               dataIndex: 'status',
               key: 'status',
+              width: 100,
               render: (status: string) => (
                 <span className={`status-tag ${status}`}>
                   {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -1014,30 +1012,29 @@ const PatientManager = () => {
               title: 'Started',
               dataIndex: 'started_at',
               key: 'started_at',
+              width: 180,
               render: (text: string) => new Date(text).toLocaleString()
-            },
-            {
-              title: 'Last Activity',
-              dataIndex: 'last_activity',
-              key: 'last_activity',
-              render: (text: string) => text ? new Date(text).toLocaleString() : '-'
             },
             {
               title: 'Messages',
               dataIndex: 'message_count',
               key: 'message_count',
+              width: 100,
+              align: 'center' as const,
               render: (count: number) => count || 0
             },
             {
               title: 'Actions',
               key: 'actions',
+              width: 120,
+              align: 'center' as const,
               render: (_: unknown, record: any) => (
                 <Button
                   type="link"
                   size="small"
                   onClick={() => window.open(`/ai-chat/sessions/${record.id}`, '_blank')}
                 >
-                  View Details
+                  View
                 </Button>
               )
             }
