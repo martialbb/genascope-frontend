@@ -115,13 +115,6 @@ const SimpleLogin: React.FC = () => {
     }
   };
 
-  const clearAuth = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('authUser');
-    setError(null);
-    setSuccess(false);
-    console.log('Auth data cleared');
-  };
 
   if (success) {
     return (
@@ -198,18 +191,6 @@ const SimpleLogin: React.FC = () => {
           )}
         </button>
       </form>
-
-      <div className="mt-6 text-center">
-        <p className="text-sm text-gray-600">
-          Test Credentials: admin@testhospital.com / Admin123!
-        </p>
-        <button
-          onClick={clearAuth}
-          className="mt-2 text-sm text-blue-600 hover:text-blue-800 underline"
-        >
-          Clear Auth Data
-        </button>
-      </div>
     </div>
   );
 };
