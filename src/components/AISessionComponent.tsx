@@ -52,22 +52,28 @@ const AISessionComponent: React.FC<AISessionProps> = ({ isNewSession = false }) 
       // Get current user info
       const user = getCurrentUser(token);
       const patientId = user?.patient_id || user?.id; // use id field which contains the actual patient_id
-      
+
       if (!patientId) {
         setError('Unable to identify patient information. Please ensure you accessed this page through a valid invite link.');
         setIsLoading(false);
         return;
       }
 
+      // Get chat strategy from JWT token (for simplified access invites)
+      // Falls back to default strategy if not specified in token
+      const strategyId = user?.chat_strategy_id || 'strategy-1';
+
+      console.log('Starting chat session with strategy:', strategyId, 'from token:', user);
+
       // Start a new AI chat session using the API service
-      // Note: In production, strategy_id should be determined by the use case
       const sessionData: ChatSession = await apiService.startAIChatSession({
-        strategy_id: 'strategy-1', // Using Genetic Counseling Assessment strategy
+        strategy_id: strategyId, // Use strategy from invite token
         patient_id: patientId,
         session_type: 'screening',
         initial_context: {
           source: 'simplified_access',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          invite_id: user?.invite_id // Include invite ID for tracking
         }
       });
       setSession(sessionData);

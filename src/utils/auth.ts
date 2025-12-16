@@ -13,6 +13,8 @@ interface TokenPayload {
   user_id?: string;
   name?: string;
   email?: string;
+  invite_id?: string; // Invite ID for simplified access
+  chat_strategy_id?: string; // Chat strategy from invite
 }
 
 export const getAuthToken = (): string | null => {
