@@ -63,7 +63,7 @@ export interface PatientUpdate {
 export interface PatientInviteRequest {
   patient_id: string;
   provider_id: string;
-  chat_strategy: string;
+  chat_strategy_id: string; // Fixed: was 'chat_strategy', should be 'chat_strategy_id'
   send_email?: boolean;
   custom_message?: string;
   expiry_days?: number;
