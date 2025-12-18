@@ -19,6 +19,7 @@ import CreateUserPage from './pages/CreateUserPage';
 import CreateAccountPage from './pages/CreateAccountPage';
 import PatientInvitePage from './pages/PatientInvitePage';
 import ChatSessionPage from './pages/ChatSessionPage';
+import SessionDetailPage from './pages/SessionDetailPage';
 
 // Theme configuration
 const theme = {
@@ -58,6 +59,7 @@ function App() {
 
           {/* AI Chat Sessions */}
           <Route path="/ai-chat/sessions" element={<ChatSessionPage />} />
+          <Route path="/ai-chat/sessions/:sessionId" element={<SessionDetailPage />} />
           
           {/* Appointments */}
           <Route path="/appointments-dashboard" element={<AppointmentsPage />} />

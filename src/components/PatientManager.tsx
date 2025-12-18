@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Table, 
   Button, 
@@ -35,6 +36,8 @@ const { Option } = Select;
 const { Dragger } = Upload;
 
 const PatientManager = () => {
+  const navigate = useNavigate();
+
   // State variables
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1032,7 +1035,7 @@ const PatientManager = () => {
                 <Button
                   type="link"
                   size="small"
-                  onClick={() => window.open(`/ai-chat/sessions/${record.id}`, '_blank')}
+                  onClick={() => navigate(`/ai-chat/sessions/${record.id}`)}
                 >
                   View
                 </Button>
