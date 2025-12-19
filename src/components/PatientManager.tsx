@@ -888,20 +888,20 @@ const PatientManager = () => {
             Close
           </Button>
         ]}
-        width={1100}
+        width={1200}
       >
         <Table
           dataSource={patientInvites}
           loading={loadingInvites}
           pagination={false}
           rowKey="invite_id"
-          scroll={{ x: 900 }}
+          scroll={{ x: 'max-content' }}
           columns={[
             {
               title: 'Invite ID',
               dataIndex: 'invite_id',
               key: 'invite_id',
-              width: 100,
+              width: 90,
               render: (text: string) => (
                 <Tooltip title={text}>
                   {text.substring(0, 8)}...
@@ -912,14 +912,14 @@ const PatientManager = () => {
               title: 'Provider',
               dataIndex: 'provider_name',
               key: 'provider_name',
-              width: 120,
+              width: 110,
               ellipsis: true
             },
             {
               title: 'Chat Strategy',
               dataIndex: 'chat_strategy_name',
               key: 'chat_strategy_name',
-              width: 150,
+              width: 140,
               ellipsis: true,
               render: (text: string, record: PatientInviteResponse) => {
                 if (text) return text;
@@ -939,7 +939,7 @@ const PatientManager = () => {
               title: 'Status',
               dataIndex: 'status',
               key: 'status',
-              width: 100,
+              width: 95,
               render: (status: string) => (
                 <span className={`status-tag ${status}`}>
                   {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -950,27 +950,27 @@ const PatientManager = () => {
               title: 'Created',
               dataIndex: 'created_at',
               key: 'created_at',
-              width: 110,
+              width: 100,
               render: (text: string) => new Date(text).toLocaleDateString()
             },
             {
               title: 'Expires',
               dataIndex: 'expires_at',
               key: 'expires_at',
-              width: 110,
+              width: 100,
               render: (text: string) => new Date(text).toLocaleDateString()
             },
             {
               title: 'Accepted',
               dataIndex: 'accepted_at',
               key: 'accepted_at',
-              width: 110,
+              width: 100,
               render: (text: string) => text ? new Date(text).toLocaleDateString() : '-'
             },
             {
               title: 'Actions',
               key: 'chat_sessions',
-              width: 120,
+              width: 110,
               fixed: 'right' as const,
               render: () => (
                 <Button
