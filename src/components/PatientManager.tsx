@@ -888,35 +888,58 @@ const PatientManager = () => {
             Close
           </Button>
         ]}
-        width={800}
+        width={1100}
       >
         <Table
           dataSource={patientInvites}
           loading={loadingInvites}
           pagination={false}
           rowKey="invite_id"
+          scroll={{ x: 900 }}
           columns={[
             {
               title: 'Invite ID',
               dataIndex: 'invite_id',
               key: 'invite_id',
-              render: (text: string) => text.substring(0, 8) + '...'
+              width: 100,
+              render: (text: string) => (
+                <Tooltip title={text}>
+                  {text.substring(0, 8)}...
+                </Tooltip>
+              )
             },
             {
               title: 'Provider',
               dataIndex: 'provider_name',
-              key: 'provider_name'
+              key: 'provider_name',
+              width: 120,
+              ellipsis: true
             },
             {
               title: 'Chat Strategy',
               dataIndex: 'chat_strategy_name',
               key: 'chat_strategy_name',
-              render: (text: string) => text || 'Not specified'
+              width: 150,
+              ellipsis: true,
+              render: (text: string, record: PatientInviteResponse) => {
+                if (text) return text;
+                if (record.chat_strategy_id) {
+                  return (
+                    <Tooltip title={`Strategy ID: ${record.chat_strategy_id}`}>
+                      <span style={{ color: '#999', fontStyle: 'italic' }}>
+                        {record.chat_strategy_id.substring(0, 8)}...
+                      </span>
+                    </Tooltip>
+                  );
+                }
+                return <span style={{ color: '#999' }}>Not available</span>;
+              }
             },
             {
               title: 'Status',
               dataIndex: 'status',
               key: 'status',
+              width: 100,
               render: (status: string) => (
                 <span className={`status-tag ${status}`}>
                   {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -927,23 +950,28 @@ const PatientManager = () => {
               title: 'Created',
               dataIndex: 'created_at',
               key: 'created_at',
+              width: 110,
               render: (text: string) => new Date(text).toLocaleDateString()
             },
             {
               title: 'Expires',
               dataIndex: 'expires_at',
               key: 'expires_at',
+              width: 110,
               render: (text: string) => new Date(text).toLocaleDateString()
             },
             {
               title: 'Accepted',
               dataIndex: 'accepted_at',
               key: 'accepted_at',
+              width: 110,
               render: (text: string) => text ? new Date(text).toLocaleDateString() : '-'
             },
             {
-              title: 'Chat Sessions',
+              title: 'Actions',
               key: 'chat_sessions',
+              width: 120,
+              fixed: 'right' as const,
               render: () => (
                 <Button
                   type="link"
@@ -951,7 +979,7 @@ const PatientManager = () => {
                   onClick={handleViewChatSessions}
                   size="small"
                 >
-                  View Sessions
+                  Sessions
                 </Button>
               )
             }
