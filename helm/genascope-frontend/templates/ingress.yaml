@@ -45,6 +45,14 @@ spec:
                 name: {{ $.Values.backend.serviceName }}
                 port:
                   number: {{ $.Values.backend.servicePort }}
+          # AI Chat endpoints (separate from /api prefix)
+          - path: /ai-chat
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $.Values.backend.serviceName }}
+                port:
+                  number: {{ $.Values.backend.servicePort }}
           {{- end }}
           # Frontend routes (catch-all, must come last)
           {{- range .paths }}
