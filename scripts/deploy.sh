@@ -70,6 +70,10 @@ case $ACTION in
         helm upgrade genascope-frontend-${ENVIRONMENT} ./helm/genascope-frontend \
             -f ./helm/genascope-frontend/values/${ENVIRONMENT}.yaml \
             --namespace ${NAMESPACE}
+        
+        # Force pods to pull the latest image (needed when using :latest tag)
+        echo -e "${YELLOW}🔄 Triggering rollout restart to pull latest image...${NC}"
+        kubectl rollout restart deployment/genascope-frontend-${ENVIRONMENT} -n ${NAMESPACE}
         ;;
     uninstall)
         helm uninstall genascope-frontend-${ENVIRONMENT} --namespace ${NAMESPACE}
