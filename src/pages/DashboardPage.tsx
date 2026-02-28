@@ -23,15 +23,12 @@ export const DashboardPage: React.FC = () => {
     const userData = localStorage.getItem('authUser');
     
     if (!token || !userData) {
-      console.log('Dashboard: User not authenticated, redirecting to login');
       navigate('/login');
     } else {
       try {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
-        console.log('Dashboard: User authenticated', parsedUser);
-      } catch (error) {
-        console.error('Dashboard: Error parsing user data, redirecting to login');
+      } catch {
         localStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
         navigate('/login');
@@ -62,9 +59,9 @@ export const DashboardPage: React.FC = () => {
             </Link>
           </div>
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <AppointmentsList 
-              clinicianId="clinician-123" 
-              isClinicianView={true} 
+            <AppointmentsList
+              clinicianId={user?.id || ''}
+              isClinicianView={true}
             />
           </div>
         </div>

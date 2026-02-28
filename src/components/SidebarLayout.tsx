@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import apiService from '../services/api';
 
@@ -23,7 +23,22 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const [account, setAccount] = useState<AccountData | null>(null);
   const [loading, setLoading] = useState(true);
   const [accountLoading, setAccountLoading] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  // Close dropdown when clicking outside
+  const handleClickOutside = useCallback((event: MouseEvent) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      setIsUserDropdownOpen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isUserDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isUserDropdownOpen, handleClickOutside]);
 
   // Check authentication status on component mount
   useEffect(() => {
@@ -35,8 +50,7 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         if (token && userData) {
           const parsedUser = JSON.parse(userData);
           setUser(parsedUser);
-          console.log('SidebarLayout: User authenticated', parsedUser);
-          
+
           // Fetch account data if user has account_id
           if (parsedUser.account_id) {
             fetchAccountData(parsedUser.account_id);
@@ -44,10 +58,8 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         } else {
           setUser(null);
           setAccount(null);
-          console.log('SidebarLayout: No authentication found');
         }
-      } catch (error) {
-        console.error('SidebarLayout: Error checking auth status', error);
+      } catch {
         setUser(null);
         setAccount(null);
       } finally {
@@ -75,9 +87,7 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     try {
       const accountData = await apiService.getAccountById(accountId);
       setAccount(accountData);
-      console.log('SidebarLayout: Account data fetched', accountData);
-    } catch (error) {
-      console.error('SidebarLayout: Error fetching account data', error);
+    } catch {
       setAccount(null);
     } finally {
       setAccountLoading(false);
@@ -154,20 +164,12 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   };
 
   const handleLogout = () => {
-    console.log('SidebarLayout: Logout button clicked');
-    
-    // Clear all authentication data
     localStorage.removeItem('authToken');
     localStorage.removeItem('authUser');
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    
-    // Update state
+
     setUser(null);
-    
-    console.log('SidebarLayout: Auth data cleared, redirecting to login');
-    
-    // Use navigate instead of window.location
     navigate('/login?logout=true');
   };
 
@@ -196,7 +198,7 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           {/* Right side - User dropdown */}
           <div className="flex items-center">
             {user ? (
-              <div className="relative">
+              <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                   className="flex items-center px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"

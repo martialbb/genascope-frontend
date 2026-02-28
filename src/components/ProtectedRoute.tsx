@@ -28,14 +28,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     const checkAuth = () => {
       // Check if user is authenticated at all
       if (!isAuthenticated()) {
-        console.log('ProtectedRoute: User not authenticated, redirecting to login');
         setAuthState('unauthenticated');
         return;
       }
 
       // Check if user has simplified access (patient via invite link)
       if (isSimplifiedAccess()) {
-        console.log('ProtectedRoute: User has simplified access, redirecting to chat');
         setAuthState('simplified');
         return;
       }
@@ -47,16 +45,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           try {
             const user = JSON.parse(userData);
             if (!allowedRoles.includes(user.role)) {
-              console.log(`ProtectedRoute: User role '${user.role}' not in allowed roles:`, allowedRoles);
               setHasPermission(false);
             }
-          } catch (e) {
-            console.error('ProtectedRoute: Error parsing user data');
+          } catch {
             setHasPermission(false);
           }
         } else {
-          // No user data but authenticated - might be a token without user info
-          console.log('ProtectedRoute: No user data found');
           setHasPermission(false);
         }
       }

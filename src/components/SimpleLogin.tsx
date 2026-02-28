@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { API_CONFIG, getApiUrl } from '../services/apiConfig';
+import { useNavigate } from 'react-router-dom';
+import { getApiUrl } from '../services/apiConfig';
 
 interface LoginResponse {
   access_token: string;
@@ -21,17 +22,17 @@ const SimpleLogin: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
 
   // Check if user is already logged in on component mount
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     const user = localStorage.getItem('authUser');
-    
+
     if (token && user) {
-      console.log('User already logged in, redirecting to dashboard');
-      window.location.href = '/dashboard';
+      navigate('/dashboard');
     }
-  }, []);
+  }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,15 +46,11 @@ const SimpleLogin: React.FC = () => {
     setError(null);
     
     try {
-      console.log('Starting login process...');
-      
       // Prepare login request
       const params = new URLSearchParams();
       params.append('username', email);
       params.append('password', password);
       params.append('grant_type', 'password');
-
-      console.log('API Base URL:', API_CONFIG.baseUrl);
 
       // Step 1: Get access token
       const tokenResponse = await fetch(getApiUrl('auth/token'), {
@@ -70,7 +67,6 @@ const SimpleLogin: React.FC = () => {
       }
 
       const tokenData: LoginResponse = await tokenResponse.json();
-      console.log('Token received successfully');
 
       // Step 2: Get user details
       const userResponse = await fetch(getApiUrl('auth/me'), {
@@ -84,7 +80,6 @@ const SimpleLogin: React.FC = () => {
       }
 
       const userDetails = await userResponse.json();
-      console.log('User details received:', userDetails);
 
       // Step 3: Create user object
       const userData: UserData = {
@@ -99,16 +94,14 @@ const SimpleLogin: React.FC = () => {
       localStorage.setItem('authToken', tokenData.access_token);
       localStorage.setItem('authUser', JSON.stringify(userData));
 
-      console.log('Login successful!', userData);
       setSuccess(true);
 
       // Step 5: Redirect to dashboard after a brief delay
       setTimeout(() => {
-        window.location.href = '/dashboard';
+        navigate('/dashboard');
       }, 1000);
 
     } catch (err) {
-      console.error('Login error:', err);
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
       setLoading(false);

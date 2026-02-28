@@ -20,6 +20,7 @@ import CreateAccountPage from './pages/CreateAccountPage';
 import PatientInvitePage from './pages/PatientInvitePage';
 import ChatSessionPage from './pages/ChatSessionPage';
 import SessionDetailPage from './pages/SessionDetailPage';
+import LandingPage from './pages/LandingPage';
 
 // Import route guards
 import ProtectedRoute from './components/ProtectedRoute';
@@ -155,11 +156,11 @@ function App() {
             </ProtectedRoute>
           } />
           
-          {/* Default route */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          
-          {/* Catch all - redirect to dashboard */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          {/* Landing page for unauthenticated visitors */}
+          <Route path="/" element={<LandingPage />} />
+
+          {/* Catch all - redirect to landing */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </ConfigProvider>
