@@ -32,9 +32,40 @@ export interface ChatAnswerData {
 
 export interface EligibilityResult {
   is_eligible: boolean;
+  /** @deprecated Use guideline_eligible instead */
   nccn_eligible: boolean;
+  guideline_eligible: boolean;
+  guideline_source: string; // e.g. 'uspstf'
+  risk_model: string; // e.g. 'gail'
+  /** @deprecated Use risk_score instead */
   tyrer_cuzick_score: number;
+  risk_score: number;
+  /** @deprecated Use risk_threshold instead */
   tyrer_cuzick_threshold: number;
+  risk_threshold: number;
+  risk_factors?: string[];
+  recommendations?: string[];
+}
+
+export interface PedigreeMember {
+  id: string;
+  name?: string;
+  sex: 'M' | 'F' | 'U';
+  affected?: boolean;
+  cancer_type?: string;
+  age_at_diagnosis?: number;
+  age?: number;
+  deceased?: boolean;
+  relationship?: string;
+  mother?: string;
+  father?: string;
+}
+
+export interface PedigreeData {
+  patient_id: string;
+  session_id?: string;
+  members: PedigreeMember[];
+  proband_id: string;
 }
 
 // Appointment Scheduling Types
@@ -278,6 +309,12 @@ class ApiService {
 
   async analyzeEligibility(sessionId: string): Promise<EligibilityResult> {
     const response = await this.client.post('/chat/analyze', { session_id: sessionId });
+    return response.data;
+  }
+
+  async getPedigree(patientId: string, sessionId?: string): Promise<PedigreeData> {
+    const params = sessionId ? { session_id: sessionId } : {};
+    const response = await this.client.get(`/pedigree/${patientId}`, { params });
     return response.data;
   }
 

@@ -6,9 +6,19 @@ interface SchedulingPromptProps {
   patientId: string;
   eligibilityResult?: {
     is_eligible: boolean;
-    nccn_eligible: boolean;
-    tyrer_cuzick_score: number;
-    tyrer_cuzick_threshold: number;
+    guideline_eligible: boolean;
+    guideline_source: string;
+    risk_model: string;
+    risk_score: number;
+    risk_threshold: number;
+    risk_factors?: string[];
+    recommendations?: string[];
+    /** @deprecated */
+    nccn_eligible?: boolean;
+    /** @deprecated */
+    tyrer_cuzick_score?: number;
+    /** @deprecated */
+    tyrer_cuzick_threshold?: number;
   };
   testResultsAvailable?: boolean;
 }
@@ -36,8 +46,8 @@ const SchedulingPrompt: React.FC<SchedulingPromptProps> = ({
       if (eligibilityResult.is_eligible) {
         // High risk - recommend urgent appointment
         return {
-          title: "Genetic Testing Recommended",
-          description: "Based on your risk assessment, we recommend scheduling an appointment with a genetic counselor to discuss testing options.",
+          title: "Genetic Counseling Referral Recommended",
+          description: "Based on your risk assessment, we recommend a referral to a genetic counselor to discuss your results and next steps.",
           buttonText: "Schedule Priority Consultation",
           urgency: "high"
         };

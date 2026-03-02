@@ -452,7 +452,7 @@ const LandingPage: React.FC = () => {
                 {[
                   'Recurring SaaS revenue model with per-patient pricing',
                   'Capital-efficient distribution through health system partnerships',
-                  'Regulatory tailwinds: NCCN guidelines expanding screening criteria',
+                  'Regulatory tailwinds: USPSTF recommendations expanding screening criteria',
                   'Platform extensibility to pharmacogenomics and polygenic risk scores',
                 ].map((point) => (
                   <div key={point} className="flex items-start">

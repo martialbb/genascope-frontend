@@ -26,31 +26,41 @@ describe('SchedulingPrompt', () => {
   it('should show high risk prompt for eligible results', () => {
     const eligibilityResult = {
       is_eligible: true,
+      guideline_eligible: true,
+      guideline_source: 'uspstf',
+      risk_model: 'gail',
+      risk_score: 25,
+      risk_threshold: 20,
       nccn_eligible: true,
       tyrer_cuzick_score: 25,
       tyrer_cuzick_threshold: 20
     };
-    
+
     render(
-      <SchedulingPrompt 
-        patientId={patientId} 
-        eligibilityResult={eligibilityResult} 
+      <SchedulingPrompt
+        patientId={patientId}
+        eligibilityResult={eligibilityResult}
       />
     );
-    
+
     // Check high risk content
-    expect(screen.getByText('Genetic Testing Recommended')).toBeInTheDocument();
+    expect(screen.getByText('Genetic Counseling Referral Recommended')).toBeInTheDocument();
     expect(screen.getByText(/Based on your risk assessment/i)).toBeInTheDocument();
     expect(screen.getByText('Schedule Priority Consultation')).toBeInTheDocument();
-    
+
     // Should have high urgency styling
-    const container = screen.getByText('Genetic Testing Recommended').closest('div');
-    expect(container).toHaveClass('border-red-300 bg-red-50');
+    const container = screen.getByText('Genetic Counseling Referral Recommended').closest('div.rounded-md');
+    expect(container).toHaveClass('border-red-300', 'bg-red-50');
   });
   
   it('should show lower risk prompt for non-eligible results', () => {
     const eligibilityResult = {
       is_eligible: false,
+      guideline_eligible: false,
+      guideline_source: 'uspstf',
+      risk_model: 'gail',
+      risk_score: 15,
+      risk_threshold: 20,
       nccn_eligible: false,
       tyrer_cuzick_score: 15,
       tyrer_cuzick_threshold: 20
@@ -69,8 +79,8 @@ describe('SchedulingPrompt', () => {
     expect(screen.getByText('Schedule Optional Consultation')).toBeInTheDocument();
     
     // Should have low urgency styling
-    const container = screen.getByText('Risk Assessment Complete').closest('div');
-    expect(container).toHaveClass('border-green-300 bg-green-50');
+    const container = screen.getByText('Risk Assessment Complete').closest('div.rounded-md');
+    expect(container).toHaveClass('border-green-300', 'bg-green-50');
   });
   
   it('should show test results prompt when results are available', () => {
@@ -87,8 +97,8 @@ describe('SchedulingPrompt', () => {
     expect(screen.getByText('Schedule Results Consultation')).toBeInTheDocument();
     
     // Should have medium urgency styling
-    const container = screen.getByText('Your Test Results Are Ready').closest('div');
-    expect(container).toHaveClass('border-blue-300 bg-blue-50');
+    const container = screen.getByText('Your Test Results Are Ready').closest('div.rounded-md');
+    expect(container).toHaveClass('border-blue-300', 'bg-blue-50');
   });
   
   it('should navigate to scheduling page when button is clicked', () => {
